@@ -46,17 +46,23 @@ El sistema busca reemplazar procesos manuales y facilitar futuras integraciones 
 ```mermaid
 flowchart LR
 
-    A[Usuario / Frontend] --> B[Spring Boot API]
+    A[Frontend / Usuario]
+        --> B[Controllers]
 
-    B --> C[Controllers]
-    C --> D[Services]
-    D --> E[Repositories JPA]
-    E --> F[Hibernate / JPA]
+    B --> C[Services]
+    C --> D[Repositories]
+    D --> E[Hibernate/JPA]
+    E --> F[(PostgreSQL)]
 
-    F --> G[(PostgreSQL)]
+    subgraph Backend Spring Boot
+        B
+        C
+        D
+        E
+    end
 
     subgraph Docker
-        G
+        F
     end
 ```
 
@@ -67,13 +73,40 @@ flowchart LR
 ```mermaid
 flowchart TD
 
-    A[Migration SQL] --> B[Flyway]
+    A[Migration SQL]
+        --> B[Flyway]
+
     B --> C[(PostgreSQL)]
 
-    D[Spring Boot] --> E[Hibernate/JPA]
+    D[Spring Boot]
+        --> E[Hibernate/JPA]
+
     E --> C
 
     C --> F[Trazabilidad de Relés]
+```
+
+---
+
+# Arquitectura Backend
+
+```mermaid
+flowchart TD
+
+    A[HTTP Request]
+        --> B[Controller]
+
+    B --> C[Service]
+
+    C --> D[Repository]
+
+    D --> E[(PostgreSQL)]
+
+    E --> D
+    D --> C
+    C --> B
+
+    B --> F[JSON Response]
 ```
 
 ---
@@ -122,6 +155,7 @@ erDiagram
 ```text
 backend/
 ├── src/main/java/
+│
 │   ├── controller/
 │   ├── service/
 │   ├── repository/
@@ -218,16 +252,57 @@ V5__add_observaciones_to_rele.sql
 
 ---
 
-# Convenciones de Desarrollo
+# Entidades JPA Implementadas
 
-- Un commit por cambio lógico
-- Arquitectura por capas
-- Base de datos versionada con Flyway
-- Convención REST para endpoints
-- Uso de migraciones incrementales
-- Separación entre lógica de negocio y persistencia
-- No modificar migrations ya ejecutadas
-- Toda modificación estructural debe realizarse mediante una nueva versión Flyway
+## Catálogos
+- Tipo
+- Marca
+- Estado
+- Provincia
+- Localidad
+
+## Dominio principal
+- Modelo
+- Rele
+- Movimiento
+
+## Ubicaciones
+- Destino
+- Posicion
+
+## Gestión logística
+- Proveedor
+- Remito
+
+## Usuarios
+- Usuario
+
+---
+
+# APIs REST Implementadas
+
+## Catálogos
+- /api/tipos
+- /api/marcas
+- /api/estados
+- /api/provincias
+- /api/localidades
+
+## Dominio principal
+- /api/modelos
+- /api/reles
+- /api/movimientos
+
+## Ubicaciones
+- /api/destinos
+- /api/posiciones
+
+## Gestión logística
+- /api/proveedores
+- /api/remitos
+
+## Usuarios
+- /api/usuarios
 
 ---
 
@@ -241,21 +316,42 @@ V5__add_observaciones_to_rele.sql
 - Hibernate/JPA
 - Modelo relacional completo
 - Versionado de base de datos
-- Backend operativo
-- PostgreSQL Explorer conectado
-- Persistencia inicial funcional
-
-## Próximos Pasos
-- Creación de entidades JPA
+- Arquitectura backend por capas
+- Entidades JPA
 - Repositories
 - Services
 - Controllers REST
-- CRUD de catálogos
-- Gestión de movimientos
-- Historial de trazabilidad
-- API REST completa
+- Endpoints CRUD base
+- PostgreSQL Explorer conectado
+- Persistencia funcional
+
+---
+
+# Próximos Pasos
+
+- DTOs
+- Validaciones
+- Exception Handling
+- Responses personalizados
+- Swagger/OpenAPI
+- Queries avanzadas
+- Historial detallado
+- Auditoría
 - Frontend React
 - Integración futura con Maximo/MIF
+
+---
+
+# Convenciones de Desarrollo
+
+- Un commit por cambio lógico
+- Arquitectura por capas
+- Base de datos versionada con Flyway
+- Convención REST para endpoints
+- Uso de migraciones incrementales
+- Separación entre lógica de negocio y persistencia
+- No modificar migrations ya ejecutadas
+- Toda modificación estructural debe realizarse mediante una nueva versión Flyway
 
 ---
 
@@ -274,7 +370,7 @@ docker compose up -d
 
 ```bash
 cd backend
-./mvnw spring-boot:run
+./mvnw.cmd spring-boot:run
 ```
 
 ---
@@ -301,10 +397,15 @@ docker compose down
 flowchart LR
 
     A[Crear Migration SQL]
-    --> B[Ejecutar Spring Boot]
-    --> C[Flyway actualiza PostgreSQL]
-    --> D[Validar en PostgreSQL Explorer]
-    --> E[Implementar JPA y API REST]
+        --> B[Ejecutar Spring Boot]
+
+    B --> C[Flyway actualiza PostgreSQL]
+
+    C --> D[Hibernate valida Entities]
+
+    D --> E[Exposición API REST]
+
+    E --> F[Pruebas y validación]
 ```
 
 ---
