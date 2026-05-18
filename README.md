@@ -1,6 +1,6 @@
 # Protecciones Trazabilidad
 
-Sistema de trazabilidad e inventario de relés de protección e IEDs orientado a la gestión de stock, movimientos, historial y auditoría de equipos utilizados en el área de protecciones eléctricas.
+Sistema de trazabilidad e inventario de relés de protección orientado a la gestión de stock, movimientos, historial y auditoría de equipos utilizados en el área de Protecciones y Teleoperación.
 
 ---
 
@@ -8,13 +8,13 @@ Sistema de trazabilidad e inventario de relés de protección e IEDs orientado a
 
 Centralizar y digitalizar la trazabilidad de:
 - relés de protección
-- IEDs
 - movimientos de stock
 - ubicaciones
 - estados de equipos
 - historial de intervenciones
+- remitos y proveedores
 
-El sistema busca reemplazar procesos manuales y facilitar futuras integraciones con plataformas corporativas como IBM Maximo mediante APIs o MIF.
+El sistema busca reemplazar procesos manuales y facilitar futuras integraciones con plataformas corporativas como IBM Maximo mediante APIs REST o MIF.
 
 ---
 
@@ -43,7 +43,7 @@ El sistema busca reemplazar procesos manuales y facilitar futuras integraciones 
 
 # Arquitectura General
 
-```mermaid 
+```mermaid
 flowchart LR
 
     A[Usuario / Frontend] --> B[Spring Boot API]
@@ -62,6 +62,22 @@ flowchart LR
 
 ---
 
+# Flujo de Persistencia
+
+```mermaid
+flowchart TD
+
+    A[Migration SQL] --> B[Flyway]
+    B --> C[(PostgreSQL)]
+
+    D[Spring Boot] --> E[Hibernate/JPA]
+    E --> C
+
+    C --> F[Trazabilidad de Relés]
+```
+
+---
+
 # Puertos Utilizados
 
 | Componente | Puerto |
@@ -72,18 +88,31 @@ flowchart LR
 
 ---
 
-# Flujo Actual del Sistema
+# Modelo de Dominio Actual
 
 ```mermaid
-flowchart TD
+erDiagram
 
-    A[Spring Boot] --> B[Flyway]
-    B --> C[PostgreSQL]
+    TIPO ||--o{ MODELO : clasifica
+    MARCA ||--o{ MODELO : fabrica
 
-    A --> D[Hibernate/JPA]
-    D --> C
+    MODELO ||--o{ RELE : define
 
-    C --> E[Trazabilidad de Equipos]
+    PROVINCIA ||--o{ LOCALIDAD : contiene
+
+    LOCALIDAD ||--o{ PROVEEDOR : ubica
+    LOCALIDAD ||--o{ DESTINO : ubica
+
+    DESTINO ||--o{ POSICION : contiene
+
+    PROVEEDOR ||--o{ REMITO : emite
+
+    REMITO ||--o{ RELE : incluye
+
+    ESTADO ||--o{ MOVIMIENTO : determina
+    POSICION ||--o{ MOVIMIENTO : registra
+    USUARIO ||--o{ MOVIMIENTO : realiza
+    RELE ||--o{ MOVIMIENTO : posee
 ```
 
 ---
@@ -149,15 +178,43 @@ Migraciones SQL versionadas mediante Flyway.
 
 La estructura de base de datos se administra mediante Flyway.
 
-Ejemplo de migraciones:
+## Migraciones actuales
 
 ```text
-V1__initial_schema.sql
-V2__create_ied_table.sql
-V3__create_movimiento_table.sql
+V1__initial_catalogs.sql
+V2__create_location_and_provider.sql
+V3__create_rele_domain.sql
+V4__create_movimiento_and_usuario.sql
 ```
 
 Cada cambio estructural debe realizarse mediante una nueva migration.
+
+Ejemplo:
+
+```text
+V5__add_observaciones_to_rele.sql
+```
+
+---
+
+# Modelo Implementado en PostgreSQL
+
+## Tablas actuales
+
+- tipo
+- marca
+- estado
+- provincia
+- localidad
+- proveedor
+- destino
+- posicion
+- modelo
+- remito
+- rele
+- usuario
+- movimiento
+- flyway_schema_history
 
 ---
 
@@ -169,6 +226,8 @@ Cada cambio estructural debe realizarse mediante una nueva migration.
 - Convención REST para endpoints
 - Uso de migraciones incrementales
 - Separación entre lógica de negocio y persistencia
+- No modificar migrations ya ejecutadas
+- Toda modificación estructural debe realizarse mediante una nueva versión Flyway
 
 ---
 
@@ -180,15 +239,21 @@ Cada cambio estructural debe realizarse mediante una nueva migration.
 - Spring Boot
 - Flyway
 - Hibernate/JPA
-- Primera migration ejecutada
+- Modelo relacional completo
+- Versionado de base de datos
 - Backend operativo
+- PostgreSQL Explorer conectado
+- Persistencia inicial funcional
 
 ## Próximos Pasos
-- Modelado completo del dominio
-- CRUD de entidades principales
+- Creación de entidades JPA
+- Repositories
+- Services
+- Controllers REST
+- CRUD de catálogos
 - Gestión de movimientos
 - Historial de trazabilidad
-- API REST
+- API REST completa
 - Frontend React
 - Integración futura con Maximo/MIF
 
@@ -203,11 +268,43 @@ cd docker
 docker compose up -d
 ```
 
+---
+
 ## Ejecutar Backend
 
 ```bash
 cd backend
 ./mvnw spring-boot:run
+```
+
+---
+
+## Verificar contenedores Docker
+
+```bash
+docker ps
+```
+
+---
+
+## Detener contenedores
+
+```bash
+docker compose down
+```
+
+---
+
+# Flujo de Trabajo Actual
+
+```mermaid
+flowchart LR
+
+    A[Crear Migration SQL]
+    --> B[Ejecutar Spring Boot]
+    --> C[Flyway actualiza PostgreSQL]
+    --> D[Validar en PostgreSQL Explorer]
+    --> E[Implementar JPA y API REST]
 ```
 
 ---
