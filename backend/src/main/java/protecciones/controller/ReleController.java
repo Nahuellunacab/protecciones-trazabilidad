@@ -31,11 +31,21 @@ public class ReleController {
     @GetMapping
     @Operation(summary = "Obtener relés paginados")
     public Page<ReleResponseDTO> obtenerTodos(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
 
-        return releService.obtenerPaginados(page, size);
-}
+            @RequestParam(defaultValue = "0")
+            int page,
+
+            @RequestParam(defaultValue = "10")
+            int size,
+
+            @RequestParam(defaultValue = "id,asc")
+            String sort) {
+
+        return releService.obtenerPaginados(
+                page,
+                size,
+                sort);
+    }
 
     @GetMapping("/serial/{numeroSerie}")
     @Operation(summary = "Buscar relé por número de serie")

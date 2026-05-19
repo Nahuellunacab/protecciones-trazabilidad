@@ -22,6 +22,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import org.springframework.data.domain.Sort;
+
 @Service
 public class ReleService {
 
@@ -138,9 +140,24 @@ public class ReleService {
 
     public Page<ReleResponseDTO> obtenerPaginados(
             int page,
-            int size) {
+            int size,
+            String sort) {
 
-        Pageable pageable = PageRequest.of(page, size);
+        String[] sortParams = sort.split(",");
+
+        String campo = sortParams[0];
+
+        Sort.Direction direccion =
+                sortParams.length > 1 &&
+                sortParams[1].equalsIgnoreCase("desc")
+                        ? Sort.Direction.DESC
+                        : Sort.Direction.ASC;
+
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                Sort.by(direccion, campo)
+        );
 
         return releRepository.findAll(pageable)
                 .map(this::mapToResponseDTO);
