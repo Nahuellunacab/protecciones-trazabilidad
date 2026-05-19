@@ -10,9 +10,11 @@ Centralizar y digitalizar la trazabilidad de:
 - relés de protección
 - movimientos de stock
 - ubicaciones
-- estados de equipos
+- estados operativos
 - historial de intervenciones
 - remitos y proveedores
+- posiciones y destinos
+- usuarios responsables
 
 El sistema busca reemplazar procesos manuales y facilitar futuras integraciones con plataformas corporativas como IBM Maximo mediante APIs REST o MIF.
 
@@ -34,6 +36,9 @@ El sistema busca reemplazar procesos manuales y facilitar futuras integraciones 
 ## Infraestructura
 - Docker
 - Docker Compose
+
+## Documentación API
+- Swagger / OpenAPI
 
 ## Frontend (futuro)
 - React
@@ -68,6 +73,37 @@ flowchart LR
 
 ---
 
+# Flujo Backend Actual
+
+```mermaid
+flowchart TD
+
+    A[HTTP Request]
+        --> B[DTO Request]
+
+    B --> C[Bean Validation]
+
+    C --> D[Controller]
+
+    D --> E[Service]
+
+    E --> F[Repository JPA]
+
+    F --> G[Hibernate]
+
+    G --> H[(PostgreSQL)]
+
+    H --> G
+    G --> F
+    F --> E
+
+    E --> I[DTO Response]
+
+    I --> J[HTTP JSON Response]
+```
+
+---
+
 # Flujo de Persistencia
 
 ```mermaid
@@ -84,29 +120,6 @@ flowchart TD
     E --> C
 
     C --> F[Trazabilidad de Relés]
-```
-
----
-
-# Arquitectura Backend
-
-```mermaid
-flowchart TD
-
-    A[HTTP Request]
-        --> B[Controller]
-
-    B --> C[Service]
-
-    C --> D[Repository]
-
-    D --> E[(PostgreSQL)]
-
-    E --> D
-    D --> C
-    C --> B
-
-    B --> F[JSON Response]
 ```
 
 ---
@@ -146,6 +159,29 @@ erDiagram
     POSICION ||--o{ MOVIMIENTO : registra
     USUARIO ||--o{ MOVIMIENTO : realiza
     RELE ||--o{ MOVIMIENTO : posee
+```
+
+---
+
+# Arquitectura Backend
+
+```mermaid
+flowchart TD
+
+    A[HTTP Request]
+        --> B[Controller]
+
+    B --> C[Service]
+
+    C --> D[Repository]
+
+    D --> E[(PostgreSQL)]
+
+    E --> D
+    D --> C
+    C --> B
+
+    B --> F[JSON Response]
 ```
 
 ---
@@ -279,6 +315,48 @@ V5__add_observaciones_to_rele.sql
 
 ---
 
+# Capacidades Actuales de la API
+
+## Persistencia
+- Hibernate/JPA
+- PostgreSQL
+- Repositories Spring Data
+
+## Arquitectura
+- Arquitectura por capas
+- DTOs
+- Validaciones
+- Exception Handling global
+- Responses REST desacopladas
+
+## REST API
+- CRUD base
+- Status HTTP correctos
+- JSON responses
+- ResponseEntity
+
+## Documentación
+- Swagger/OpenAPI
+- Documentación automática
+
+## Trazabilidad
+- Historial de movimientos
+- Estado actual derivado
+- Tracking operativo
+
+## Queries y búsquedas
+- Búsqueda exacta por serial
+- Búsqueda parcial por serial
+- Filtros por estado actual
+- Queries derivadas JPA
+
+## Escalabilidad
+- Paginación
+- Sorting dinámico
+- Consultas configurables
+
+---
+
 # APIs REST Implementadas
 
 ## Catálogos
@@ -306,6 +384,57 @@ V5__add_observaciones_to_rele.sql
 
 ---
 
+# Endpoints Avanzados Implementados
+
+## Relés
+
+### Obtener relés paginados
+```http
+GET /api/reles?page=0&size=10
+```
+
+### Sorting dinámico
+```http
+GET /api/reles?page=0&size=10&sort=numeroSerie,asc
+```
+
+### Buscar por serial exacto
+```http
+GET /api/reles/serial/REL-001
+```
+
+### Buscar por serial parcial
+```http
+GET /api/reles/buscar?serial=REL
+```
+
+### Obtener historial de movimientos
+```http
+GET /api/reles/1/movimientos
+```
+
+### Obtener estado actual
+```http
+GET /api/reles/1/estado-actual
+```
+
+### Filtrar por estado actual
+```http
+GET /api/reles/estado/INSTALADO
+```
+
+---
+
+# Swagger / OpenAPI
+
+## Acceso local
+
+```text
+http://localhost:8082/swagger-ui/index.html
+```
+
+---
+
 # Estado Actual
 
 ## Implementado
@@ -318,10 +447,20 @@ V5__add_observaciones_to_rele.sql
 - Versionado de base de datos
 - Arquitectura backend por capas
 - Entidades JPA
+- DTOs
+- Validaciones Bean Validation
+- Exception Handling global
+- Swagger/OpenAPI
 - Repositories
 - Services
 - Controllers REST
-- Endpoints CRUD base
+- Endpoints CRUD
+- Queries derivadas JPA
+- Historial de movimientos
+- Estado actual derivado
+- Filtros operativos
+- Paginación
+- Sorting dinámico
 - PostgreSQL Explorer conectado
 - Persistencia funcional
 
@@ -329,16 +468,27 @@ V5__add_observaciones_to_rele.sql
 
 # Próximos Pasos
 
-- DTOs
-- Validaciones
-- Exception Handling
-- Responses personalizados
-- Swagger/OpenAPI
+## Backend
 - Queries avanzadas
-- Historial detallado
-- Auditoría
-- Frontend React
-- Integración futura con Maximo/MIF
+- Filtros múltiples
+- Auditoría automática
+- Soft delete
+- Seguridad/JWT
+- Roles y permisos
+- Optimización de queries
+- Dockerización completa backend
+
+## Frontend
+- React
+- Dashboard operativo
+- Tablas dinámicas
+- Gestión visual de trazabilidad
+
+## Integraciones futuras
+- IBM Maximo
+- MIF
+- APIs corporativas
+- Exportación Excel/PDF
 
 ---
 
@@ -375,6 +525,14 @@ cd backend
 
 ---
 
+## Acceder a Swagger
+
+```text
+http://localhost:8082/swagger-ui/index.html
+```
+
+---
+
 ## Verificar contenedores Docker
 
 ```bash
@@ -405,8 +563,29 @@ flowchart LR
 
     D --> E[Exposición API REST]
 
-    E --> F[Pruebas y validación]
+    E --> F[DTOs y Validation]
+
+    F --> G[Swagger/OpenAPI]
+
+    G --> H[Pruebas y validación]
 ```
+
+---
+
+# Estado Arquitectónico Actual
+
+```text
+Backend enterprise base funcional completo
+```
+
+Con:
+- arquitectura desacoplada
+- API REST profesional
+- trazabilidad histórica
+- validaciones
+- documentación OpenAPI
+- consultas operativas
+- paginación y escalabilidad inicial
 
 ---
 
