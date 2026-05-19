@@ -68,11 +68,20 @@ public class ReleController {
 
         return releService.obtenerEstadoActual(id);
     }
+
     @GetMapping("/estado/{estado}")
     @Operation(summary = "Obtener relés por estado actual")
     public List<ReleResponseDTO> obtenerPorEstado(
             @PathVariable String estado) {
 
         return releService.obtenerPorEstadoActual(estado);
+    }
+
+    @GetMapping("/buscar")
+    @Operation(summary = "Buscar relés por número de serie")
+    public List<ReleResponseDTO> buscarPorSerial(
+            @RequestParam String serial) {
+
+        return releService.buscarPorSerialParcial(serial);
     }
 }

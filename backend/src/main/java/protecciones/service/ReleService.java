@@ -146,6 +146,16 @@ public class ReleService {
                 .map(this::mapToResponseDTO);
     }
 
+    public List<ReleResponseDTO> buscarPorSerialParcial(
+            String serial) {
+
+        return releRepository
+                .findByNumeroSerieContainingIgnoreCase(serial)
+                .stream()
+                .map(this::mapToResponseDTO)
+                .toList();
+    }
+
     private MovimientoResponseDTO mapMovimientoToDTO(
             Movimiento movimiento) {
 
