@@ -56,4 +56,12 @@ public class ReleController {
 
         return releService.guardar(dto);
     }
+
+    @GetMapping("/{id}/estado-actual")
+    @Operation(summary = "Obtener estado actual del relé")
+    public MovimientoResponseDTO obtenerEstadoActual(
+            @PathVariable Long id) {
+
+        return releService.obtenerEstadoActual(id);
+}
 }

@@ -101,6 +101,17 @@ public class ReleService {
         );
     }
 
+    public MovimientoResponseDTO obtenerEstadoActual(Long releId) {
+
+        Movimiento movimiento = movimientoRepository
+                .findTopByReleIdOrderByFechaMovimientoDesc(releId)
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "El relé no tiene movimientos"));
+
+        return mapMovimientoToDTO(movimiento);
+}
+
     private MovimientoResponseDTO mapMovimientoToDTO(
             Movimiento movimiento) {
 
