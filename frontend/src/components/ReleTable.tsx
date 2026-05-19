@@ -1,5 +1,16 @@
 import type { Rele } from "../types/Rele";
 
+import {
+    Paper,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    Typography
+} from "@mui/material";
+
 interface Props {
     reles: Rele[];
 }
@@ -8,36 +19,82 @@ function ReleTable({ reles }: Props) {
 
     return (
 
-        <table border={1} cellPadding={10}>
+        <TableContainer component={Paper}>
 
-            <thead>
+            <Table>
 
-                <tr>
-                    <th>ID</th>
-                    <th>Número Serie</th>
-                    <th>Modelo</th>
-                    <th>Marca</th>
-                </tr>
+                <TableHead>
 
-            </thead>
+                    <TableRow>
 
-            <tbody>
+                        <TableCell>
+                            <strong>ID</strong>
+                        </TableCell>
 
-                {reles.map((rele) => (
+                        <TableCell>
+                            <strong>Número Serie</strong>
+                        </TableCell>
 
-                    <tr key={rele.id}>
+                        <TableCell>
+                            <strong>Modelo</strong>
+                        </TableCell>
 
-                        <td>{rele.id}</td>
-                        <td>{rele.numeroSerie}</td>
-                        <td>{rele.modelo}</td>
-                        <td>{rele.marca}</td>
+                        <TableCell>
+                            <strong>Marca</strong>
+                        </TableCell>
 
-                    </tr>
-                ))}
+                    </TableRow>
 
-            </tbody>
+                </TableHead>
 
-        </table>
+                <TableBody>
+
+                    {reles.map((rele) => (
+
+                        <TableRow key={rele.id}>
+
+                            <TableCell>
+                                {rele.id}
+                            </TableCell>
+
+                            <TableCell>
+                                {rele.numeroSerie}
+                            </TableCell>
+
+                            <TableCell>
+                                {rele.modelo}
+                            </TableCell>
+
+                            <TableCell>
+                                {rele.marca}
+                            </TableCell>
+
+                        </TableRow>
+                    ))}
+
+                    {reles.length === 0 && (
+
+                        <TableRow>
+
+                            <TableCell
+                                colSpan={4}
+                                align="center"
+                            >
+
+                                <Typography>
+                                    No hay relés cargados
+                                </Typography>
+
+                            </TableCell>
+
+                        </TableRow>
+                    )}
+
+                </TableBody>
+
+            </Table>
+
+        </TableContainer>
     );
 }
 

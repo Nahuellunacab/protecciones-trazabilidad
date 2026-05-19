@@ -1,4 +1,15 @@
-import { Link, Outlet } from "react-router-dom";
+import {
+    AppBar,
+    Toolbar,
+    Typography,
+    Button,
+    Container
+} from "@mui/material";
+
+import {
+    Link,
+    Outlet
+} from "react-router-dom";
 
 function MainLayout() {
 
@@ -6,31 +17,42 @@ function MainLayout() {
 
         <div>
 
-            <nav
-                style={{
-                    padding: "15px",
-                    borderBottom: "1px solid gray",
-                    marginBottom: "20px"
-                }}
-            >
+            <AppBar position="static">
 
-                <Link to="/">
-                    Inicio
-                </Link>
+                <Toolbar>
 
-                {" | "}
+                    <Typography
+                        variant="h6"
+                        sx={{ flexGrow: 1 }}
+                    >
+                        Protecciones
+                    </Typography>
 
-                <Link to="/reles">
-                    Relés
-                </Link>
+                    <Button
+                        color="inherit"
+                        component={Link}
+                        to="/"
+                    >
+                        Inicio
+                    </Button>
 
-            </nav>
+                    <Button
+                        color="inherit"
+                        component={Link}
+                        to="/reles"
+                    >
+                        Relés
+                    </Button>
 
-            <div style={{ padding: "20px" }}>
+                </Toolbar>
+
+            </AppBar>
+
+            <Container sx={{ mt: 4 }}>
 
                 <Outlet />
 
-            </div>
+            </Container>
 
         </div>
     );

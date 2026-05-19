@@ -2,6 +2,18 @@ import { useState } from "react";
 
 import type { ReleRequest } from "../types/ReleRequest";
 
+import {
+    Alert,
+    Box,
+    Button,
+    CircularProgress,
+    Paper,
+    Snackbar,
+    Stack,
+    TextField,
+    Typography
+} from "@mui/material";
+
 interface Props {
     onCreate: (data: ReleRequest) => Promise<void>;
 }
@@ -15,6 +27,15 @@ function ReleForm({ onCreate }: Props) {
             modeloId: 1,
             remitoId: 1
         });
+
+    const [loading, setLoading] =
+        useState(false);
+
+    const [successOpen, setSuccessOpen] =
+        useState(false);
+
+    const [errorOpen, setErrorOpen] =
+        useState(false);
 
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement>
@@ -39,70 +60,150 @@ function ReleForm({ onCreate }: Props) {
 
         e.preventDefault();
 
-        await onCreate(formData);
+        try {
 
-        setFormData({
-            numeroSerie: "",
-            garantiaMeses: 12,
-            modeloId: 1,
-            remitoId: 1
-        });
+            setLoading(true);
+
+            await onCreate(formData);
+
+            setSuccessOpen(true);
+
+            setFormData({
+                numeroSerie: "",
+                garantiaMeses: 12,
+                modeloId: 1,
+                remitoId: 1
+            });
+
+        } catch (error) {
+
+            console.error(error);
+
+            setErrorOpen(true);
+
+        } finally {
+
+            setLoading(false);
+        }
     };
 
     return (
 
-        <form onSubmit={handleSubmit}>
+        <>
 
-            <div>
-                <input
-                    type="text"
-                    name="numeroSerie"
-                    placeholder="Número Serie"
-                    value={formData.numeroSerie}
-                    onChange={handleChange}
-                />
-            </div>
+            <Snackbar
+                open={successOpen}
+                autoHideDuration={3000}
+                onClose={() => setSuccessOpen(false)}
+            >
 
-            <br />
+                <Alert severity="success">
 
-            <div>
-                <input
-                    type="number"
-                    name="garantiaMeses"
-                    value={formData.garantiaMeses}
-                    onChange={handleChange}
-                />
-            </div>
+                    Relé creado correctamente
 
-            <br />
+                </Alert>
 
-            <div>
-                <input
-                    type="number"
-                    name="modeloId"
-                    value={formData.modeloId}
-                    onChange={handleChange}
-                />
-            </div>
+            </Snackbar>
 
-            <br />
+            <Snackbar
+                open={errorOpen}
+                autoHideDuration={3000}
+                onClose={() => setErrorOpen(false)}
+            >
 
-            <div>
-                <input
-                    type="number"
-                    name="remitoId"
-                    value={formData.remitoId}
-                    onChange={handleChange}
-                />
-            </div>
+                <Alert severity="error">
 
-            <br />
+                    Error al crear relé
 
-            <button type="submit">
-                Crear Relé
-            </button>
+                </Alert>
 
-        </form>
+            </Snackbar>
+
+            <Paper
+                elevation={3}
+                sx={{
+                    padding: 3,
+                    marginBottom: 4
+                }}
+            >
+
+                <Typography
+                    variant="h6"
+                    gutterBottom
+                >
+                    Crear Relé
+                </Typography>
+
+                <Box
+                    component="form"
+                    onSubmit={handleSubmit}
+                >
+
+                    <Stack spacing={2}>
+
+                        <TextField
+                            label="Número Serie"
+                            name="numeroSerie"
+                            value={formData.numeroSerie}
+                            onChange={handleChange}
+                            fullWidth
+                        />
+
+                        <TextField
+                            label="Garantía Meses"
+                            name="garantiaMeses"
+                            type="number"
+                            value={formData.garantiaMeses}
+                            onChange={handleChange}
+                            fullWidth
+                        />
+
+                        <TextField
+                            label="Modelo ID"
+                            name="modeloId"
+                            type="number"
+                            value={formData.modeloId}
+                            onChange={handleChange}
+                            fullWidth
+                        />
+
+                        <TextField
+                            label="Remito ID"
+                            name="remitoId"
+                            type="number"
+                            value={formData.remitoId}
+                            onChange={handleChange}
+                            fullWidth
+                        />
+
+                        <Button
+                            variant="contained"
+                            type="submit"
+                            disabled={loading}
+                        >
+
+                            {loading ? (
+
+                                <CircularProgress
+                                    size={24}
+                                    color="inherit"
+                                />
+
+                            ) : (
+
+                                "Crear Relé"
+                            )}
+
+                        </Button>
+
+                    </Stack>
+
+                </Box>
+
+            </Paper>
+
+        </>
+
     );
 }
 
