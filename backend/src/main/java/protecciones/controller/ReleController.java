@@ -15,6 +15,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+
 @RestController
 @RequestMapping("/api/reles")
 @Tag(name = "Relés", description = "Gestión de relés de protección")
@@ -27,11 +29,13 @@ public class ReleController {
     }
 
     @GetMapping
-    @Operation(summary = "Obtener todos los relés")
-    public List<ReleResponseDTO> obtenerTodos() {
+    @Operation(summary = "Obtener relés paginados")
+    public Page<ReleResponseDTO> obtenerTodos(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
 
-        return releService.obtenerTodos();
-    }
+        return releService.obtenerPaginados(page, size);
+}
 
     @GetMapping("/serial/{numeroSerie}")
     @Operation(summary = "Buscar relé por número de serie")
