@@ -1,7 +1,9 @@
 package protecciones.controller;
 
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
-import protecciones.entity.Rele;
+import protecciones.dto.ReleRequestDTO;
+import protecciones.dto.ReleResponseDTO;
 import protecciones.service.ReleService;
 
 import java.util.List;
@@ -17,12 +19,12 @@ public class ReleController {
     }
 
     @GetMapping
-    public List<Rele> obtenerTodos() {
+    public List<ReleResponseDTO> obtenerTodos() {
         return releService.obtenerTodos();
     }
 
     @PostMapping
-    public Rele guardar(@RequestBody Rele rele) {
-        return releService.guardar(rele);
+    public ReleResponseDTO guardar(@Valid @RequestBody ReleRequestDTO dto) {
+        return releService.guardar(dto);
     }
 }
