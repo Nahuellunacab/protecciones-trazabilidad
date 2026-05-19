@@ -37,12 +37,16 @@ El sistema busca reemplazar procesos manuales y facilitar futuras integraciones 
 - Docker
 - Docker Compose
 
-## Documentación API
-- Swagger / OpenAPI
-
-## Frontend (futuro)
+## Frontend
 - React
 - TypeScript
+- Vite
+- Axios
+- React Router
+- Material UI
+
+## Documentación API
+- Swagger / OpenAPI
 
 ---
 
@@ -51,55 +55,63 @@ El sistema busca reemplazar procesos manuales y facilitar futuras integraciones 
 ```mermaid
 flowchart LR
 
-    A[Frontend / Usuario]
-        --> B[Controllers]
+    A[Frontend React]
+        -->|HTTP REST| B[Spring Boot API]
 
-    B --> C[Services]
-    C --> D[Repositories]
-    D --> E[Hibernate/JPA]
-    E --> F[(PostgreSQL)]
+    B --> C[Controllers]
+    C --> D[Services]
+    D --> E[Repositories JPA]
+    E --> F[Hibernate]
+    F --> G[(PostgreSQL)]
 
-    subgraph Backend Spring Boot
+    subgraph Frontend
+        A
+    end
+
+    subgraph Backend
         B
         C
         D
         E
+        F
     end
 
     subgraph Docker
-        F
+        G
     end
 ```
 
 ---
 
-# Flujo Backend Actual
+# Flujo Fullstack Actual
 
 ```mermaid
 flowchart TD
 
-    A[HTTP Request]
-        --> B[DTO Request]
+    A[Usuario Frontend React]
+        --> B[Axios HTTP Request]
 
-    B --> C[Bean Validation]
+    B --> C[Spring Boot REST API]
 
-    C --> D[Controller]
+    C --> D[DTO Request]
 
-    D --> E[Service]
+    D --> E[Validation]
 
-    E --> F[Repository JPA]
+    E --> F[Service]
 
-    F --> G[Hibernate]
+    F --> G[JPA Repository]
 
     G --> H[(PostgreSQL)]
 
     H --> G
+
     G --> F
-    F --> E
 
-    E --> I[DTO Response]
+    F --> I[DTO Response]
 
-    I --> J[HTTP JSON Response]
+    I --> J[JSON Response]
+
+    J --> K[React Render UI]
 ```
 
 ---
@@ -128,6 +140,7 @@ flowchart TD
 
 | Componente | Puerto |
 |---|---|
+| Frontend React/Vite | 5173 |
 | Spring Boot API | 8082 |
 | PostgreSQL Docker | 5433 |
 | PostgreSQL Interno Docker | 5432 |
@@ -186,6 +199,29 @@ flowchart TD
 
 ---
 
+# Arquitectura Frontend
+
+```mermaid
+flowchart TD
+
+    A[Pages]
+        --> B[Components]
+
+    B --> C[Services]
+
+    C --> D[Axios API]
+
+    D --> E[Spring Boot Backend]
+
+    A --> F[Layouts]
+
+    A --> G[Routes]
+
+    A --> H[Types]
+```
+
+---
+
 # Estructura del Proyecto
 
 ```text
@@ -207,13 +243,27 @@ backend/
 │
 └── pom.xml
 
+frontend/
+├── src/
+│
+│   ├── api/
+│   ├── components/
+│   ├── layouts/
+│   ├── pages/
+│   ├── routes/
+│   ├── services/
+│   ├── types/
+│   └── App.tsx
+│
+└── package.json
+
 docker/
 └── docker-compose.yml
 ```
 
 ---
 
-# Responsabilidad de Cada Capa
+# Responsabilidad de Cada Capa Backend
 
 ## controller
 Expone endpoints REST y recibe requests HTTP.
@@ -241,6 +291,31 @@ Manejo centralizado de errores y excepciones.
 
 ## db/migration
 Migraciones SQL versionadas mediante Flyway.
+
+---
+
+# Responsabilidad de Cada Capa Frontend
+
+## pages
+Pantallas principales de la aplicación.
+
+## components
+Componentes reutilizables de UI.
+
+## layouts
+Layouts globales de navegación y estructura.
+
+## routes
+Configuración centralizada de rutas React Router.
+
+## services
+Comunicación HTTP con backend mediante Axios.
+
+## api
+Configuración global de Axios.
+
+## types
+Tipos TypeScript desacoplados del backend.
 
 ---
 
@@ -315,7 +390,7 @@ V5__add_observaciones_to_rele.sql
 
 ---
 
-# Capacidades Actuales de la API
+# Capacidades Actuales del Backend
 
 ## Persistencia
 - Hibernate/JPA
@@ -354,6 +429,34 @@ V5__add_observaciones_to_rele.sql
 - Paginación
 - Sorting dinámico
 - Consultas configurables
+
+---
+
+# Capacidades Actuales del Frontend
+
+## Arquitectura
+- React + TypeScript
+- Arquitectura desacoplada
+- React Router
+- Componentización
+- Services desacoplados
+- Axios centralizado
+
+## UI/UX
+- Material UI
+- Navbar corporativa
+- Tabla enterprise
+- Formularios modernos
+- Feedback visual
+- Loading states
+- Snackbars de éxito/error
+
+## Fullstack
+- Consumo API real
+- CRUD operativo
+- Integración React ↔ Spring Boot
+- CORS configurado
+- Persistencia fullstack funcional
 
 ---
 
@@ -437,7 +540,7 @@ http://localhost:8082/swagger-ui/index.html
 
 # Estado Actual
 
-## Implementado
+## Backend implementado
 - Entorno Docker
 - PostgreSQL
 - Spring Boot
@@ -461,12 +564,38 @@ http://localhost:8082/swagger-ui/index.html
 - Filtros operativos
 - Paginación
 - Sorting dinámico
-- PostgreSQL Explorer conectado
 - Persistencia funcional
 
 ---
 
+## Frontend implementado
+- React + Vite
+- TypeScript
+- Axios
+- React Router
+- Material UI
+- Arquitectura frontend desacoplada
+- Navbar y layout principal
+- Tabla de relés
+- Formulario de alta
+- Loading states
+- Snackbar feedback
+- CRUD frontend operativo
+- Integración fullstack funcional
+
+---
+
 # Próximos Pasos
+
+## Frontend
+- Selects dinámicos
+- Catálogos reales
+- Dashboard operativo
+- DataGrid avanzado
+- Dialogs
+- Filtros visuales
+- Paginación frontend
+- Dark mode
 
 ## Backend
 - Queries avanzadas
@@ -477,12 +606,6 @@ http://localhost:8082/swagger-ui/index.html
 - Roles y permisos
 - Optimización de queries
 - Dockerización completa backend
-
-## Frontend
-- React
-- Dashboard operativo
-- Tablas dinámicas
-- Gestión visual de trazabilidad
 
 ## Integraciones futuras
 - IBM Maximo
@@ -495,7 +618,7 @@ http://localhost:8082/swagger-ui/index.html
 # Convenciones de Desarrollo
 
 - Un commit por cambio lógico
-- Arquitectura por capas
+- Arquitectura desacoplada
 - Base de datos versionada con Flyway
 - Convención REST para endpoints
 - Uso de migraciones incrementales
@@ -525,7 +648,25 @@ cd backend
 
 ---
 
-## Acceder a Swagger
+## Ejecutar Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+---
+
+## Acceder Frontend
+
+```text
+http://localhost:5173
+```
+
+---
+
+## Acceder Swagger
 
 ```text
 http://localhost:8082/swagger-ui/index.html
@@ -563,11 +704,11 @@ flowchart LR
 
     D --> E[Exposición API REST]
 
-    E --> F[DTOs y Validation]
+    E --> F[Frontend React consume API]
 
-    F --> G[Swagger/OpenAPI]
+    F --> G[Material UI Render]
 
-    G --> H[Pruebas y validación]
+    G --> H[Pruebas Fullstack]
 ```
 
 ---
@@ -575,16 +716,18 @@ flowchart LR
 # Estado Arquitectónico Actual
 
 ```text
-Backend enterprise base funcional completo
+Aplicación fullstack enterprise base funcional
 ```
 
 Con:
-- arquitectura desacoplada
-- API REST profesional
+- backend REST profesional
+- frontend React desacoplado
+- Material UI
+- arquitectura escalable
+- persistencia fullstack
 - trazabilidad histórica
-- validaciones
 - documentación OpenAPI
-- consultas operativas
+- integración React ↔ Spring Boot
 - paginación y escalabilidad inicial
 
 ---
