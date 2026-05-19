@@ -1,8 +1,8 @@
-import RelePage from "./pages/RelePage";
+import AppRouter from "./routes/AppRouter";
 
 function App() {
 
-  return <RelePage />;
+    return <AppRouter />;
 }
 
 export default App;
