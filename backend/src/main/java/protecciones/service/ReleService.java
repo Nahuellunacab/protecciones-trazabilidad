@@ -1,12 +1,18 @@
 package protecciones.service;
 
 import org.springframework.stereotype.Service;
+
+import protecciones.dto.MovimientoResponseDTO;
 import protecciones.dto.ReleRequestDTO;
 import protecciones.dto.ReleResponseDTO;
+
 import protecciones.entity.Modelo;
+import protecciones.entity.Movimiento;
 import protecciones.entity.Rele;
 import protecciones.entity.Remito;
+
 import protecciones.repository.ModeloRepository;
+import protecciones.repository.MovimientoRepository;
 import protecciones.repository.ReleRepository;
 import protecciones.repository.RemitoRepository;
 
@@ -18,14 +24,17 @@ public class ReleService {
     private final ReleRepository releRepository;
     private final ModeloRepository modeloRepository;
     private final RemitoRepository remitoRepository;
+    private final MovimientoRepository movimientoRepository;
 
     public ReleService(ReleRepository releRepository,
                        ModeloRepository modeloRepository,
-                       RemitoRepository remitoRepository) {
+                       RemitoRepository remitoRepository,
+                       MovimientoRepository movimientoRepository) {
 
         this.releRepository = releRepository;
         this.modeloRepository = modeloRepository;
         this.remitoRepository = remitoRepository;
+        this.movimientoRepository = movimientoRepository;
     }
 
     public List<ReleResponseDTO> obtenerTodos() {
@@ -39,13 +48,16 @@ public class ReleService {
     public ReleResponseDTO guardar(ReleRequestDTO dto) {
 
         Modelo modelo = modeloRepository.findById(dto.getModeloId())
-                .orElseThrow(() -> new RuntimeException("Modelo no encontrado"));
+                .orElseThrow(() ->
+                        new RuntimeException("Modelo no encontrado"));
 
         Remito remito = null;
 
         if (dto.getRemitoId() != null) {
+
             remito = remitoRepository.findById(dto.getRemitoId())
-                    .orElseThrow(() -> new RuntimeException("Remito no encontrado"));
+                    .orElseThrow(() ->
+                            new RuntimeException("Remito no encontrado"));
         }
 
         Rele rele = new Rele();
@@ -60,6 +72,24 @@ public class ReleService {
         return mapToResponseDTO(releGuardado);
     }
 
+    public ReleResponseDTO buscarPorNumeroSerie(String numeroSerie) {
+
+        Rele rele = releRepository.findByNumeroSerie(numeroSerie)
+                .orElseThrow(() ->
+                        new RuntimeException("Relé no encontrado"));
+
+        return mapToResponseDTO(rele);
+    }
+
+    public List<MovimientoResponseDTO> obtenerHistorial(Long releId) {
+
+        return movimientoRepository
+                .findByReleIdOrderByFechaMovimientoDesc(releId)
+                .stream()
+                .map(this::mapMovimientoToDTO)
+                .toList();
+    }
+
     private ReleResponseDTO mapToResponseDTO(Rele rele) {
 
         return new ReleResponseDTO(
@@ -68,6 +98,18 @@ public class ReleService {
                 rele.getGarantiaMeses(),
                 rele.getModelo().getNombre(),
                 rele.getModelo().getMarca().getNombre()
+        );
+    }
+
+    private MovimientoResponseDTO mapMovimientoToDTO(
+            Movimiento movimiento) {
+
+        return new MovimientoResponseDTO(
+                movimiento.getFechaMovimiento(),
+                movimiento.getEstado().getNombre(),
+                movimiento.getPosicion().getNombre(),
+                movimiento.getUsuario().getNombre(),
+                movimiento.getNotas()
         );
     }
 }

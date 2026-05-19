@@ -1,9 +1,13 @@
 package protecciones.controller;
 
 import jakarta.validation.Valid;
+
 import org.springframework.web.bind.annotation.*;
+
+import protecciones.dto.MovimientoResponseDTO;
 import protecciones.dto.ReleRequestDTO;
 import protecciones.dto.ReleResponseDTO;
+
 import protecciones.service.ReleService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -25,12 +29,31 @@ public class ReleController {
     @GetMapping
     @Operation(summary = "Obtener todos los relés")
     public List<ReleResponseDTO> obtenerTodos() {
+
         return releService.obtenerTodos();
+    }
+
+    @GetMapping("/serial/{numeroSerie}")
+    @Operation(summary = "Buscar relé por número de serie")
+    public ReleResponseDTO buscarPorNumeroSerie(
+            @PathVariable String numeroSerie) {
+
+        return releService.buscarPorNumeroSerie(numeroSerie);
+    }
+
+    @GetMapping("/{id}/movimientos")
+    @Operation(summary = "Obtener historial de movimientos del relé")
+    public List<MovimientoResponseDTO> obtenerHistorial(
+            @PathVariable Long id) {
+
+        return releService.obtenerHistorial(id);
     }
 
     @PostMapping
     @Operation(summary = "Crear un nuevo relé")
-    public ReleResponseDTO guardar(@Valid @RequestBody ReleRequestDTO dto) {
+    public ReleResponseDTO guardar(
+            @Valid @RequestBody ReleRequestDTO dto) {
+
         return releService.guardar(dto);
     }
 }
