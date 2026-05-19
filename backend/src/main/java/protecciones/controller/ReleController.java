@@ -17,6 +17,9 @@ import java.util.List;
 
 import org.springframework.data.domain.Page;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+
 @RestController
 @RequestMapping("/api/reles")
 @Tag(name = "Relés", description = "Gestión de relés de protección")
@@ -65,10 +68,14 @@ public class ReleController {
 
     @PostMapping
     @Operation(summary = "Crear un nuevo relé")
-    public ReleResponseDTO guardar(
+    public ResponseEntity<ReleResponseDTO> guardar(
             @Valid @RequestBody ReleRequestDTO dto) {
 
-        return releService.guardar(dto);
+        ReleResponseDTO response = releService.guardar(dto);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(response);
     }
 
     @GetMapping("/{id}/estado-actual")
