@@ -109,8 +109,28 @@ public class ReleService {
                         new RuntimeException(
                                 "El relé no tiene movimientos"));
 
-        return mapMovimientoToDTO(movimiento);
-}
+        return mapMovimientoToDTO(movimiento);    
+    }
+
+    public List<ReleResponseDTO> obtenerPorEstadoActual(
+        String estadoNombre) {
+
+        return releRepository.findAll()
+                .stream()
+                .filter(rele -> {
+
+                    return movimientoRepository
+                            .findTopByReleIdOrderByFechaMovimientoDesc(
+                                    rele.getId())
+                            .map(movimiento ->
+                                    movimiento.getEstado()
+                                            .getNombre()
+                                            .equalsIgnoreCase(estadoNombre))
+                            .orElse(false);
+                })
+                .map(this::mapToResponseDTO)
+                .toList();
+    }
 
     private MovimientoResponseDTO mapMovimientoToDTO(
             Movimiento movimiento) {

@@ -63,5 +63,12 @@ public class ReleController {
             @PathVariable Long id) {
 
         return releService.obtenerEstadoActual(id);
-}
+    }
+    @GetMapping("/estado/{estado}")
+    @Operation(summary = "Obtener relés por estado actual")
+    public List<ReleResponseDTO> obtenerPorEstado(
+            @PathVariable String estado) {
+
+        return releService.obtenerPorEstadoActual(estado);
+    }
 }
