@@ -21,7 +21,17 @@ public class ModeloController {
     }
 
     @GetMapping
-    public List<ModeloResponseDTO> obtenerTodos() {
+    public List<ModeloResponseDTO>
+    obtenerTodos(
+            @RequestParam(required = false)
+            Long marcaId
+    ) {
+
+        if (marcaId != null) {
+
+            return modeloService
+                    .obtenerPorMarca(marcaId);
+        }
 
         return modeloService.obtenerTodos();
     }

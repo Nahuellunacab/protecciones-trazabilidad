@@ -2,9 +2,13 @@ import { useEffect, useState } from "react";
 
 import type { ReleRequest } from "../types/ReleRequest";
 import type { Modelo } from "../types/Modelo";
+import type { Marca } from "../types/Marca";
 
 import { obtenerModelos }
     from "../services/modeloService";
+
+import { obtenerMarcas }
+    from "../services/marcaService";
 
 import {
     Alert,
@@ -32,7 +36,7 @@ function ReleForm({ onCreate }: Props) {
         useState<ReleRequest>({
             numeroSerie: "",
             garantiaMeses: 12,
-            modeloId: 1,
+            modeloId: 0,
             remitoId: 1
         });
 
@@ -48,15 +52,32 @@ function ReleForm({ onCreate }: Props) {
     const [modelos, setModelos] =
         useState<Modelo[]>([]);
 
+    const [marcas, setMarcas] =
+        useState<Marca[]>([]);
+
+    const [marcaSeleccionada,
+        setMarcaSeleccionada] =
+            useState<number | "">("");
+
     useEffect(() => {
 
-        cargarModelos();
+        cargarMarcas();
 
     }, []);
 
-    const cargarModelos = async () => {
+    const cargarMarcas = async () => {
 
-        const data = await obtenerModelos();
+        const data = await obtenerMarcas();
+
+        setMarcas(data);
+    };
+
+    const cargarModelos = async (
+        marcaId: number
+    ) => {
+
+        const data =
+            await obtenerModelos(marcaId);
 
         setModelos(data);
     };
@@ -95,9 +116,13 @@ function ReleForm({ onCreate }: Props) {
             setFormData({
                 numeroSerie: "",
                 garantiaMeses: 12,
-                modeloId: 1,
+                modeloId: 0,
                 remitoId: 1
             });
+
+            setMarcaSeleccionada("");
+
+            setModelos([]);
 
         } catch (error) {
 
@@ -185,10 +210,60 @@ function ReleForm({ onCreate }: Props) {
                         <FormControl fullWidth>
 
                             <InputLabel>
+                                Marca
+                            </InputLabel>
+
+                            <Select
+                                value={marcaSeleccionada}
+                                label="Marca"
+                                onChange={async (e) => {
+
+                                    const marcaId =
+                                        Number(
+                                            e.target.value
+                                        );
+
+                                    setMarcaSeleccionada(
+                                        marcaId
+                                    );
+
+                                    setFormData({
+                                        ...formData,
+                                        modeloId: 0
+                                    });
+
+                                    await cargarModelos(
+                                        marcaId
+                                    );
+                                }}
+                            >
+
+                                {marcas.map((marca) => (
+
+                                    <MenuItem
+                                        key={marca.id}
+                                        value={marca.id}
+                                    >
+
+                                        {marca.nombre}
+
+                                    </MenuItem>
+                                ))}
+
+                            </Select>
+
+                        </FormControl>
+
+                        <FormControl fullWidth>
+
+                            <InputLabel>
                                 Modelo
                             </InputLabel>
 
                             <Select
+                                disabled={
+                                    !marcaSeleccionada
+                                }
                                 name="modeloId"
                                 value={formData.modeloId}
                                 label="Modelo"

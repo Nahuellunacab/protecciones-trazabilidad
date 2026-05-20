@@ -28,6 +28,16 @@ public class ModeloService {
                 .toList();
     }
 
+    public List<ModeloResponseDTO>
+    obtenerPorMarca(Long marcaId) {
+
+        return modeloRepository
+                .findByMarcaId(marcaId)
+                .stream()
+                .map(this::mapToDTO)
+                .toList();
+    }
+
     private ModeloResponseDTO mapToDTO(
             Modelo modelo
     ) {
