@@ -1,7 +1,9 @@
 package protecciones.controller;
 
 import org.springframework.web.bind.annotation.*;
-import protecciones.entity.Posicion;
+
+import protecciones.dto.PosicionResponseDTO;
+
 import protecciones.service.PosicionService;
 
 import java.util.List;
@@ -10,19 +12,22 @@ import java.util.List;
 @RequestMapping("/api/posiciones")
 public class PosicionController {
 
-    private final PosicionService posicionService;
+    private final PosicionService
+            posicionService;
 
-    public PosicionController(PosicionService posicionService) {
-        this.posicionService = posicionService;
+    public PosicionController(
+            PosicionService posicionService
+    ) {
+
+        this.posicionService =
+                posicionService;
     }
 
     @GetMapping
-    public List<Posicion> obtenerTodos() {
-        return posicionService.obtenerTodos();
-    }
+    public List<PosicionResponseDTO>
+    obtenerTodos() {
 
-    @PostMapping
-    public Posicion guardar(@RequestBody Posicion posicion) {
-        return posicionService.guardar(posicion);
+        return posicionService
+                .obtenerTodos();
     }
 }

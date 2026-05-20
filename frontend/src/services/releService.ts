@@ -2,6 +2,9 @@ import api from "../api/axios";
 
 import type { Rele } from "../types/Rele";
 import type { ReleRequest } from "../types/ReleRequest";
+import type {
+    ReleOption
+} from "../types/ReleOption";
 
 export const obtenerReles = async (): Promise<Rele[]> => {
 
@@ -16,3 +19,12 @@ export const crearRele = async (
 
     await api.post("/reles", rele);
 };
+
+export async function obtenerOpciones():
+Promise<ReleOption[]> {
+
+    const response =
+        await api.get("/reles/opciones");
+
+    return response.data;
+}

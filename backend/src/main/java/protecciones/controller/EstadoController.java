@@ -1,7 +1,9 @@
 package protecciones.controller;
 
 import org.springframework.web.bind.annotation.*;
-import protecciones.entity.Estado;
+
+import protecciones.dto.EstadoResponseDTO;
+
 import protecciones.service.EstadoService;
 
 import java.util.List;
@@ -10,19 +12,22 @@ import java.util.List;
 @RequestMapping("/api/estados")
 public class EstadoController {
 
-    private final EstadoService estadoService;
+    private final EstadoService
+            estadoService;
 
-    public EstadoController(EstadoService estadoService) {
-        this.estadoService = estadoService;
+    public EstadoController(
+            EstadoService estadoService
+    ) {
+
+        this.estadoService =
+                estadoService;
     }
 
     @GetMapping
-    public List<Estado> obtenerTodos() {
-        return estadoService.obtenerTodos();
-    }
+    public List<EstadoResponseDTO>
+    obtenerTodos() {
 
-    @PostMapping
-    public Estado guardar(@RequestBody Estado estado) {
-        return estadoService.guardar(estado);
+        return estadoService
+                .obtenerTodos();
     }
 }

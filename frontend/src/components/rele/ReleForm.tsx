@@ -1,16 +1,19 @@
 import { useEffect, useState } from "react";
 
-import type { ReleRequest } from "../types/ReleRequest";
-import type { Modelo } from "../types/Modelo";
-import type { Marca } from "../types/Marca";
+import type {
+    ReleRequest
+} from "../../types/ReleRequest";
 
-import { obtenerModelos }
-    from "../services/modeloService";
-
-import { obtenerMarcas }
-    from "../services/marcaService";
+import type {
+    Modelo
+} from "../../types/Modelo";
 
 import {
+    obtenerModelos
+} from "../../services/modeloService";
+
+import {
+
     Alert,
     Box,
     Button,
@@ -24,13 +27,19 @@ import {
     Stack,
     TextField,
     Typography
+
 } from "@mui/material";
 
 interface Props {
-    onCreate: (data: ReleRequest) => Promise<void>;
+
+    onCreate: (
+        data: ReleRequest
+    ) => Promise<void>;
 }
 
-function ReleForm({ onCreate }: Props) {
+function ReleForm({
+    onCreate
+}: Props) {
 
     const [formData, setFormData] =
         useState<ReleRequest>({
@@ -39,6 +48,9 @@ function ReleForm({ onCreate }: Props) {
             modeloId: 0,
             remitoId: 1
         });
+
+    const [modelos, setModelos] =
+        useState<Modelo[]>([]);
 
     const [loading, setLoading] =
         useState(false);
@@ -49,52 +61,40 @@ function ReleForm({ onCreate }: Props) {
     const [errorOpen, setErrorOpen] =
         useState(false);
 
-    const [modelos, setModelos] =
-        useState<Modelo[]>([]);
-
-    const [marcas, setMarcas] =
-        useState<Marca[]>([]);
-
-    const [marcaSeleccionada,
-        setMarcaSeleccionada] =
-            useState<number | "">("");
-
     useEffect(() => {
 
-        cargarMarcas();
+        cargarModelos();
 
     }, []);
 
-    const cargarMarcas = async () => {
-
-        const data = await obtenerMarcas();
-
-        setMarcas(data);
-    };
-
-    const cargarModelos = async (
-        marcaId: number
-    ) => {
+    const cargarModelos =
+        async () => {
 
         const data =
-            await obtenerModelos(marcaId);
+            await obtenerModelos();
 
         setModelos(data);
     };
 
     const handleChange = (
-        e: React.ChangeEvent<HTMLInputElement>
+        e: any
     ) => {
 
-        const { name, value } = e.target;
+        const { name, value } =
+            e.target;
 
         setFormData({
+
             ...formData,
+
             [name]:
+
                 name === "garantiaMeses"
                 || name === "modeloId"
                 || name === "remitoId"
+
                     ? Number(value)
+
                     : value
         });
     };
@@ -120,10 +120,6 @@ function ReleForm({ onCreate }: Props) {
                 remitoId: 1
             });
 
-            setMarcaSeleccionada("");
-
-            setModelos([]);
-
         } catch (error) {
 
             console.error(error);
@@ -143,7 +139,9 @@ function ReleForm({ onCreate }: Props) {
             <Snackbar
                 open={successOpen}
                 autoHideDuration={3000}
-                onClose={() => setSuccessOpen(false)}
+                onClose={() =>
+                    setSuccessOpen(false)
+                }
             >
 
                 <Alert severity="success">
@@ -157,7 +155,9 @@ function ReleForm({ onCreate }: Props) {
             <Snackbar
                 open={errorOpen}
                 autoHideDuration={3000}
-                onClose={() => setErrorOpen(false)}
+                onClose={() =>
+                    setErrorOpen(false)
+                }
             >
 
                 <Alert severity="error">
@@ -193,7 +193,9 @@ function ReleForm({ onCreate }: Props) {
                         <TextField
                             label="Número Serie"
                             name="numeroSerie"
-                            value={formData.numeroSerie}
+                            value={
+                                formData.numeroSerie
+                            }
                             onChange={handleChange}
                             fullWidth
                         />
@@ -202,57 +204,12 @@ function ReleForm({ onCreate }: Props) {
                             label="Garantía Meses"
                             name="garantiaMeses"
                             type="number"
-                            value={formData.garantiaMeses}
+                            value={
+                                formData.garantiaMeses
+                            }
                             onChange={handleChange}
                             fullWidth
                         />
-
-                        <FormControl fullWidth>
-
-                            <InputLabel>
-                                Marca
-                            </InputLabel>
-
-                            <Select
-                                value={marcaSeleccionada}
-                                label="Marca"
-                                onChange={async (e) => {
-
-                                    const marcaId =
-                                        Number(
-                                            e.target.value
-                                        );
-
-                                    setMarcaSeleccionada(
-                                        marcaId
-                                    );
-
-                                    setFormData({
-                                        ...formData,
-                                        modeloId: 0
-                                    });
-
-                                    await cargarModelos(
-                                        marcaId
-                                    );
-                                }}
-                            >
-
-                                {marcas.map((marca) => (
-
-                                    <MenuItem
-                                        key={marca.id}
-                                        value={marca.id}
-                                    >
-
-                                        {marca.nombre}
-
-                                    </MenuItem>
-                                ))}
-
-                            </Select>
-
-                        </FormControl>
 
                         <FormControl fullWidth>
 
@@ -261,32 +218,25 @@ function ReleForm({ onCreate }: Props) {
                             </InputLabel>
 
                             <Select
-                                disabled={
-                                    !marcaSeleccionada
-                                }
                                 name="modeloId"
-                                value={formData.modeloId}
-                                label="Modelo"
-                                onChange={(e) =>
-                                    setFormData({
-                                        ...formData,
-                                        modeloId: Number(
-                                            e.target.value
-                                        )
-                                    })
+                                value={
+                                    formData.modeloId
                                 }
+                                label="Modelo"
+                                onChange={handleChange}
                             >
 
-                                {modelos.map((modelo) => (
+                                {modelos.map(
+                                    (modelo) => (
 
                                     <MenuItem
                                         key={modelo.id}
                                         value={modelo.id}
                                     >
 
-                                        {modelo.nombre}
-                                        {" - "}
                                         {modelo.marca}
+                                        {" - "}
+                                        {modelo.nombre}
 
                                     </MenuItem>
                                 ))}
@@ -294,15 +244,6 @@ function ReleForm({ onCreate }: Props) {
                             </Select>
 
                         </FormControl>
-
-                        <TextField
-                            label="Remito ID"
-                            name="remitoId"
-                            type="number"
-                            value={formData.remitoId}
-                            onChange={handleChange}
-                            fullWidth
-                        />
 
                         <Button
                             variant="contained"
@@ -331,7 +272,6 @@ function ReleForm({ onCreate }: Props) {
             </Paper>
 
         </>
-
     );
 }
 

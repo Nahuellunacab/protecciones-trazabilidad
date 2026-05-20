@@ -3,6 +3,7 @@ package protecciones.service;
 import org.springframework.stereotype.Service;
 
 import protecciones.dto.MovimientoResponseDTO;
+import protecciones.dto.ReleOptionDTO;
 import protecciones.dto.ReleRequestDTO;
 import protecciones.dto.ReleResponseDTO;
 
@@ -172,6 +173,24 @@ public class ReleService {
                 .map(this::mapToResponseDTO)
                 .toList();
     }
+
+    public List<ReleOptionDTO>
+        obtenerOpciones() {
+
+        return releRepository
+                .findAll()
+                .stream()
+                .map(rele ->
+
+                        new ReleOptionDTO(
+
+                        rele.getId(),
+
+                        rele.getNumeroSerie()
+                        )
+                )
+                .toList();
+        }
 
     private MovimientoResponseDTO mapMovimientoToDTO(
                 Movimiento movimiento) {

@@ -1,19 +1,14 @@
 import api from "../api/axios";
 
-import type { Modelo }
-    from "../types/Modelo";
+import type {
+    Modelo
+} from "../types/Modelo";
 
-export const obtenerModelos =
-    async (
-        marcaId?: number
-    ): Promise<Modelo[]> => {
+export async function obtenerModelos():
+Promise<Modelo[]> {
 
-        const response =
-            await api.get("/modelos", {
-                params: {
-                    marcaId
-                }
-            });
+    const response =
+        await api.get("/modelos");
 
-        return response.data;
-    };
+    return response.data;
+}

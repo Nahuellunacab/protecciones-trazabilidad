@@ -5,6 +5,7 @@ import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import protecciones.dto.MovimientoResponseDTO;
+import protecciones.dto.ReleOptionDTO;
 import protecciones.dto.ReleRequestDTO;
 import protecciones.dto.ReleResponseDTO;
 
@@ -19,6 +20,7 @@ import org.springframework.data.domain.Page;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
 
 @RestController
 @RequestMapping("/api/reles")
@@ -100,5 +102,13 @@ public class ReleController {
             @RequestParam String serial) {
 
         return releService.buscarPorSerialParcial(serial);
+    }
+
+    @GetMapping("/opciones")
+    public List<ReleOptionDTO>
+    obtenerOpciones() {
+
+        return releService
+                .obtenerOpciones();
     }
 }

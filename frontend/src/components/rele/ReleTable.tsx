@@ -1,4 +1,4 @@
-import type { Rele } from "../types/Rele";
+import type { Rele } from "../../types/Rele";
 
 import {
     Paper,

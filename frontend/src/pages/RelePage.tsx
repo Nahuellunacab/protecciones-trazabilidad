@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import PageHeader from "../components/common/PageHeader";
 
 import {
     obtenerReles,
@@ -8,25 +9,27 @@ import {
 import type { Rele } from "../types/Rele";
 import type { ReleRequest } from "../types/ReleRequest";
 
-import ReleForm from "../components/ReleForm";
-import ReleTable from "../components/ReleTable";
+import ReleForm from "../components/rele/ReleForm";
+import ReleTable from "../components/rele/ReleTable";
 
 function RelePage() {
 
-    const [reles, setReles] = useState<Rele[]>([]);
+    const [reles, setReles] =
+        useState<Rele[]>([]);
+
+    const cargarReles = async () => {
+
+        const data =
+            await obtenerReles();
+
+        setReles(data);
+    };
 
     useEffect(() => {
 
         cargarReles();
 
     }, []);
-
-    const cargarReles = async () => {
-
-        const data = await obtenerReles();
-
-        setReles(data);
-    };
 
     const handleCreate = async (
         data: ReleRequest
@@ -39,15 +42,23 @@ function RelePage() {
 
     return (
 
-        <div style={{ padding: "20px" }}>
+        <div>
 
-            <h1>Relés</h1>
+            <PageHeader
+                title="Relés"
+                subtitle="
+                Gestión de relés de protección,
+                modelos, marcas y trazabilidad operativa.
+                "
+            />
 
-            <ReleForm onCreate={handleCreate} />
+            <ReleForm
+                onCreate={handleCreate}
+            />
 
-            <hr />
-
-            <ReleTable reles={reles} />
+            <ReleTable
+                reles={reles}
+            />
 
         </div>
     );

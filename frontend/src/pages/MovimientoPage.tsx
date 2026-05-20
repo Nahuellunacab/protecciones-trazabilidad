@@ -1,56 +1,37 @@
-import { useEffect, useState }
-    from "react";
+import { useEffect, useState } from "react";
 
 import {
-    crearMovimiento,
-    obtenerMovimientos
+    obtenerMovimientos,
+    crearMovimiento
 } from "../services/movimientoService";
 
-import type { Movimiento }
-    from "../types/Movimiento";
+import type {
+    Movimiento
+} from "../types/Movimiento";
 
-import type { MovimientoRequest }
-    from "../types/MovimientoRequest";
+import type {
+    MovimientoRequest
+} from "../types/MovimientoRequest";
 
-import {
-    Alert,
-    Box,
-    Button,
-    CircularProgress,
-    Paper,
-    Snackbar,
-    Stack,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
-    TextField,
-    Typography
-} from "@mui/material";
+import MovimientoForm from "../components/movimiento/MovimientoForm";
+
+import MovimientoTable from "../components/movimiento/MovimientoTable";
+
+import PageHeader from "../components/common/PageHeader";
 
 function MovimientoPage() {
 
     const [movimientos, setMovimientos] =
         useState<Movimiento[]>([]);
 
-    const [loading, setLoading] =
-        useState(false);
+    const cargarMovimientos =
+        async () => {
 
-    const [successOpen, setSuccessOpen] =
-        useState(false);
+        const data =
+            await obtenerMovimientos();
 
-    const [errorOpen, setErrorOpen] =
-        useState(false);
-
-    const [formData, setFormData] =
-        useState<MovimientoRequest>({
-            releId: 1,
-            estadoId: 1,
-            posicionId: 1,
-            notas: ""
-        });
+        setMovimientos(data);
+    };
 
     useEffect(() => {
 
@@ -58,261 +39,36 @@ function MovimientoPage() {
 
     }, []);
 
-    const cargarMovimientos =
-        async () => {
-
-            const data =
-                await obtenerMovimientos();
-
-            setMovimientos(data);
-        };
-
-    const handleChange = (
-        e: React.ChangeEvent<HTMLInputElement>
+    const handleCreate = async (
+        data: MovimientoRequest
     ) => {
 
-        const { name, value } = e.target;
+        await crearMovimiento(data);
 
-        setFormData({
-            ...formData,
-            [name]:
-                name === "notas"
-                    ? value
-                    : Number(value)
-        });
-    };
-
-    const handleSubmit = async (
-        e: React.FormEvent
-    ) => {
-
-        e.preventDefault();
-
-        try {
-
-            setLoading(true);
-
-            await crearMovimiento(
-                formData
-            );
-
-            await cargarMovimientos();
-
-            setSuccessOpen(true);
-
-            setFormData({
-                releId: 1,
-                estadoId: 1,
-                posicionId: 1,
-                notas: ""
-            });
-
-        } catch (error) {
-
-            console.error(error);
-
-            setErrorOpen(true);
-
-        } finally {
-
-            setLoading(false);
-        }
+        await cargarMovimientos();
     };
 
     return (
 
-        <>
+        <div>
 
-            <Snackbar
-                open={successOpen}
-                autoHideDuration={3000}
-                onClose={() =>
-                    setSuccessOpen(false)
-                }
-            >
+            <PageHeader
+                title="Movimientos"
+                subtitle="
+                Gestión operativa y
+                trazabilidad de relés.
+                "
+            />
 
-                <Alert severity="success">
+            <MovimientoForm
+                onCreate={handleCreate}
+            />
 
-                    Movimiento creado
+            <MovimientoTable
+                movimientos={movimientos}
+            />
 
-                </Alert>
-
-            </Snackbar>
-
-            <Snackbar
-                open={errorOpen}
-                autoHideDuration={3000}
-                onClose={() =>
-                    setErrorOpen(false)
-                }
-            >
-
-                <Alert severity="error">
-
-                    Error al crear movimiento
-
-                </Alert>
-
-            </Snackbar>
-
-            <Paper
-                elevation={3}
-                sx={{
-                    padding: 3,
-                    marginBottom: 4
-                }}
-            >
-
-                <Typography
-                    variant="h6"
-                    gutterBottom
-                >
-                    Crear Movimiento
-                </Typography>
-
-                <Box
-                    component="form"
-                    onSubmit={handleSubmit}
-                >
-
-                    <Stack spacing={2}>
-
-                        <TextField
-                            label="Relé ID"
-                            name="releId"
-                            type="number"
-                            value={formData.releId}
-                            onChange={handleChange}
-                        />
-
-                        <TextField
-                            label="Estado ID"
-                            name="estadoId"
-                            type="number"
-                            value={formData.estadoId}
-                            onChange={handleChange}
-                        />
-
-                        <TextField
-                            label="Posición ID"
-                            name="posicionId"
-                            type="number"
-                            value={formData.posicionId}
-                            onChange={handleChange}
-                        />
-
-                        <TextField
-                            label="Notas"
-                            name="notas"
-                            value={formData.notas}
-                            onChange={handleChange}
-                            multiline
-                            rows={3}
-                        />
-
-                        <Button
-                            variant="contained"
-                            type="submit"
-                            disabled={loading}
-                        >
-
-                            {loading ? (
-
-                                <CircularProgress
-                                    size={24}
-                                    color="inherit"
-                                />
-
-                            ) : (
-
-                                "Crear Movimiento"
-                            )}
-
-                        </Button>
-
-                    </Stack>
-
-                </Box>
-
-            </Paper>
-
-            <TableContainer
-                component={Paper}
-            >
-
-                <Table>
-
-                    <TableHead>
-
-                        <TableRow>
-
-                            <TableCell>
-                                Relé
-                            </TableCell>
-
-                            <TableCell>
-                                Estado
-                            </TableCell>
-
-                            <TableCell>
-                                Posición
-                            </TableCell>
-
-                            <TableCell>
-                                Fecha
-                            </TableCell>
-
-                            <TableCell>
-                                Notas
-                            </TableCell>
-
-                        </TableRow>
-
-                    </TableHead>
-
-                    <TableBody>
-
-                        {movimientos.map(
-                            (movimiento) => (
-
-                            <TableRow
-                                key={movimiento.id}
-                            >
-
-                                <TableCell>
-                                    {movimiento.rele}
-                                </TableCell>
-
-                                <TableCell>
-                                    {movimiento.estado}
-                                </TableCell>
-
-                                <TableCell>
-                                    {movimiento.posicion}
-                                </TableCell>
-
-                                <TableCell>
-                                    {
-                                        movimiento
-                                        .fechaMovimiento
-                                    }
-                                </TableCell>
-
-                                <TableCell>
-                                    {movimiento.notas}
-                                </TableCell>
-
-                            </TableRow>
-                        ))}
-
-                    </TableBody>
-
-                </Table>
-
-            </TableContainer>
-
-        </>
-
+        </div>
     );
 }
 

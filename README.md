@@ -60,6 +60,8 @@ La aplicación implementa una interfaz institucional inspirada en la identidad c
 - Theme corporativo institucional
 - Navbar enterprise
 - Branding EPEC
+- Logo institucional
+- Favicon personalizado
 - Layout responsive
 - Material UI
 - Formularios modernos
@@ -360,26 +362,38 @@ V2__create_location_and_provider.sql
 V3__create_rele_domain.sql
 V4__create_movimiento_and_usuario.sql
 V5__seed_initial_data.sql
+V6__insert_real_operational_data.sql
 ```
 
 ---
 
-# Seed Data Inicial
+# Seed Data Operacional
 
-La aplicación implementa bootstrap automático de datos iniciales mediante Flyway.
+La aplicación implementa bootstrap automático de datos iniciales y operacionales mediante Flyway.
 
-## Datos iniciales incluidos
+## Datos incluidos
 
-- Provincia
-- Localidad
-- Destino
-- Posición
+### Catálogos
+- Provincias
+- Localidades
+- Estados
+- Marcas
+- Tipos
+
+### Operación
+- Destinos reales
+- Posiciones reales
+- Modelos reales
+- Relés reales
+- Remitos
 - Usuario sistema
-- Marca
-- Tipo
-- Modelo
-- Remito
-- Relé demo
+
+### Datos operativos simulados
+- ABB REL670
+- ABB REG670
+- Siemens SIPROTEC
+- GE Multilin
+- AREVA MiCOM
 
 Esto permite levantar el entorno completamente funcional sin inserciones manuales.
 
@@ -490,7 +504,9 @@ Esto permite levantar el entorno completamente funcional sin inserciones manuale
 - Theme institucional EPEC
 - Navbar corporativa
 - Branding Transmisión
-- Formularios modernos
+- Formularios enterprise
+- Selects dinámicos
+- Catálogos operativos
 - Tabla enterprise
 - Loading states
 - Feedback visual
@@ -504,6 +520,7 @@ Esto permite levantar el entorno completamente funcional sin inserciones manuale
 - Persistencia fullstack funcional
 - Gestión de movimientos
 - Historial operativo
+- Dropdowns dinámicos conectados al backend
 
 ---
 
@@ -515,15 +532,18 @@ Esto permite levantar el entorno completamente funcional sin inserciones manuale
 - /api/estados
 - /api/provincias
 - /api/localidades
+- /api/posiciones
 
 ## Dominio principal
 - /api/modelos
 - /api/reles
 - /api/movimientos
 
+## Opciones frontend
+- /api/reles/opciones
+
 ## Ubicaciones
 - /api/destinos
-- /api/posiciones
 
 ## Gestión logística
 - /api/proveedores
@@ -580,6 +600,12 @@ GET /api/reles/1/estado-actual
 GET /api/reles/estado/INSTALADO
 ```
 
+### Obtener opciones para dropdowns
+
+```http
+GET /api/reles/opciones
+```
+
 ---
 
 # Swagger / OpenAPI
@@ -616,6 +642,8 @@ http://localhost:8082/swagger-ui/index.html
 - Estado actual derivado
 - Persistencia funcional
 - Seed data automática
+- APIs catálogo
+- DTOs desacoplados
 
 ---
 
@@ -633,6 +661,9 @@ http://localhost:8082/swagger-ui/index.html
 - CRUD operativo
 - Gestión de movimientos
 - Integración fullstack funcional
+- Selects dinámicos
+- Catálogos conectados al backend
+- UX enterprise
 
 ---
 
@@ -640,8 +671,6 @@ http://localhost:8082/swagger-ui/index.html
 
 ## Frontend
 
-- Selects dinámicos
-- Catálogos reales
 - Dashboard operativo
 - DataGrid avanzado
 - Dialogs
@@ -649,6 +678,7 @@ http://localhost:8082/swagger-ui/index.html
 - Paginación frontend
 - Dark mode
 - Métricas operativas
+- Dashboard stock operativo
 
 ## Backend
 
@@ -737,10 +767,11 @@ docker ps
 
 ---
 
-## Detener contenedores
+## Reinicio completo de entorno
 
 ```bash
-docker compose down
+docker compose down -v
+docker compose up -d
 ```
 
 ---
@@ -787,6 +818,8 @@ Con:
 - integración React ↔ Spring Boot
 - seed data automática
 - bootstrap completo de entorno
+- catálogos dinámicos
+- UX operacional enterprise
 
 ---
 

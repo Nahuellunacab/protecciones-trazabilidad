@@ -43,9 +43,13 @@ public class ModeloService {
     ) {
 
         return new ModeloResponseDTO(
+
                 modelo.getId(),
+
                 modelo.getNombre(),
-                modelo.getMarca().getNombre()
+
+                modelo.getMarca()
+                        .getNombre()
         );
     }
 }
