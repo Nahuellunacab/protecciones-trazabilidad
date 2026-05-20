@@ -1,7 +1,8 @@
 package protecciones.controller;
 
 import org.springframework.web.bind.annotation.*;
-import protecciones.entity.Modelo;
+
+import protecciones.dto.ModeloResponseDTO;
 import protecciones.service.ModeloService;
 
 import java.util.List;
@@ -12,17 +13,16 @@ public class ModeloController {
 
     private final ModeloService modeloService;
 
-    public ModeloController(ModeloService modeloService) {
+    public ModeloController(
+            ModeloService modeloService
+    ) {
+
         this.modeloService = modeloService;
     }
 
     @GetMapping
-    public List<Modelo> obtenerTodos() {
-        return modeloService.obtenerTodos();
-    }
+    public List<ModeloResponseDTO> obtenerTodos() {
 
-    @PostMapping
-    public Modelo guardar(@RequestBody Modelo modelo) {
-        return modeloService.guardar(modelo);
+        return modeloService.obtenerTodos();
     }
 }

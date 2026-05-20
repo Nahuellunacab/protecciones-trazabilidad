@@ -1,6 +1,8 @@
 package protecciones.service;
 
 import org.springframework.stereotype.Service;
+
+import protecciones.dto.ModeloResponseDTO;
 import protecciones.entity.Modelo;
 import protecciones.repository.ModeloRepository;
 
@@ -11,15 +13,29 @@ public class ModeloService {
 
     private final ModeloRepository modeloRepository;
 
-    public ModeloService(ModeloRepository modeloRepository) {
+    public ModeloService(
+            ModeloRepository modeloRepository
+    ) {
+
         this.modeloRepository = modeloRepository;
     }
 
-    public List<Modelo> obtenerTodos() {
-        return modeloRepository.findAll();
+    public List<ModeloResponseDTO> obtenerTodos() {
+
+        return modeloRepository.findAll()
+                .stream()
+                .map(this::mapToDTO)
+                .toList();
     }
 
-    public Modelo guardar(Modelo modelo) {
-        return modeloRepository.save(modelo);
+    private ModeloResponseDTO mapToDTO(
+            Modelo modelo
+    ) {
+
+        return new ModeloResponseDTO(
+                modelo.getId(),
+                modelo.getNombre(),
+                modelo.getMarca().getNombre()
+        );
     }
 }

@@ -1,13 +1,21 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import type { ReleRequest } from "../types/ReleRequest";
+import type { Modelo } from "../types/Modelo";
+
+import { obtenerModelos }
+    from "../services/modeloService";
 
 import {
     Alert,
     Box,
     Button,
     CircularProgress,
+    FormControl,
+    InputLabel,
+    MenuItem,
     Paper,
+    Select,
     Snackbar,
     Stack,
     TextField,
@@ -36,6 +44,22 @@ function ReleForm({ onCreate }: Props) {
 
     const [errorOpen, setErrorOpen] =
         useState(false);
+
+    const [modelos, setModelos] =
+        useState<Modelo[]>([]);
+
+    useEffect(() => {
+
+        cargarModelos();
+
+    }, []);
+
+    const cargarModelos = async () => {
+
+        const data = await obtenerModelos();
+
+        setModelos(data);
+    };
 
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement>
@@ -158,14 +182,43 @@ function ReleForm({ onCreate }: Props) {
                             fullWidth
                         />
 
-                        <TextField
-                            label="Modelo ID"
-                            name="modeloId"
-                            type="number"
-                            value={formData.modeloId}
-                            onChange={handleChange}
-                            fullWidth
-                        />
+                        <FormControl fullWidth>
+
+                            <InputLabel>
+                                Modelo
+                            </InputLabel>
+
+                            <Select
+                                name="modeloId"
+                                value={formData.modeloId}
+                                label="Modelo"
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        modeloId: Number(
+                                            e.target.value
+                                        )
+                                    })
+                                }
+                            >
+
+                                {modelos.map((modelo) => (
+
+                                    <MenuItem
+                                        key={modelo.id}
+                                        value={modelo.id}
+                                    >
+
+                                        {modelo.nombre}
+                                        {" - "}
+                                        {modelo.marca}
+
+                                    </MenuItem>
+                                ))}
+
+                            </Select>
+
+                        </FormControl>
 
                         <TextField
                             label="Remito ID"
