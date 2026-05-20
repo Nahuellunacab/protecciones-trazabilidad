@@ -43,6 +43,13 @@ function MainLayout() {
                     >
                         Relés
                     </Button>
+                    <Button
+                        color="inherit"
+                        component={Link}
+                        to="/movimientos"
+                    >
+                        Movimientos
+                    </Button>
 
                 </Toolbar>
 

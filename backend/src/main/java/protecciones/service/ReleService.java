@@ -174,14 +174,29 @@ public class ReleService {
     }
 
     private MovimientoResponseDTO mapMovimientoToDTO(
-            Movimiento movimiento) {
+                Movimiento movimiento) {
 
         return new MovimientoResponseDTO(
+
+                movimiento.getId(),
+
+                movimiento.getRele()
+                        .getNumeroSerie(),
+
                 movimiento.getFechaMovimiento(),
-                movimiento.getEstado().getNombre(),
-                movimiento.getPosicion().getNombre(),
-                movimiento.getUsuario().getNombre(),
+
+                movimiento.getEstado()
+                        .getNombre(),
+
+                movimiento.getPosicion()
+                        .getNombre(),
+
+                movimiento.getUsuario() != null
+                        ? movimiento.getUsuario()
+                                .getNombre()
+                        : null,
+
                 movimiento.getNotas()
         );
-    }
+        }
 }

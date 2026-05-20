@@ -1,7 +1,12 @@
 package protecciones.controller;
 
+import jakarta.validation.Valid;
+
 import org.springframework.web.bind.annotation.*;
-import protecciones.entity.Movimiento;
+
+import protecciones.dto.MovimientoRequestDTO;
+import protecciones.dto.MovimientoResponseDTO;
+
 import protecciones.service.MovimientoService;
 
 import java.util.List;
@@ -10,19 +15,33 @@ import java.util.List;
 @RequestMapping("/api/movimientos")
 public class MovimientoController {
 
-    private final MovimientoService movimientoService;
+    private final MovimientoService
+            movimientoService;
 
-    public MovimientoController(MovimientoService movimientoService) {
-        this.movimientoService = movimientoService;
+    public MovimientoController(
+            MovimientoService movimientoService
+    ) {
+
+        this.movimientoService =
+                movimientoService;
     }
 
     @GetMapping
-    public List<Movimiento> obtenerTodos() {
-        return movimientoService.obtenerTodos();
+    public List<MovimientoResponseDTO>
+    obtenerTodos() {
+
+        return movimientoService
+                .obtenerTodos();
     }
 
     @PostMapping
-    public Movimiento guardar(@RequestBody Movimiento movimiento) {
-        return movimientoService.guardar(movimiento);
+    public MovimientoResponseDTO guardar(
+            @Valid
+            @RequestBody
+            MovimientoRequestDTO dto
+    ) {
+
+        return movimientoService
+                .guardar(dto);
     }
 }

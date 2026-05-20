@@ -4,6 +4,10 @@ import java.time.LocalDateTime;
 
 public class MovimientoResponseDTO {
 
+    private Long id;
+
+    private String rele;
+
     private LocalDateTime fechaMovimiento;
 
     private String estado;
@@ -17,17 +21,31 @@ public class MovimientoResponseDTO {
     public MovimientoResponseDTO() {
     }
 
-    public MovimientoResponseDTO(LocalDateTime fechaMovimiento,
-                                 String estado,
-                                 String posicion,
-                                 String usuario,
-                                 String notas) {
+    public MovimientoResponseDTO(
+            Long id,
+            String rele,
+            LocalDateTime fechaMovimiento,
+            String estado,
+            String posicion,
+            String usuario,
+            String notas
+    ) {
 
+        this.id = id;
+        this.rele = rele;
         this.fechaMovimiento = fechaMovimiento;
         this.estado = estado;
         this.posicion = posicion;
         this.usuario = usuario;
         this.notas = notas;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public String getRele() {
+        return rele;
     }
 
     public LocalDateTime getFechaMovimiento() {
@@ -50,7 +68,17 @@ public class MovimientoResponseDTO {
         return notas;
     }
 
-    public void setFechaMovimiento(LocalDateTime fechaMovimiento) {
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setRele(String rele) {
+        this.rele = rele;
+    }
+
+    public void setFechaMovimiento(
+            LocalDateTime fechaMovimiento
+    ) {
         this.fechaMovimiento = fechaMovimiento;
     }
 

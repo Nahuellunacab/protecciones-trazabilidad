@@ -8,6 +8,7 @@ import MainLayout from "../layouts/MainLayout";
 
 import HomePage from "../pages/HomePage";
 import RelePage from "../pages/RelePage";
+import MovimientoPage from "../pages/MovimientoPage";
 
 function AppRouter() {
 
@@ -27,6 +28,11 @@ function AppRouter() {
                     <Route
                         path="reles"
                         element={<RelePage />}
+                    />
+
+                    <Route
+                        path="movimientos"
+                        element={<MovimientoPage />}
                     />
 
                 </Route>

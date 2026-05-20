@@ -35,11 +35,3 @@ CREATE TABLE movimiento (
         FOREIGN KEY (usuario_id)
         REFERENCES usuario(id)
 );
-
-INSERT INTO estado (nombre, descripcion)
-VALUES
-('EN STOCK', 'Equipo disponible en depósito'),
-('INSTALADO', 'Equipo instalado en servicio'),
-('EN REPARACION', 'Equipo enviado a reparación'),
-('FUERA DE SERVICIO', 'Equipo fuera de operación'),
-('EN LABORATORIO', 'Equipo en pruebas o laboratorio');
