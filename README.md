@@ -1,22 +1,23 @@
 # Protecciones Trazabilidad
 
-Sistema de trazabilidad e inventario de relés de protección orientado a la gestión de stock, movimientos, historial y auditoría de equipos utilizados en el área de Protecciones y Teleoperación.
+Sistema de gestión y trazabilidad de relés de protección orientado a la administración de stock, movimientos, historial operativo y auditoría de equipos utilizados por EPEC Transmisión — Departamento de Teleoperaciones y Protecciones.
 
 ---
 
 # Objetivo
 
 Centralizar y digitalizar la trazabilidad de:
+
 - relés de protección
-- movimientos de stock
-- ubicaciones
-- estados operativos
+- movimientos operativos
+- estados de equipos
+- posiciones físicas
+- destinos y ubicaciones
 - historial de intervenciones
 - remitos y proveedores
-- posiciones y destinos
 - usuarios responsables
 
-El sistema busca reemplazar procesos manuales y facilitar futuras integraciones con plataformas corporativas como IBM Maximo mediante APIs REST o MIF.
+El sistema busca reemplazar procesos manuales y servir como base para futuras integraciones con plataformas corporativas como IBM Maximo mediante APIs REST o MIF.
 
 ---
 
@@ -33,10 +34,6 @@ El sistema busca reemplazar procesos manuales y facilitar futuras integraciones 
 - PostgreSQL 16
 - Flyway
 
-## Infraestructura
-- Docker
-- Docker Compose
-
 ## Frontend
 - React
 - TypeScript
@@ -45,8 +42,31 @@ El sistema busca reemplazar procesos manuales y facilitar futuras integraciones 
 - React Router
 - Material UI
 
+## Infraestructura
+- Docker
+- Docker Compose
+
 ## Documentación API
 - Swagger / OpenAPI
+
+---
+
+# Identidad Visual
+
+La aplicación implementa una interfaz institucional inspirada en la identidad corporativa de EPEC Transmisión.
+
+## Características UI/UX actuales
+
+- Theme corporativo institucional
+- Navbar enterprise
+- Branding EPEC
+- Layout responsive
+- Material UI
+- Formularios modernos
+- Feedback visual
+- Snackbar notifications
+- Loading states
+- Diseño orientado a operación técnica
 
 ---
 
@@ -218,6 +238,8 @@ flowchart TD
     A --> G[Routes]
 
     A --> H[Types]
+
+    A --> I[Theme]
 ```
 
 ---
@@ -247,13 +269,17 @@ frontend/
 ├── src/
 │
 │   ├── api/
+│   ├── assets/
 │   ├── components/
 │   ├── layouts/
 │   ├── pages/
 │   ├── routes/
 │   ├── services/
+│   ├── theme/
 │   ├── types/
 │   └── App.tsx
+│
+├── public/
 │
 └── package.json
 
@@ -317,6 +343,9 @@ Configuración global de Axios.
 ## types
 Tipos TypeScript desacoplados del backend.
 
+## theme
+Configuración visual global Material UI.
+
 ---
 
 # Base de Datos Versionada
@@ -330,15 +359,29 @@ V1__initial_catalogs.sql
 V2__create_location_and_provider.sql
 V3__create_rele_domain.sql
 V4__create_movimiento_and_usuario.sql
+V5__seed_initial_data.sql
 ```
 
-Cada cambio estructural debe realizarse mediante una nueva migration.
+---
 
-Ejemplo:
+# Seed Data Inicial
 
-```text
-V5__add_observaciones_to_rele.sql
-```
+La aplicación implementa bootstrap automático de datos iniciales mediante Flyway.
+
+## Datos iniciales incluidos
+
+- Provincia
+- Localidad
+- Destino
+- Posición
+- Usuario sistema
+- Marca
+- Tipo
+- Modelo
+- Remito
+- Relé demo
+
+Esto permite levantar el entorno completamente funcional sin inserciones manuales.
 
 ---
 
@@ -444,19 +487,23 @@ V5__add_observaciones_to_rele.sql
 
 ## UI/UX
 - Material UI
+- Theme institucional EPEC
 - Navbar corporativa
-- Tabla enterprise
+- Branding Transmisión
 - Formularios modernos
-- Feedback visual
+- Tabla enterprise
 - Loading states
+- Feedback visual
 - Snackbars de éxito/error
+- Responsive layout
 
 ## Fullstack
 - Consumo API real
 - CRUD operativo
 - Integración React ↔ Spring Boot
-- CORS configurado
 - Persistencia fullstack funcional
+- Gestión de movimientos
+- Historial operativo
 
 ---
 
@@ -492,36 +539,43 @@ V5__add_observaciones_to_rele.sql
 ## Relés
 
 ### Obtener relés paginados
+
 ```http
 GET /api/reles?page=0&size=10
 ```
 
 ### Sorting dinámico
+
 ```http
 GET /api/reles?page=0&size=10&sort=numeroSerie,asc
 ```
 
 ### Buscar por serial exacto
+
 ```http
 GET /api/reles/serial/REL-001
 ```
 
 ### Buscar por serial parcial
+
 ```http
 GET /api/reles/buscar?serial=REL
 ```
 
 ### Obtener historial de movimientos
+
 ```http
 GET /api/reles/1/movimientos
 ```
 
 ### Obtener estado actual
+
 ```http
 GET /api/reles/1/estado-actual
 ```
 
 ### Filtrar por estado actual
+
 ```http
 GET /api/reles/estado/INSTALADO
 ```
@@ -541,15 +595,15 @@ http://localhost:8082/swagger-ui/index.html
 # Estado Actual
 
 ## Backend implementado
-- Entorno Docker
+
+- Docker
 - PostgreSQL
 - Spring Boot
 - Flyway
 - Hibernate/JPA
+- Arquitectura backend por capas
 - Modelo relacional completo
 - Versionado de base de datos
-- Arquitectura backend por capas
-- Entidades JPA
 - DTOs
 - Validaciones Bean Validation
 - Exception Handling global
@@ -557,30 +611,27 @@ http://localhost:8082/swagger-ui/index.html
 - Repositories
 - Services
 - Controllers REST
-- Endpoints CRUD
-- Queries derivadas JPA
+- CRUD base
 - Historial de movimientos
 - Estado actual derivado
-- Filtros operativos
-- Paginación
-- Sorting dinámico
 - Persistencia funcional
+- Seed data automática
 
 ---
 
 ## Frontend implementado
+
 - React + Vite
 - TypeScript
 - Axios
 - React Router
 - Material UI
-- Arquitectura frontend desacoplada
-- Navbar y layout principal
-- Tabla de relés
-- Formulario de alta
-- Loading states
-- Snackbar feedback
-- CRUD frontend operativo
+- Theme corporativo
+- Navbar institucional
+- Branding EPEC Transmisión
+- HomePage corporativa
+- CRUD operativo
+- Gestión de movimientos
 - Integración fullstack funcional
 
 ---
@@ -588,6 +639,7 @@ http://localhost:8082/swagger-ui/index.html
 # Próximos Pasos
 
 ## Frontend
+
 - Selects dinámicos
 - Catálogos reales
 - Dashboard operativo
@@ -596,8 +648,10 @@ http://localhost:8082/swagger-ui/index.html
 - Filtros visuales
 - Paginación frontend
 - Dark mode
+- Métricas operativas
 
 ## Backend
+
 - Queries avanzadas
 - Filtros múltiples
 - Auditoría automática
@@ -608,6 +662,7 @@ http://localhost:8082/swagger-ui/index.html
 - Dockerización completa backend
 
 ## Integraciones futuras
+
 - IBM Maximo
 - MIF
 - APIs corporativas
@@ -720,18 +775,21 @@ Aplicación fullstack enterprise base funcional
 ```
 
 Con:
+
 - backend REST profesional
 - frontend React desacoplado
 - Material UI
+- identidad visual institucional
 - arquitectura escalable
 - persistencia fullstack
 - trazabilidad histórica
 - documentación OpenAPI
 - integración React ↔ Spring Boot
-- paginación y escalabilidad inicial
+- seed data automática
+- bootstrap completo de entorno
 
 ---
 
 # Autor
 
-Proyecto desarrollado como iniciativa de mejora y digitalización de procesos para el área de Protecciones y Teleoperación.
+Proyecto desarrollado como iniciativa de mejora y digitalización de procesos para el área de Protecciones y Teleoperación de EPEC Transmisión.

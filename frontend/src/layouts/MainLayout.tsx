@@ -1,32 +1,90 @@
 import {
+
     AppBar,
     Toolbar,
     Typography,
     Button,
-    Container
+    Container,
+    Box
+
 } from "@mui/material";
 
 import {
+
     Link,
     Outlet
+
 } from "react-router-dom";
+
+import epecLogo
+    from "../assets/epec-logo.png";
 
 function MainLayout() {
 
     return (
 
-        <div>
+        <Box
+            sx={{
+                minHeight: "100vh",
+                backgroundColor: "#F4F6F8"
+            }}
+        >
 
-            <AppBar position="static">
+            <AppBar
+                position="static"
+                color="primary"
+            >
 
-                <Toolbar>
+                <Toolbar
+                    sx={{
+                        minHeight: "80px"
+                    }}
+                >
 
-                    <Typography
-                        variant="h6"
-                        sx={{ flexGrow: 1 }}
+                    <Box
+                        sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 2,
+                            flexGrow: 1
+                        }}
                     >
-                        Protecciones
-                    </Typography>
+
+                        <Box
+                            component="img"
+                            src={epecLogo}
+                            alt="EPEC"
+                            sx={{
+                                height: 48
+                            }}
+                        />
+
+                        <Box>
+
+                            <Typography
+                                variant="h6"
+                                sx={{
+                                    fontWeight: 700,
+                                    lineHeight: 1.1
+                                }}
+                            >
+                                EPEC Transmisión
+                            </Typography>
+
+                            <Typography
+                                variant="body2"
+                                sx={{
+                                    opacity: 0.9
+                                }}
+                            >
+                                Departamento de
+                                Teleoperaciones y
+                                Protecciones
+                            </Typography>
+
+                        </Box>
+
+                    </Box>
 
                     <Button
                         color="inherit"
@@ -43,6 +101,7 @@ function MainLayout() {
                     >
                         Relés
                     </Button>
+
                     <Button
                         color="inherit"
                         component={Link}
@@ -55,13 +114,19 @@ function MainLayout() {
 
             </AppBar>
 
-            <Container sx={{ mt: 4 }}>
+            <Container
+                maxWidth="xl"
+                sx={{
+                    mt: 5,
+                    mb: 5
+                }}
+            >
 
                 <Outlet />
 
             </Container>
 
-        </div>
+        </Box>
     );
 }
 
