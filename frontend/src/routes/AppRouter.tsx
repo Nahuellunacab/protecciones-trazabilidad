@@ -4,11 +4,20 @@ import {
     Route
 } from "react-router-dom";
 
-import MainLayout from "../layouts/MainLayout";
+import MainLayout
+from "../layouts/MainLayout";
 
-import HomePage from "../pages/HomePage";
-import RelePage from "../pages/RelePage";
-import MovimientoPage from "../pages/MovimientoPage";
+import HomePage
+from "../pages/HomePage";
+
+import RelePage
+from "../pages/RelePage";
+
+import MovimientoPage
+from "../pages/MovimientoPage";
+
+import MarcaPage
+from "../pages/admin/MarcaPage";
 
 function AppRouter() {
 
@@ -18,7 +27,10 @@ function AppRouter() {
 
             <Routes>
 
-                <Route path="/" element={<MainLayout />}>
+                <Route
+                    path="/"
+                    element={<MainLayout />}
+                >
 
                     <Route
                         index
@@ -33,6 +45,11 @@ function AppRouter() {
                     <Route
                         path="movimientos"
                         element={<MovimientoPage />}
+                    />
+
+                    <Route
+                        path="admin/marcas"
+                        element={<MarcaPage />}
                     />
 
                 </Route>

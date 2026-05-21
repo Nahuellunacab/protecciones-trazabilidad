@@ -110,6 +110,14 @@ function MainLayout() {
                         Movimientos
                     </Button>
 
+                    <Button
+                        color="inherit"
+                        component={Link}
+                        to="/admin/marcas"
+                    >
+                        Marcas
+                    </Button>
+
                 </Toolbar>
 
             </AppBar>
