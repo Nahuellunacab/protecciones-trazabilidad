@@ -13,24 +13,61 @@ public class Modelo {
     @Column(nullable = false)
     private String nombre;
 
-    private String tension;
+    @Column(name = "tension_desde")
+    private Integer tensionDesde;
+
+    @Column(name = "tension_hasta")
+    private Integer tensionHasta;
+
+    @Column(name = "tipo_tension")
+    private String tipoTension;
 
     @ManyToOne
-    @JoinColumn(name = "tipo_id", nullable = false)
+    @JoinColumn(
+            name = "tipo_id",
+            nullable = false
+    )
     private Tipo tipo;
 
     @ManyToOne
-    @JoinColumn(name = "marca_id", nullable = false)
+    @JoinColumn(
+            name = "marca_id",
+            nullable = false
+    )
     private Marca marca;
 
     public Modelo() {
     }
 
-    public Modelo(Long id, String nombre, String tension, Tipo tipo, Marca marca) {
+    public Modelo(
+
+            Long id,
+
+            String nombre,
+
+            Integer tensionDesde,
+
+            Integer tensionHasta,
+
+            String tipoTension,
+
+            Tipo tipo,
+
+            Marca marca
+    ) {
+
         this.id = id;
+
         this.nombre = nombre;
-        this.tension = tension;
+
+        this.tensionDesde = tensionDesde;
+
+        this.tensionHasta = tensionHasta;
+
+        this.tipoTension = tipoTension;
+
         this.tipo = tipo;
+
         this.marca = marca;
     }
 
@@ -42,8 +79,16 @@ public class Modelo {
         return nombre;
     }
 
-    public String getTension() {
-        return tension;
+    public Integer getTensionDesde() {
+        return tensionDesde;
+    }
+
+    public Integer getTensionHasta() {
+        return tensionHasta;
+    }
+
+    public String getTipoTension() {
+        return tipoTension;
     }
 
     public Tipo getTipo() {
@@ -62,8 +107,25 @@ public class Modelo {
         this.nombre = nombre;
     }
 
-    public void setTension(String tension) {
-        this.tension = tension;
+    public void setTensionDesde(
+            Integer tensionDesde
+    ) {
+
+        this.tensionDesde = tensionDesde;
+    }
+
+    public void setTensionHasta(
+            Integer tensionHasta
+    ) {
+
+        this.tensionHasta = tensionHasta;
+    }
+
+    public void setTipoTension(
+            String tipoTension
+    ) {
+
+        this.tipoTension = tipoTension;
     }
 
     public void setTipo(Tipo tipo) {

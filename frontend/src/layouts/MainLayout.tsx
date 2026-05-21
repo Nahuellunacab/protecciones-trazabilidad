@@ -5,7 +5,8 @@ import {
     Typography,
     Button,
     Container,
-    Box
+    Box,
+    Divider
 
 } from "@mui/material";
 
@@ -33,11 +34,14 @@ function MainLayout() {
             <AppBar
                 position="static"
                 color="primary"
+                elevation={2}
             >
 
                 <Toolbar
                     sx={{
-                        minHeight: "80px"
+                        minHeight: "80px",
+                        display: "flex",
+                        gap: 2
                     }}
                 >
 
@@ -110,12 +114,29 @@ function MainLayout() {
                         Movimientos
                     </Button>
 
+                    <Divider
+                        orientation="vertical"
+                        flexItem
+                        sx={{
+                            borderColor:
+                                "rgba(255,255,255,0.3)"
+                        }}
+                    />
+
                     <Button
                         color="inherit"
                         component={Link}
                         to="/admin/marcas"
                     >
                         Marcas
+                    </Button>
+
+                    <Button
+                        color="inherit"
+                        component={Link}
+                        to="/admin/modelos"
+                    >
+                        Modelos
                     </Button>
 
                 </Toolbar>

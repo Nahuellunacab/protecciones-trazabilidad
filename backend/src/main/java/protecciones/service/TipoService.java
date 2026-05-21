@@ -1,28 +1,49 @@
 package protecciones.service;
 
 import org.springframework.stereotype.Service;
+
+import protecciones.dto.TipoResponseDTO;
+
 import protecciones.entity.Tipo;
+
 import protecciones.repository.TipoRepository;
 
-import java.util.List; // Importa la clase List de Java, que se utiliza para manejar colecciones de objetos, en este caso, una lista de objetos Tipo.
+import java.util.List;
 
 @Service
 public class TipoService {
 
-    private final TipoRepository tipoRepository;
+    private final TipoRepository
+            tipoRepository;
 
-    // Constructor de la clase TipoService que recibe una instancia de TipoRepository. La anotación @Service indica que esta clase es un componente de servicio en el contexto de Spring, lo que permite que sea detectada y gestionada por el contenedor de Spring.
-    public TipoService(TipoRepository tipoRepository) {
-        this.tipoRepository = tipoRepository;
+    public TipoService(
+            TipoRepository tipoRepository
+    ) {
+
+        this.tipoRepository =
+                tipoRepository;
     }
 
-    // Método que obtiene todos los objetos Tipo de la base de datos utilizando el método findAll() del repositorio.
-    public List<Tipo> obtenerTodos() {
-        return tipoRepository.findAll();
+    public List<TipoResponseDTO>
+    obtenerTodos() {
+
+        return tipoRepository
+                .findAllByOrderByNombreAsc()
+                .stream()
+                .map(this::mapToDTO)
+                .toList();
     }
 
-    // Método que guarda un nuevo objeto Tipo en la base de datos utilizando el método save() del repositorio. Devuelve el objeto Tipo guardado, que incluye el ID generado automáticamente por la base de datos.
-    public Tipo guardar(Tipo tipo) {
-        return tipoRepository.save(tipo);
+    private TipoResponseDTO
+    mapToDTO(
+            Tipo tipo
+    ) {
+
+        return new TipoResponseDTO(
+
+                tipo.getId(),
+
+                tipo.getNombre()
+        );
     }
 }

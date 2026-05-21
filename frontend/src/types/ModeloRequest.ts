@@ -1,6 +1,4 @@
-export interface Modelo {
-
-    id: number;
+export interface ModeloRequest {
 
     nombre: string;
 
@@ -8,9 +6,5 @@ export interface Modelo {
 
     marcaId: number;
 
-    marca: string;
-
     tipoId: number;
-
-    tipo: string;
 }

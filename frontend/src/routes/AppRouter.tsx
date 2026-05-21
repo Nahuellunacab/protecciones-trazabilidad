@@ -19,6 +19,9 @@ from "../pages/MovimientoPage";
 import MarcaPage
 from "../pages/admin/MarcaPage";
 
+import ModeloPage
+from "../pages/admin/ModeloPage";
+
 function AppRouter() {
 
     return (
@@ -50,6 +53,11 @@ function AppRouter() {
                     <Route
                         path="admin/marcas"
                         element={<MarcaPage />}
+                    />
+
+                    <Route
+                        path="admin/modelos"
+                        element={<ModeloPage />}
                     />
 
                 </Route>

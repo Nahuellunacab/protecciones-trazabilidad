@@ -1,28 +1,60 @@
 package protecciones.service;
 
+import org.springframework.dao.DataIntegrityViolationException;
+
 import org.springframework.stereotype.Service;
 
+import protecciones.dto.ModeloRequestDTO;
 import protecciones.dto.ModeloResponseDTO;
+
+import protecciones.entity.Marca;
 import protecciones.entity.Modelo;
+import protecciones.entity.Tipo;
+
+import protecciones.exception.BusinessException;
+
+import protecciones.repository.MarcaRepository;
 import protecciones.repository.ModeloRepository;
+import protecciones.repository.TipoRepository;
 
 import java.util.List;
 
 @Service
 public class ModeloService {
 
-    private final ModeloRepository modeloRepository;
+    private final ModeloRepository
+            modeloRepository;
+
+    private final MarcaRepository
+            marcaRepository;
+
+    private final TipoRepository
+            tipoRepository;
 
     public ModeloService(
-            ModeloRepository modeloRepository
+
+            ModeloRepository modeloRepository,
+
+            MarcaRepository marcaRepository,
+
+            TipoRepository tipoRepository
     ) {
 
-        this.modeloRepository = modeloRepository;
+        this.modeloRepository =
+                modeloRepository;
+
+        this.marcaRepository =
+                marcaRepository;
+
+        this.tipoRepository =
+                tipoRepository;
     }
 
-    public List<ModeloResponseDTO> obtenerTodos() {
+    public List<ModeloResponseDTO>
+    obtenerTodos() {
 
-        return modeloRepository.findAll()
+        return modeloRepository
+                .findAllByOrderByNombreAsc()
                 .stream()
                 .map(this::mapToDTO)
                 .toList();
@@ -38,7 +70,146 @@ public class ModeloService {
                 .toList();
     }
 
-    private ModeloResponseDTO mapToDTO(
+    public ModeloResponseDTO guardar(
+            ModeloRequestDTO dto
+    ) {
+
+        validarDuplicado(dto);
+
+        Marca marca =
+                marcaRepository.findById(
+                        dto.getMarcaId()
+                ).orElseThrow();
+
+        Tipo tipo =
+                tipoRepository.findById(
+                        dto.getTipoId()
+                ).orElseThrow();
+
+        Modelo modelo = new Modelo();
+
+        modelo.setNombre(
+                dto.getNombre().trim()
+        );
+
+        modelo.setTensionDesde(
+                dto.getTensionDesde()
+        );
+
+        modelo.setTensionHasta(
+                dto.getTensionHasta()
+        );
+
+        modelo.setTipoTension(
+                dto.getTipoTension().trim()
+        );
+
+        modelo.setMarca(marca);
+
+        modelo.setTipo(tipo);
+
+        Modelo guardado =
+                modeloRepository.save(modelo);
+
+        return mapToDTO(guardado);
+    }
+
+    public ModeloResponseDTO actualizar(
+            Long id,
+            ModeloRequestDTO dto
+    ) {
+
+        Modelo modelo =
+                modeloRepository.findById(id)
+                        .orElseThrow();
+
+        modeloRepository
+                .findByNombreIgnoreCaseAndMarcaId(
+                        dto.getNombre(),
+                        dto.getMarcaId()
+                )
+                .ifPresent(existente -> {
+
+                    if (!existente.getId()
+                            .equals(id)) {
+
+                        throw new BusinessException(
+                                "Ya existe un modelo con ese nombre para esa marca"
+                        );
+                    }
+                });
+
+        Marca marca =
+                marcaRepository.findById(
+                        dto.getMarcaId()
+                ).orElseThrow();
+
+        Tipo tipo =
+                tipoRepository.findById(
+                        dto.getTipoId()
+                ).orElseThrow();
+
+        modelo.setNombre(
+                dto.getNombre().trim()
+        );
+
+        modelo.setTensionDesde(
+                dto.getTensionDesde()
+        );
+
+        modelo.setTensionHasta(
+                dto.getTensionHasta()
+        );
+
+        modelo.setTipoTension(
+                dto.getTipoTension().trim()
+        );
+
+        modelo.setMarca(marca);
+
+        modelo.setTipo(tipo);
+
+        Modelo actualizado =
+                modeloRepository.save(modelo);
+
+        return mapToDTO(actualizado);
+    }
+
+    public void eliminar(Long id) {
+
+        try {
+
+            modeloRepository.deleteById(id);
+
+        } catch (
+                DataIntegrityViolationException ex
+        ) {
+
+            throw new BusinessException(
+                    "No se puede eliminar porque el modelo está siendo utilizado"
+            );
+        }
+    }
+
+    private void validarDuplicado(
+            ModeloRequestDTO dto
+    ) {
+
+        modeloRepository
+                .findByNombreIgnoreCaseAndMarcaId(
+                        dto.getNombre(),
+                        dto.getMarcaId()
+                )
+                .ifPresent(modelo -> {
+
+                    throw new BusinessException(
+                            "Ya existe un modelo con ese nombre para esa marca"
+                    );
+                });
+    }
+
+    private ModeloResponseDTO
+    mapToDTO(
             Modelo modelo
     ) {
 
@@ -48,7 +219,22 @@ public class ModeloService {
 
                 modelo.getNombre(),
 
+                modelo.getTensionDesde(),
+
+                modelo.getTensionHasta(),
+
+                modelo.getTipoTension(),
+
                 modelo.getMarca()
+                        .getId(),
+
+                modelo.getMarca()
+                        .getNombre(),
+
+                modelo.getTipo()
+                        .getId(),
+
+                modelo.getTipo()
                         .getNombre()
         );
     }
