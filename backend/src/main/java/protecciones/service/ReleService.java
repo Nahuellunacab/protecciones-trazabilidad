@@ -22,25 +22,32 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-
 import org.springframework.data.domain.Sort;
 
 @Service
 public class ReleService {
 
     private final ReleRepository releRepository;
+
     private final ModeloRepository modeloRepository;
+
     private final RemitoRepository remitoRepository;
+
     private final MovimientoRepository movimientoRepository;
 
-    public ReleService(ReleRepository releRepository,
-                       ModeloRepository modeloRepository,
-                       RemitoRepository remitoRepository,
-                       MovimientoRepository movimientoRepository) {
+    public ReleService(
+            ReleRepository releRepository,
+            ModeloRepository modeloRepository,
+            RemitoRepository remitoRepository,
+            MovimientoRepository movimientoRepository
+    ) {
 
         this.releRepository = releRepository;
+
         this.modeloRepository = modeloRepository;
+
         this.remitoRepository = remitoRepository;
+
         this.movimientoRepository = movimientoRepository;
     }
 
@@ -52,130 +59,317 @@ public class ReleService {
                 .toList();
     }
 
-    public ReleResponseDTO guardar(ReleRequestDTO dto) {
+    public ReleResponseDTO guardar(
+            ReleRequestDTO dto
+    ) {
 
-        Modelo modelo = modeloRepository.findById(dto.getModeloId())
-                .orElseThrow(() ->
-                        new RuntimeException("Modelo no encontrado"));
+        Modelo modelo =
+                modeloRepository.findById(
+                        dto.getModeloId()
+                ).orElseThrow(() ->
+                        new RuntimeException(
+                                "Modelo no encontrado"
+                        )
+                );
 
         Remito remito = null;
 
         if (dto.getRemitoId() != null) {
 
-            remito = remitoRepository.findById(dto.getRemitoId())
-                    .orElseThrow(() ->
-                            new RuntimeException("Remito no encontrado"));
+            remito = remitoRepository.findById(
+                    dto.getRemitoId()
+            ).orElseThrow(() ->
+                    new RuntimeException(
+                            "Remito no encontrado"
+                    )
+            );
         }
 
         Rele rele = new Rele();
 
-        rele.setNumeroSerie(dto.getNumeroSerie());
-        rele.setGarantiaMeses(dto.getGarantiaMeses());
+        rele.setNumeroSerie(
+                dto.getNumeroSerie()
+        );
+
         rele.setModelo(modelo);
+
         rele.setRemito(remito);
 
-        Rele releGuardado = releRepository.save(rele);
+        if (
+                Boolean.TRUE.equals(
+                        dto.getCargarGarantia()
+                )
+        ) {
 
-        return mapToResponseDTO(releGuardado);
+            rele.setGarantiaMeses(
+                    dto.getGarantiaMeses()
+            );
+
+            rele.setInicioGarantia(
+                    dto.getInicioGarantia()
+            );
+
+            if (
+                    dto.getInicioGarantia() != null
+                            &&
+                    dto.getGarantiaMeses() != null
+            ) {
+
+                rele.setFinGarantia(
+
+                        dto.getInicioGarantia()
+                                .plusMonths(
+                                        dto.getGarantiaMeses()
+                                )
+                );
+            }
+
+        } else {
+
+            rele.setGarantiaMeses(null);
+
+            rele.setInicioGarantia(null);
+
+            rele.setFinGarantia(null);
+        }
+
+        Rele releGuardado =
+                releRepository.save(rele);
+
+        return mapToResponseDTO(
+                releGuardado
+        );
     }
 
-    public ReleResponseDTO buscarPorNumeroSerie(String numeroSerie) {
+    public ReleResponseDTO buscarPorNumeroSerie(
+            String numeroSerie
+    ) {
 
-        Rele rele = releRepository.findByNumeroSerie(numeroSerie)
-                .orElseThrow(() ->
-                        new RuntimeException("Relé no encontrado"));
+        Rele rele =
+                releRepository.findByNumeroSerie(
+                        numeroSerie
+                ).orElseThrow(() ->
+                        new RuntimeException(
+                                "Relé no encontrado"
+                        )
+                );
 
         return mapToResponseDTO(rele);
     }
 
-    public List<MovimientoResponseDTO> obtenerHistorial(Long releId) {
+    public List<MovimientoResponseDTO>
+    obtenerHistorial(Long releId) {
 
         return movimientoRepository
-                .findByReleIdOrderByFechaMovimientoDesc(releId)
+                .findByReleIdOrderByFechaMovimientoDesc(
+                        releId
+                )
                 .stream()
                 .map(this::mapMovimientoToDTO)
                 .toList();
     }
 
-    private ReleResponseDTO mapToResponseDTO(Rele rele) {
+    private ReleResponseDTO mapToResponseDTO(
+            Rele rele
+    ) {
+
+        Modelo modelo =
+                rele.getModelo();
+
+        String tension = "";
+
+        if (modelo != null) {
+
+            Integer desde =
+                    modelo.getTensionDesde();
+
+            Integer hasta =
+                    modelo.getTensionHasta();
+
+            String tipo =
+                    modelo.getTipoTension();
+
+            if (
+                    desde != null
+                            &&
+                    hasta != null
+            ) {
+
+                tension =
+                        desde
+                        + " - "
+                        + hasta
+                        + " "
+                        + (
+                            tipo != null
+                                    ? tipo
+                                    : ""
+                        );
+
+            } else if (desde != null) {
+
+                tension =
+                        desde
+                        + " "
+                        + (
+                            tipo != null
+                                    ? tipo
+                                    : ""
+                        );
+
+            } else {
+
+                tension =
+                        tipo != null
+                                ? tipo
+                                : "";
+            }
+        }
+
+        Long modeloId =
+                modelo != null
+                        ? modelo.getId()
+                        : null;
+
+        Long remitoId =
+                rele.getRemito() != null
+                        ? rele.getRemito().getId()
+                        : null;
 
         return new ReleResponseDTO(
+
                 rele.getId(),
+
                 rele.getNumeroSerie(),
+
                 rele.getGarantiaMeses(),
-                rele.getModelo().getNombre(),
-                rele.getModelo().getMarca().getNombre()
+
+                rele.getInicioGarantia(),
+
+                rele.getFinGarantia(),
+
+                modelo != null
+                        ? modelo.getNombre()
+                        : null,
+
+                modelo != null
+                        &&
+                        modelo.getMarca() != null
+                                ? modelo.getMarca()
+                                        .getNombre()
+                                : null,
+
+                tension,
+
+                modeloId,
+
+                remitoId
         );
     }
 
-    public MovimientoResponseDTO obtenerEstadoActual(Long releId) {
+    public MovimientoResponseDTO
+    obtenerEstadoActual(Long releId) {
 
-        Movimiento movimiento = movimientoRepository
-                .findTopByReleIdOrderByFechaMovimientoDesc(releId)
-                .orElseThrow(() ->
-                        new RuntimeException(
-                                "El relé no tiene movimientos"));
+        Movimiento movimiento =
+                movimientoRepository
+                        .findTopByReleIdOrderByFechaMovimientoDesc(
+                                releId
+                        )
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "El relé no tiene movimientos"
+                                )
+                        );
 
-        return mapMovimientoToDTO(movimiento);    
+        return mapMovimientoToDTO(
+                movimiento
+        );
     }
 
-    public List<ReleResponseDTO> obtenerPorEstadoActual(
-        String estadoNombre) {
+    public List<ReleResponseDTO>
+    obtenerPorEstadoActual(
+            String estadoNombre
+    ) {
 
         return releRepository.findAll()
                 .stream()
-                .filter(rele -> {
+                .filter(rele ->
 
-                    return movimientoRepository
-                            .findTopByReleIdOrderByFechaMovimientoDesc(
-                                    rele.getId())
-                            .map(movimiento ->
-                                    movimiento.getEstado()
-                                            .getNombre()
-                                            .equalsIgnoreCase(estadoNombre))
-                            .orElse(false);
-                })
+                        movimientoRepository
+                                .findTopByReleIdOrderByFechaMovimientoDesc(
+                                        rele.getId()
+                                )
+                                .map(movimiento ->
+
+                                        movimiento.getEstado()
+                                                .getNombre()
+                                                .equalsIgnoreCase(
+                                                        estadoNombre
+                                                )
+                                )
+                                .orElse(false)
+                )
                 .map(this::mapToResponseDTO)
                 .toList();
     }
 
-    public Page<ReleResponseDTO> obtenerPaginados(
+    public Page<ReleResponseDTO>
+    obtenerPaginados(
             int page,
             int size,
-            String sort) {
+            String sort
+    ) {
 
-        String[] sortParams = sort.split(",");
+        String[] sortParams =
+                sort.split(",");
 
-        String campo = sortParams[0];
+        String campo =
+                sortParams[0];
 
         Sort.Direction direccion =
-                sortParams.length > 1 &&
-                sortParams[1].equalsIgnoreCase("desc")
+                sortParams.length > 1
+                        &&
+                        sortParams[1]
+                                .equalsIgnoreCase(
+                                        "desc"
+                                )
                         ? Sort.Direction.DESC
                         : Sort.Direction.ASC;
 
-        Pageable pageable = PageRequest.of(
-                page,
-                size,
-                Sort.by(direccion, campo)
-        );
+        Pageable pageable =
+                PageRequest.of(
 
-        return releRepository.findAll(pageable)
+                        page,
+
+                        size,
+
+                        Sort.by(
+                                direccion,
+                                campo
+                        )
+                );
+
+        return releRepository
+                .findAll(pageable)
                 .map(this::mapToResponseDTO);
     }
 
-    public List<ReleResponseDTO> buscarPorSerialParcial(
-            String serial) {
+    public List<ReleResponseDTO>
+    buscarPorSerialParcial(
+            String serial
+    ) {
 
         return releRepository
-                .findByNumeroSerieContainingIgnoreCase(serial)
+                .findByNumeroSerieContainingIgnoreCase(
+                        serial
+                )
                 .stream()
                 .map(this::mapToResponseDTO)
                 .toList();
     }
 
     public List<ReleOptionDTO>
-        obtenerOpciones() {
+    obtenerOpciones() {
 
         return releRepository
                 .findAll()
@@ -184,16 +378,18 @@ public class ReleService {
 
                         new ReleOptionDTO(
 
-                        rele.getId(),
+                                rele.getId(),
 
-                        rele.getNumeroSerie()
+                                rele.getNumeroSerie()
                         )
                 )
                 .toList();
-        }
+    }
 
-    private MovimientoResponseDTO mapMovimientoToDTO(
-                Movimiento movimiento) {
+    private MovimientoResponseDTO
+        mapMovimientoToDTO(
+                Movimiento movimiento
+        ) {
 
         return new MovimientoResponseDTO(
 
@@ -202,9 +398,24 @@ public class ReleService {
                 movimiento.getRele()
                         .getNumeroSerie(),
 
-                movimiento.getFechaMovimiento(),
+                movimiento.getRele()
+                        .getModelo()
+                        .getNombre(),
+
+                movimiento.getRele()
+                        .getModelo()
+                        .getMarca()
+                        .getNombre(),
 
                 movimiento.getEstado()
+                        .getNombre(),
+
+                "",
+
+                "",
+
+                movimiento.getPosicion()
+                        .getDestino()
                         .getNombre(),
 
                 movimiento.getPosicion()
@@ -214,6 +425,8 @@ public class ReleService {
                         ? movimiento.getUsuario()
                                 .getNombre()
                         : null,
+
+                movimiento.getFechaMovimiento(),
 
                 movimiento.getNotas()
         );

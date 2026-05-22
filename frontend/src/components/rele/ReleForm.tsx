@@ -8,17 +8,29 @@ import type {
     Modelo
 } from "../../types/Modelo";
 
+import type {
+    Marca
+} from "../../types/Marca";
+
 import {
-    obtenerModelos
+
+    obtenerModelosPorMarca
+
 } from "../../services/modeloService";
+
+import {
+    obtenerMarcas
+} from "../../services/marcaService";
 
 import {
 
     Alert,
     Box,
     Button,
+    Checkbox,
     CircularProgress,
     FormControl,
+    FormControlLabel,
     InputLabel,
     MenuItem,
     Paper,
@@ -43,14 +55,32 @@ function ReleForm({
 
     const [formData, setFormData] =
         useState<ReleRequest>({
+
             numeroSerie: "",
-            garantiaMeses: 12,
+
             modeloId: 0,
-            remitoId: 1
+
+            remitoId: 1,
+
+            cargarGarantia: false,
+
+            garantiaMeses: 12,
+
+            inicioGarantia: ""
         });
+
+    const [marcas, setMarcas] =
+        useState<Marca[]>([]);
 
     const [modelos, setModelos] =
         useState<Modelo[]>([]);
+
+    const [marcaId, setMarcaId] =
+        useState<number>(0);
+
+    const [modeloSeleccionado,
+        setModeloSeleccionado] =
+            useState<Modelo | null>(null);
 
     const [loading, setLoading] =
         useState(false);
@@ -63,25 +93,83 @@ function ReleForm({
 
     useEffect(() => {
 
-        cargarModelos();
+        cargarMarcas();
 
     }, []);
 
-    const cargarModelos =
+    const cargarMarcas =
         async () => {
 
         const data =
-            await obtenerModelos();
+            await obtenerMarcas();
+
+        setMarcas(data);
+    };
+
+    const cargarModelos =
+        async (marcaId: number) => {
+
+        const data =
+            await obtenerModelosPorMarca(
+                marcaId
+            );
 
         setModelos(data);
+    };
+
+    const handleMarcaChange =
+        async (value: number) => {
+
+        setMarcaId(value);
+
+        setFormData({
+
+            ...formData,
+
+            modeloId: 0
+        });
+
+        setModeloSeleccionado(null);
+
+        if (value > 0) {
+
+            await cargarModelos(value);
+
+        } else {
+
+            setModelos([]);
+        }
+    };
+
+    const handleModeloChange =
+        (modeloId: number) => {
+
+        const modelo =
+            modelos.find(
+                (m) =>
+                    m.id === modeloId
+            ) || null;
+
+        setModeloSeleccionado(
+            modelo
+        );
+
+        setFormData({
+
+            ...formData,
+
+            modeloId
+        });
     };
 
     const handleChange = (
         e: any
     ) => {
 
-        const { name, value } =
-            e.target;
+        const {
+            name,
+            value
+        } = e.target;
 
         setFormData({
 
@@ -99,6 +187,52 @@ function ReleForm({
         });
     };
 
+    const handleCheckbox =
+        (
+            e: React.ChangeEvent<HTMLInputElement>
+        ) => {
+
+        setFormData({
+
+            ...formData,
+
+            cargarGarantia:
+                e.target.checked
+        });
+    };
+
+    const obtenerTension =
+        () => {
+
+        if (!modeloSeleccionado) {
+            return "-";
+        }
+
+        const desde =
+            modeloSeleccionado.tensionDesde;
+
+        const hasta =
+            modeloSeleccionado.tensionHasta;
+
+        const tipo =
+            modeloSeleccionado.tipoTension;
+
+        if (
+            desde &&
+            hasta
+        ) {
+
+            return `${desde} - ${hasta} ${tipo}`;
+        }
+
+        if (desde) {
+
+            return `${desde} ${tipo}`;
+        }
+
+        return tipo || "-";
+    };
+
     const handleSubmit = async (
         e: React.FormEvent
     ) => {
@@ -114,11 +248,25 @@ function ReleForm({
             setSuccessOpen(true);
 
             setFormData({
+
                 numeroSerie: "",
-                garantiaMeses: 12,
+
                 modeloId: 0,
-                remitoId: 1
+
+                remitoId: 1,
+
+                cargarGarantia: false,
+
+                garantiaMeses: 12,
+
+                inicioGarantia: ""
             });
+
+            setMarcaId(0);
+
+            setModeloSeleccionado(null);
+
+            setModelos([]);
 
         } catch (error) {
 
@@ -172,7 +320,8 @@ function ReleForm({
                 elevation={3}
                 sx={{
                     padding: 3,
-                    marginBottom: 4
+                    marginBottom: 4,
+                    borderRadius: 4
                 }}
             >
 
@@ -190,26 +339,40 @@ function ReleForm({
 
                     <Stack spacing={2}>
 
-                        <TextField
-                            label="Número Serie"
-                            name="numeroSerie"
-                            value={
-                                formData.numeroSerie
-                            }
-                            onChange={handleChange}
-                            fullWidth
-                        />
+                        <FormControl fullWidth>
 
-                        <TextField
-                            label="Garantía Meses"
-                            name="garantiaMeses"
-                            type="number"
-                            value={
-                                formData.garantiaMeses
-                            }
-                            onChange={handleChange}
-                            fullWidth
-                        />
+                            <InputLabel>
+                                Marca
+                            </InputLabel>
+
+                            <Select
+                                value={marcaId}
+                                label="Marca"
+                                onChange={(e) =>
+                                    handleMarcaChange(
+                                        Number(
+                                            e.target.value
+                                        )
+                                    )
+                                }
+                            >
+
+                                {marcas.map(
+                                    (marca) => (
+
+                                    <MenuItem
+                                        key={marca.id}
+                                        value={marca.id}
+                                    >
+
+                                        {marca.nombre}
+
+                                    </MenuItem>
+                                ))}
+
+                            </Select>
+
+                        </FormControl>
 
                         <FormControl fullWidth>
 
@@ -218,12 +381,17 @@ function ReleForm({
                             </InputLabel>
 
                             <Select
-                                name="modeloId"
                                 value={
                                     formData.modeloId
                                 }
                                 label="Modelo"
-                                onChange={handleChange}
+                                onChange={(e) =>
+                                    handleModeloChange(
+                                        Number(
+                                            e.target.value
+                                        )
+                                    )
+                                }
                             >
 
                                 {modelos.map(
@@ -234,8 +402,6 @@ function ReleForm({
                                         value={modelo.id}
                                     >
 
-                                        {modelo.marcaNombre}
-                                        {" - "}
                                         {modelo.nombre}
 
                                     </MenuItem>
@@ -244,6 +410,78 @@ function ReleForm({
                             </Select>
 
                         </FormControl>
+
+                        <TextField
+                            label="Tensión"
+                            value={
+                                obtenerTension()
+                            }
+                            slotProps={{
+                                input: {
+                                    readOnly: true
+                                }
+                            }}
+                            fullWidth
+                        />
+
+                        <TextField
+                            label="Número Serie"
+                            name="numeroSerie"
+                            value={
+                                formData.numeroSerie
+                            }
+                            onChange={handleChange}
+                            fullWidth
+                        />
+
+                        <FormControlLabel
+                            control={
+
+                                <Checkbox
+                                    checked={
+                                        formData.cargarGarantia
+                                    }
+                                    onChange={
+                                        handleCheckbox
+                                    }
+                                />
+                            }
+                            label="Cargar garantía"
+                        />
+
+                        {formData.cargarGarantia && (
+
+                            <>
+
+                                <TextField
+                                    label="Garantía Meses"
+                                    name="garantiaMeses"
+                                    type="number"
+                                    value={
+                                        formData.garantiaMeses
+                                    }
+                                    onChange={handleChange}
+                                    fullWidth
+                                />
+
+                                <TextField
+                                    label="Inicio Garantía"
+                                    name="inicioGarantia"
+                                    type="date"
+                                    value={
+                                        formData.inicioGarantia
+                                    }
+                                    onChange={handleChange}
+                                    slotProps={{
+                                        inputLabel: {
+                                            shrink: true
+                                        }
+                                    }}
+                                    fullWidth
+                                />
+
+                            </>
+                        )}
 
                         <Button
                             variant="contained"

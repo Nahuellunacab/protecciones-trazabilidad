@@ -8,35 +8,52 @@ public class MovimientoResponseDTO {
 
     private String rele;
 
-    private LocalDateTime fechaMovimiento;
+    private String modelo;
+
+    private String marca;
 
     private String estado;
 
+    private String provincia;
+
+    private String localidad;
+
+    private String destino;
+
     private String posicion;
 
-    private String usuario;
+    private String responsable;
+
+    private LocalDateTime fechaMovimiento;
 
     private String notas;
-
-    public MovimientoResponseDTO() {
-    }
 
     public MovimientoResponseDTO(
             Long id,
             String rele,
-            LocalDateTime fechaMovimiento,
+            String modelo,
+            String marca,
             String estado,
+            String provincia,
+            String localidad,
+            String destino,
             String posicion,
-            String usuario,
+            String responsable,
+            LocalDateTime fechaMovimiento,
             String notas
     ) {
 
         this.id = id;
         this.rele = rele;
-        this.fechaMovimiento = fechaMovimiento;
+        this.modelo = modelo;
+        this.marca = marca;
         this.estado = estado;
+        this.provincia = provincia;
+        this.localidad = localidad;
+        this.destino = destino;
         this.posicion = posicion;
-        this.usuario = usuario;
+        this.responsable = responsable;
+        this.fechaMovimiento = fechaMovimiento;
         this.notas = notas;
     }
 
@@ -48,53 +65,43 @@ public class MovimientoResponseDTO {
         return rele;
     }
 
-    public LocalDateTime getFechaMovimiento() {
-        return fechaMovimiento;
+    public String getModelo() {
+        return modelo;
+    }
+
+    public String getMarca() {
+        return marca;
     }
 
     public String getEstado() {
         return estado;
     }
 
+    public String getProvincia() {
+        return provincia;
+    }
+
+    public String getLocalidad() {
+        return localidad;
+    }
+
+    public String getDestino() {
+        return destino;
+    }
+
     public String getPosicion() {
         return posicion;
     }
 
-    public String getUsuario() {
-        return usuario;
+    public String getResponsable() {
+        return responsable;
+    }
+
+    public LocalDateTime getFechaMovimiento() {
+        return fechaMovimiento;
     }
 
     public String getNotas() {
         return notas;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public void setRele(String rele) {
-        this.rele = rele;
-    }
-
-    public void setFechaMovimiento(
-            LocalDateTime fechaMovimiento
-    ) {
-        this.fechaMovimiento = fechaMovimiento;
-    }
-
-    public void setEstado(String estado) {
-        this.estado = estado;
-    }
-
-    public void setPosicion(String posicion) {
-        this.posicion = posicion;
-    }
-
-    public void setUsuario(String usuario) {
-        this.usuario = usuario;
-    }
-
-    public void setNotas(String notas) {
-        this.notas = notas;
     }
 }

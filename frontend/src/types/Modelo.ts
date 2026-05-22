@@ -10,13 +10,11 @@ export interface Modelo {
 
     tipoTension: string | null;
 
-    tensionCompleta: string;
+    marca: string;
 
     marcaId: number;
 
-    marcaNombre: string;
+    tipo: string;
 
     tipoId: number;
-
-    tipoNombre: string;
 }

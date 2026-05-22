@@ -123,8 +123,8 @@ public class MovimientoService {
     }
 
     private MovimientoResponseDTO mapToDTO(
-            Movimiento movimiento
-    ) {
+                Movimiento movimiento
+        ) {
 
         return new MovimientoResponseDTO(
 
@@ -133,9 +133,24 @@ public class MovimientoService {
                 movimiento.getRele()
                         .getNumeroSerie(),
 
-                movimiento.getFechaMovimiento(),
+                movimiento.getRele()
+                        .getModelo()
+                        .getNombre(),
+
+                movimiento.getRele()
+                        .getModelo()
+                        .getMarca()
+                        .getNombre(),
 
                 movimiento.getEstado()
+                        .getNombre(),
+
+                null,
+
+                null,
+
+                movimiento.getPosicion()
+                        .getDestino()
                         .getNombre(),
 
                 movimiento.getPosicion()
@@ -143,10 +158,12 @@ public class MovimientoService {
 
                 movimiento.getUsuario() != null
                         ? movimiento.getUsuario()
-                            .getNombre()
+                                .getNombre()
                         : null,
+
+                movimiento.getFechaMovimiento(),
 
                 movimiento.getNotas()
         );
-    }
+        }
 }

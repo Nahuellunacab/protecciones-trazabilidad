@@ -1,18 +1,30 @@
 package protecciones.dto;
 
-import jakarta.validation.constraints.NotBlank; // Para validar que el campo no esté vacío o solo contenga espacios en blanco.
-import jakarta.validation.constraints.NotNull;  // Para validar que el campo no sea nulo.
-import jakarta.validation.constraints.Positive; // Para validar que el número sea positivo (mayor que cero).
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+
+import java.time.LocalDate;
 
 public class ReleRequestDTO {
 
-    @NotBlank(message = "El número de serie es obligatorio")
+    @NotBlank(
+            message = "El número de serie es obligatorio"
+    )
     private String numeroSerie;
 
-    @Positive(message = "La garantía debe ser mayor a cero")
+    private Boolean cargarGarantia;
+
+    @Positive(
+            message = "La garantía debe ser mayor a cero"
+    )
     private Integer garantiaMeses;
 
-    @NotNull(message = "El modelo es obligatorio")
+    private LocalDate inicioGarantia;
+
+    @NotNull(
+            message = "El modelo es obligatorio"
+    )
     private Long modeloId;
 
     private Long remitoId;
@@ -24,8 +36,16 @@ public class ReleRequestDTO {
         return numeroSerie;
     }
 
+    public Boolean getCargarGarantia() {
+        return cargarGarantia;
+    }
+
     public Integer getGarantiaMeses() {
         return garantiaMeses;
+    }
+
+    public LocalDate getInicioGarantia() {
+        return inicioGarantia;
     }
 
     public Long getModeloId() {
@@ -36,19 +56,45 @@ public class ReleRequestDTO {
         return remitoId;
     }
 
-    public void setNumeroSerie(String numeroSerie) {
+    public void setNumeroSerie(
+            String numeroSerie
+    ) {
+
         this.numeroSerie = numeroSerie;
     }
 
-    public void setGarantiaMeses(Integer garantiaMeses) {
+    public void setCargarGarantia(
+            Boolean cargarGarantia
+    ) {
+
+        this.cargarGarantia = cargarGarantia;
+    }
+
+    public void setGarantiaMeses(
+            Integer garantiaMeses
+    ) {
+
         this.garantiaMeses = garantiaMeses;
     }
 
-    public void setModeloId(Long modeloId) {
+    public void setInicioGarantia(
+            LocalDate inicioGarantia
+    ) {
+
+        this.inicioGarantia = inicioGarantia;
+    }
+
+    public void setModeloId(
+            Long modeloId
+    ) {
+
         this.modeloId = modeloId;
     }
 
-    public void setRemitoId(Long remitoId) {
+    public void setRemitoId(
+            Long remitoId
+    ) {
+
         this.remitoId = remitoId;
     }
 }

@@ -51,3 +51,14 @@ export async function eliminarModelo(
         `/modelos/${id}`
     );
 }
+
+export async function obtenerModelosPorMarca(
+    marcaId: number
+) {
+
+    const response = await api.get(
+        `/modelos?marcaId=${marcaId}`
+    );
+
+    return response.data;
+}

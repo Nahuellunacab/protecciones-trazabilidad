@@ -1,5 +1,7 @@
 package protecciones.dto;
 
+import java.time.LocalDate;
+
 public class ReleResponseDTO {
 
     private Long id;
@@ -8,24 +10,43 @@ public class ReleResponseDTO {
 
     private Integer garantiaMeses;
 
+    private LocalDate inicioGarantia;
+
+    private LocalDate finGarantia;
+
     private String modelo;
 
     private String marca;
 
-    public ReleResponseDTO() {
-    }
+    private String tension;
 
-    public ReleResponseDTO(Long id,
-                            String numeroSerie,
-                            Integer garantiaMeses,
-                            String modelo,
-                            String marca) {
+    private Long modeloId;
+
+    private Long remitoId;
+
+    public ReleResponseDTO(
+            Long id,
+            String numeroSerie,
+            Integer garantiaMeses,
+            LocalDate inicioGarantia,
+            LocalDate finGarantia,
+            String modelo,
+            String marca,
+            String tension,
+            Long modeloId,
+            Long remitoId
+    ) {
 
         this.id = id;
         this.numeroSerie = numeroSerie;
         this.garantiaMeses = garantiaMeses;
+        this.inicioGarantia = inicioGarantia;
+        this.finGarantia = finGarantia;
         this.modelo = modelo;
         this.marca = marca;
+        this.tension = tension;
+        this.modeloId = modeloId;
+        this.remitoId = remitoId;
     }
 
     public Long getId() {
@@ -40,6 +61,14 @@ public class ReleResponseDTO {
         return garantiaMeses;
     }
 
+    public LocalDate getInicioGarantia() {
+        return inicioGarantia;
+    }
+
+    public LocalDate getFinGarantia() {
+        return finGarantia;
+    }
+
     public String getModelo() {
         return modelo;
     }
@@ -48,23 +77,15 @@ public class ReleResponseDTO {
         return marca;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public String getTension() {
+        return tension;
     }
 
-    public void setNumeroSerie(String numeroSerie) {
-        this.numeroSerie = numeroSerie;
+    public Long getModeloId() {
+        return modeloId;
     }
 
-    public void setGarantiaMeses(Integer garantiaMeses) {
-        this.garantiaMeses = garantiaMeses;
-    }
-
-    public void setModelo(String modelo) {
-        this.modelo = modelo;
-    }
-
-    public void setMarca(String marca) {
-        this.marca = marca;
+    public Long getRemitoId() {
+        return remitoId;
     }
 }
