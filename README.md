@@ -578,6 +578,11 @@ generado automáticamente desde backend.
 - Historial operativo
 - Asociación logística
 
+- Edición de relés (alta/editar/actualizar) implementada en frontend y backend.
+- Formulario de relés corregido y compatible con Material UI + TypeScript (`frontend/src/components/rele/ReleForm.tsx`).
+- Servicio frontend `releService` con método `actualizar` agregado (`frontend/src/services/releService.ts`).
+- Ajustes en el backend para el mapeo de DTOs en `backend/src/main/java/protecciones/service/ReleService.java` y `backend/src/main/java/protecciones/service/MovimientoService.java`.
+
 ## Próxima mejora
 
 Adaptar la pantalla de relés tomando como referencia el Access original:
@@ -705,6 +710,12 @@ GET /api/reles/estado/INSTALADO
 GET /api/reles/opciones
 ```
 
+### Actualizar relé
+
+```http
+PUT /api/reles/{id}
+```
+
 ---
 
 # Swagger/OpenAPI
@@ -815,6 +826,8 @@ El sistema fue diseñado para soportar dashboards operativos.
 - Axios centralizado
 - Componentización
 
+- Correcciones recientes de compatibilidad TypeScript ↔ Material UI en componentes clave (PageHeader, ModeloForm, ReleForm).
+
 ## UI/UX
 
 - Material UI
@@ -828,6 +841,8 @@ El sistema fue diseñado para soportar dashboards operativos.
 - Snackbars
 - Dialogs
 - Feedback visual
+
+- Formularios de relés actualizados y validados (`frontend/src/components/rele/ReleForm.tsx`) y servicio de edición `releService.actualizar`.
 
 ## Fullstack
 
