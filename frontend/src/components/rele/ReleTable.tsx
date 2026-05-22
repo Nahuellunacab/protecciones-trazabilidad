@@ -1,53 +1,27 @@
-import type { Rele }
-from "../../types/Rele";
+import type { Rele } from "../../types/Rele";
 
 import {
+    Chip,
     Paper,
+    Stack,
     Table,
     TableBody,
     TableCell,
     TableContainer,
     TableHead,
     TableRow,
-    Typography,
-    Chip,
-    Stack
+    Typography
 } from "@mui/material";
 
 interface Props {
-
     reles: Rele[];
 }
 
-function ReleTable({
-    reles
-}: Props) {
-
-    const obtenerGarantia = (
-        rele: Rele
-    ) => {
-
-        if (
-            !rele.garantiaMeses
-        ) {
-
-            return "Sin garantía";
-        }
-
-        return `
-            ${rele.garantiaMeses}
-            meses
-        `;
-    };
+function ReleTable({ reles }: Props) {
 
     return (
 
-        <TableContainer
-            component={Paper}
-            sx={{
-                borderRadius: 3
-            }}
-        >
+        <TableContainer component={Paper}>
 
             <Table>
 
@@ -89,92 +63,124 @@ function ReleTable({
 
                 <TableBody>
 
-                    {
-                        reles.map((rele) => (
+                    {reles.map((rele) => (
 
-                            <TableRow
-                                key={rele.id}
-                                hover
-                            >
+                        <TableRow key={rele.id} hover>
 
-                                <TableCell>
-                                    {rele.numeroSerie}
-                                </TableCell>
+                            <TableCell>
+                                {rele.numeroSerie}
+                            </TableCell>
 
-                                <TableCell>
-                                    {rele.marca}
-                                </TableCell>
+                            <TableCell>
+                                {rele.marca}
+                            </TableCell>
 
-                                <TableCell>
-                                    {rele.modelo}
-                                </TableCell>
+                            <TableCell>
+                                {rele.modelo}
+                            </TableCell>
 
-                                <TableCell>
-                                    {rele.tension || "-"}
-                                </TableCell>
+                            <TableCell>
+                                {rele.tension || "-"}
+                            </TableCell>
 
-                                <TableCell>
-                                    <Chip
-                                        label={
-                                            rele.tipo || "-"
-                                        }
-                                        size="small"
-                                        color="primary"
-                                        variant="outlined"
-                                    />
-                                </TableCell>
+                            <TableCell>
 
-                                <TableCell>
-                                    {
-                                        obtenerGarantia(
-                                            rele
-                                        )
+                                <Chip
+                                    label={
+                                        rele.tipo || "-"
                                     }
-                                </TableCell>
+                                    size="small"
+                                    color="primary"
+                                    variant="outlined"
+                                />
 
-                                <TableCell>
+                            </TableCell>
 
-                                    {
-                                        rele.remito
+                            <TableCell>
+
+                                {
+                                    rele.estadoGarantia === "VIGENTE" && (
+
+                                        <Chip
+                                            label={
+                                                `${rele.mesesRestantesGarantia} meses restantes`
+                                            }
+                                            color="success"
+                                            size="small"
+                                        />
+                                    )
+                                }
+
+                                {
+                                    rele.estadoGarantia === "POR VENCER" && (
+
+                                        <Chip
+                                            label={
+                                                `${rele.mesesRestantesGarantia} meses restantes`
+                                            }
+                                            color="warning"
+                                            size="small"
+                                        />
+                                    )
+                                }
+
+                                {
+                                    rele.estadoGarantia === "VENCIDA" && (
+
+                                        <Chip
+                                            label="Garantía vencida"
+                                            color="error"
+                                            size="small"
+                                        />
+                                    )
+                                }
+
+                                {
+                                    rele.estadoGarantia === "Sin garantía" && (
+
+                                        <Chip
+                                            label="Sin garantía"
+                                            size="small"
+                                        />
+                                    )
+                                }
+
+                            </TableCell>
+
+                            <TableCell>
+
+                                {
+                                    rele.remitoId
                                             ? (
                                                 <Stack>
-                                                    {
-                                                        rele.remito
-                                                    }
+                                                    {rele.remitoId}
                                                 </Stack>
                                             )
                                             : "-"
-                                    }
+                                }
 
-                                </TableCell>
+                            </TableCell>
 
-                            </TableRow>
-                        ))
-                    }
+                        </TableRow>
+                    ))}
 
-                    {
-                        reles.length === 0 && (
+                    {reles.length === 0 && (
 
-                            <TableRow>
+                        <TableRow>
 
-                                <TableCell
-                                    colSpan={7}
-                                    align="center"
-                                >
+                            <TableCell
+                                colSpan={7}
+                                align="center"
+                            >
 
-                                    <Typography
-                                        sx={{
-                                            py: 3
-                                        }}
-                                    >
-                                        No hay relés cargados
-                                    </Typography>
+                                <Typography>
+                                    No hay relés cargados
+                                </Typography>
 
-                                </TableCell>
+                            </TableCell>
 
-                            </TableRow>
-                        )
-                    }
+                        </TableRow>
+                    )}
 
                 </TableBody>
 
@@ -183,5 +189,4 @@ function ReleTable({
         </TableContainer>
     );
 }
-
 export default ReleTable;

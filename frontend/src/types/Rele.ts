@@ -4,6 +4,12 @@ export interface Rele {
 
     numeroSerie: string;
 
+    garantiaMeses: number | null;
+
+    inicioGarantia: string | null;
+
+    finGarantia: string | null;
+
     modelo: string;
 
     marca: string;
@@ -12,11 +18,17 @@ export interface Rele {
 
     tipo: string;
 
-    garantiaMeses?: number;
+    estadoActual: string;
 
-    inicioGarantia?: string;
+    posicionActual: string;
 
-    finGarantia?: string;
+    localidadActual: string;
 
-    remito?: string;
+    modeloId: number | null;
+
+    remitoId: number | null;
+
+    estadoGarantia: string;
+
+    mesesRestantesGarantia: number | null;
 }

@@ -17,7 +17,11 @@ import protecciones.repository.MovimientoRepository;
 import protecciones.repository.ReleRepository;
 import protecciones.repository.RemitoRepository;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -42,16 +46,21 @@ public class ReleService {
             MovimientoRepository movimientoRepository
     ) {
 
-        this.releRepository = releRepository;
+        this.releRepository =
+                releRepository;
 
-        this.modeloRepository = modeloRepository;
+        this.modeloRepository =
+                modeloRepository;
 
-        this.remitoRepository = remitoRepository;
+        this.remitoRepository =
+                remitoRepository;
 
-        this.movimientoRepository = movimientoRepository;
+        this.movimientoRepository =
+                movimientoRepository;
     }
 
-    public List<ReleResponseDTO> obtenerTodos() {
+    public List<ReleResponseDTO>
+    obtenerTodos() {
 
         return releRepository.findAll()
                 .stream()
@@ -76,24 +85,30 @@ public class ReleService {
 
         if (dto.getRemitoId() != null) {
 
-            remito = remitoRepository.findById(
-                    dto.getRemitoId()
-            ).orElseThrow(() ->
-                    new RuntimeException(
-                            "Remito no encontrado"
-                    )
-            );
+            remito =
+                    remitoRepository.findById(
+                            dto.getRemitoId()
+                    ).orElseThrow(() ->
+                            new RuntimeException(
+                                    "Remito no encontrado"
+                            )
+                    );
         }
 
-        Rele rele = new Rele();
+        Rele rele =
+                new Rele();
 
         rele.setNumeroSerie(
                 dto.getNumeroSerie()
         );
 
-        rele.setModelo(modelo);
+        rele.setModelo(
+                modelo
+        );
 
-        rele.setRemito(remito);
+        rele.setRemito(
+                remito
+        );
 
         if (
                 Boolean.TRUE.equals(
@@ -134,14 +149,17 @@ public class ReleService {
         }
 
         Rele releGuardado =
-                releRepository.save(rele);
+                releRepository.save(
+                        rele
+                );
 
         return mapToResponseDTO(
                 releGuardado
         );
     }
 
-    public ReleResponseDTO buscarPorNumeroSerie(
+    public ReleResponseDTO
+    buscarPorNumeroSerie(
             String numeroSerie
     ) {
 
@@ -154,11 +172,15 @@ public class ReleService {
                         )
                 );
 
-        return mapToResponseDTO(rele);
+        return mapToResponseDTO(
+                rele
+        );
     }
 
     public List<MovimientoResponseDTO>
-    obtenerHistorial(Long releId) {
+    obtenerHistorial(
+            Long releId
+    ) {
 
         return movimientoRepository
                 .findByReleIdOrderByFechaMovimientoDesc(
@@ -169,7 +191,8 @@ public class ReleService {
                 .toList();
     }
 
-    private ReleResponseDTO mapToResponseDTO(
+    private ReleResponseDTO
+    mapToResponseDTO(
             Rele rele
     ) {
 
@@ -201,10 +224,10 @@ public class ReleService {
                         + hasta
                         + " "
                         + (
-                            tipo != null
-                                    ? tipo
-                                    : ""
-                        );
+                        tipo != null
+                                ? tipo
+                                : ""
+                );
 
             } else if (desde != null) {
 
@@ -212,10 +235,10 @@ public class ReleService {
                         desde
                         + " "
                         + (
-                            tipo != null
-                                    ? tipo
-                                    : ""
-                        );
+                        tipo != null
+                                ? tipo
+                                : ""
+                );
 
             } else {
 
@@ -236,6 +259,69 @@ public class ReleService {
                         ? rele.getRemito().getId()
                         : null;
 
+        String estadoActual = "-";
+        String posicionActual = "-";
+        String localidadActual = "-";
+
+        Optional<Movimiento> ultimoMovimiento =
+                movimientoRepository
+                        .findTopByReleIdOrderByFechaMovimientoDesc(
+                                rele.getId()
+                        );
+
+        if (ultimoMovimiento.isPresent()) {
+
+            Movimiento movimiento =
+                    ultimoMovimiento.get();
+
+            estadoActual =
+                    movimiento.getEstado()
+                            .getNombre();
+
+            posicionActual =
+                    movimiento.getPosicion()
+                            .getNombre();
+
+            localidadActual =
+                    movimiento.getPosicion()
+                            .getDestino()
+                            .getNombre();
+        }
+
+        String estadoGarantia =
+                "Sin garantía";
+
+        Long mesesRestantesGarantia =
+                null;
+
+        if (rele.getFinGarantia() != null) {
+
+            long mesesRestantes =
+                    ChronoUnit.MONTHS.between(
+                            LocalDate.now(),
+                            rele.getFinGarantia()
+                    );
+
+            mesesRestantesGarantia =
+                    mesesRestantes;
+
+            if (mesesRestantes < 0) {
+
+                estadoGarantia =
+                        "VENCIDA";
+
+            } else if (mesesRestantes <= 6) {
+
+                estadoGarantia =
+                        "POR VENCER";
+
+            } else {
+
+                estadoGarantia =
+                        "VIGENTE";
+            }
+        }
+
         return new ReleResponseDTO(
 
                 rele.getId(),
@@ -255,20 +341,37 @@ public class ReleService {
                 modelo != null
                         &&
                         modelo.getMarca() != null
-                                ? modelo.getMarca()
-                                        .getNombre()
-                                : null,
+                        ? modelo.getMarca()
+                        .getNombre()
+                        : null,
 
                 tension,
 
+                modelo != null
+                        ? modelo.getTipo()
+                        .getNombre()
+                        : null,
+
+                estadoActual,
+
+                posicionActual,
+
+                localidadActual,
+
                 modeloId,
 
-                remitoId
+                remitoId,
+
+                estadoGarantia,
+
+                mesesRestantesGarantia
         );
     }
 
     public MovimientoResponseDTO
-    obtenerEstadoActual(Long releId) {
+    obtenerEstadoActual(
+            Long releId
+    ) {
 
         Movimiento movimiento =
                 movimientoRepository
@@ -387,9 +490,9 @@ public class ReleService {
     }
 
     private MovimientoResponseDTO
-        mapMovimientoToDTO(
-                Movimiento movimiento
-        ) {
+    mapMovimientoToDTO(
+            Movimiento movimiento
+    ) {
 
         return new MovimientoResponseDTO(
 
@@ -423,12 +526,12 @@ public class ReleService {
 
                 movimiento.getUsuario() != null
                         ? movimiento.getUsuario()
-                                .getNombre()
+                        .getNombre()
                         : null,
 
                 movimiento.getFechaMovimiento(),
 
                 movimiento.getNotas()
         );
-        }
+    }
 }
