@@ -114,11 +114,11 @@ function ModeloTable({
                                 </TableCell>
 
                                 <TableCell>
-                                    {modelo.marca}
+                                    {modelo.marcaNombre}
                                 </TableCell>
 
                                 <TableCell>
-                                    {modelo.tipo}
+                                    {modelo.tipoNombre}
                                 </TableCell>
 
                                 <TableCell>

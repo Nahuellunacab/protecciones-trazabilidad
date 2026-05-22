@@ -1,12 +1,30 @@
 # Protecciones Trazabilidad
 
-Sistema de gestión y trazabilidad de relés de protección orientado a la administración de stock, movimientos, historial operativo y auditoría de equipos utilizados por EPEC Transmisión — Departamento de Teleoperaciones y Protecciones.
+Sistema fullstack enterprise de gestión y trazabilidad de relés de protección para EPEC Transmisión — Departamento de Teleoperaciones y Protecciones.
+
+La aplicación permite administrar:
+
+- relés de protección
+- modelos y marcas
+- tensiones auxiliares
+- movimientos operativos
+- historial operativo
+- estados
+- posiciones
+- destinos
+- localidades
+- provincias
+- remitos
+- proveedores
+- usuarios responsables
+
+mediante una arquitectura desacoplada React + Spring Boot + PostgreSQL.
 
 ---
 
 # Objetivo
 
-Centralizar y digitalizar la trazabilidad de:
+Centralizar y digitalizar la trazabilidad operativa de:
 
 - relés de protección
 - movimientos operativos
@@ -17,58 +35,97 @@ Centralizar y digitalizar la trazabilidad de:
 - remitos y proveedores
 - usuarios responsables
 
-El sistema busca reemplazar procesos manuales y servir como base para futuras integraciones con plataformas corporativas como IBM Maximo mediante APIs REST o MIF.
+El sistema busca reemplazar procesos manuales realizados previamente en Microsoft Access y servir como base para futuras integraciones corporativas:
+
+- IBM Maximo
+- APIs REST
+- MIF
+- dashboards operativos
+- reporting técnico
+- auditoría operacional
+
+---
+
+# Estado Actual del Proyecto
+
+```text
+Aplicación fullstack enterprise funcional
+```
+
+Actualmente el sistema ya posee:
+
+- backend REST profesional
+- frontend React desacoplado
+- PostgreSQL
+- Flyway
+- Docker
+- Material UI
+- identidad visual institucional
+- CRUDs operativos
+- trazabilidad histórica
+- catálogos dinámicos
+- seed data automática
+- integración React ↔ Spring Boot
+- arquitectura escalable
+- UX enterprise
 
 ---
 
 # Stack Tecnológico
 
 ## Backend
+
 - Java 21
-- Spring Boot 4
+- Spring Boot
 - Spring Data JPA
 - Hibernate
 - Maven
+- Bean Validation
 
 ## Base de Datos
+
 - PostgreSQL 16
 - Flyway
 
 ## Frontend
+
 - React
 - TypeScript
 - Vite
 - Axios
-- React Router
+- React Router DOM
 - Material UI
 
 ## Infraestructura
+
 - Docker
 - Docker Compose
 
-## Documentación API
-- Swagger / OpenAPI
+## API Docs
+
+- Swagger/OpenAPI
 
 ---
 
 # Identidad Visual
 
-La aplicación implementa una interfaz institucional inspirada en la identidad corporativa de EPEC Transmisión.
+La aplicación implementa una interfaz institucional basada en EPEC Transmisión.
 
-## Características UI/UX actuales
+## Características UI/UX
 
 - Theme corporativo institucional
 - Navbar enterprise
 - Branding EPEC
 - Logo institucional
-- Favicon personalizado
 - Layout responsive
 - Material UI
 - Formularios modernos
-- Feedback visual
 - Snackbar notifications
+- Dialogs de confirmación
+- Feedback visual
 - Loading states
 - Diseño orientado a operación técnica
+- UX enterprise
 
 ---
 
@@ -78,11 +135,11 @@ La aplicación implementa una interfaz institucional inspirada en la identidad c
 flowchart LR
 
     A[Frontend React]
-        -->|HTTP REST| B[Spring Boot API]
+        -->|REST API| B[Spring Boot API]
 
     B --> C[Controllers]
     C --> D[Services]
-    D --> E[Repositories JPA]
+    D --> E[Repositories]
     E --> F[Hibernate]
     F --> G[(PostgreSQL)]
 
@@ -101,99 +158,6 @@ flowchart LR
     subgraph Docker
         G
     end
-```
-
----
-
-# Flujo Fullstack Actual
-
-```mermaid
-flowchart TD
-
-    A[Usuario Frontend React]
-        --> B[Axios HTTP Request]
-
-    B --> C[Spring Boot REST API]
-
-    C --> D[DTO Request]
-
-    D --> E[Validation]
-
-    E --> F[Service]
-
-    F --> G[JPA Repository]
-
-    G --> H[(PostgreSQL)]
-
-    H --> G
-
-    G --> F
-
-    F --> I[DTO Response]
-
-    I --> J[JSON Response]
-
-    J --> K[React Render UI]
-```
-
----
-
-# Flujo de Persistencia
-
-```mermaid
-flowchart TD
-
-    A[Migration SQL]
-        --> B[Flyway]
-
-    B --> C[(PostgreSQL)]
-
-    D[Spring Boot]
-        --> E[Hibernate/JPA]
-
-    E --> C
-
-    C --> F[Trazabilidad de Relés]
-```
-
----
-
-# Puertos Utilizados
-
-| Componente | Puerto |
-|---|---|
-| Frontend React/Vite | 5173 |
-| Spring Boot API | 8082 |
-| PostgreSQL Docker | 5433 |
-| PostgreSQL Interno Docker | 5432 |
-
----
-
-# Modelo de Dominio Actual
-
-```mermaid
-erDiagram
-
-    TIPO ||--o{ MODELO : clasifica
-    MARCA ||--o{ MODELO : fabrica
-
-    MODELO ||--o{ RELE : define
-
-    PROVINCIA ||--o{ LOCALIDAD : contiene
-
-    LOCALIDAD ||--o{ PROVEEDOR : ubica
-    LOCALIDAD ||--o{ DESTINO : ubica
-
-    DESTINO ||--o{ POSICION : contiene
-
-    PROVEEDOR ||--o{ REMITO : emite
-
-    REMITO ||--o{ RELE : incluye
-
-    ESTADO ||--o{ MOVIMIENTO : determina
-    POSICION ||--o{ MOVIMIENTO : registra
-    USUARIO ||--o{ MOVIMIENTO : realiza
-    RELE ||--o{ MOVIMIENTO : posee
 ```
 
 ---
@@ -246,6 +210,59 @@ flowchart TD
 
 ---
 
+# Flujo Fullstack Actual
+
+```mermaid
+flowchart TD
+
+    A[Usuario React]
+        --> B[Axios HTTP Request]
+
+    B --> C[Spring Boot REST API]
+
+    C --> D[DTO Request]
+
+    D --> E[Bean Validation]
+
+    E --> F[Service]
+
+    F --> G[JPA Repository]
+
+    G --> H[(PostgreSQL)]
+
+    H --> G
+
+    G --> F
+
+    F --> I[DTO Response]
+
+    I --> J[JSON Response]
+
+    J --> K[React Render UI]
+```
+
+---
+
+# Flujo de Persistencia
+
+```mermaid
+flowchart TD
+
+    A[Migration SQL]
+        --> B[Flyway]
+
+    B --> C[(PostgreSQL)]
+
+    D[Spring Boot]
+        --> E[Hibernate/JPA]
+
+    E --> C
+
+    C --> F[Trazabilidad de Relés]
+```
+
+---
+
 # Estructura del Proyecto
 
 ```text
@@ -259,7 +276,8 @@ backend/
 │   ├── dto/
 │   ├── mapper/
 │   ├── config/
-│   └── exception/
+│   ├── exception/
+│   └── security/
 │
 ├── src/main/resources/
 │   ├── db/migration/
@@ -291,68 +309,89 @@ docker/
 
 ---
 
-# Responsabilidad de Cada Capa Backend
+# Responsabilidad Backend
 
 ## controller
-Expone endpoints REST y recibe requests HTTP.
+
+Expone endpoints REST y maneja requests HTTP.
 
 ## service
-Contiene la lógica de negocio del sistema.
+
+Contiene la lógica de negocio.
 
 ## repository
+
 Acceso a base de datos mediante Spring Data JPA.
 
 ## entity
-Modelos persistentes mapeados a tablas SQL.
+
+Entidades persistentes mapeadas a PostgreSQL.
 
 ## dto
-Objetos utilizados para intercambio de datos vía API.
+
+Objetos desacoplados utilizados por la API.
 
 ## mapper
-Transformación entre DTOs y Entities.
+
+Conversión entre DTOs y entidades.
 
 ## config
+
 Configuraciones generales del sistema.
 
 ## exception
-Manejo centralizado de errores y excepciones.
+
+Manejo centralizado de excepciones.
+
+## security
+
+Preparado para futura autenticación y autorización.
 
 ## db/migration
+
 Migraciones SQL versionadas mediante Flyway.
 
 ---
 
-# Responsabilidad de Cada Capa Frontend
+# Responsabilidad Frontend
 
 ## pages
-Pantallas principales de la aplicación.
+
+Pantallas principales del sistema.
 
 ## components
+
 Componentes reutilizables de UI.
 
 ## layouts
-Layouts globales de navegación y estructura.
+
+Layouts globales y navegación.
 
 ## routes
-Configuración centralizada de rutas React Router.
+
+Configuración React Router.
 
 ## services
-Comunicación HTTP con backend mediante Axios.
+
+Comunicación HTTP con backend.
 
 ## api
-Configuración global de Axios.
+
+Configuración Axios global.
 
 ## types
-Tipos TypeScript desacoplados del backend.
+
+Tipos TypeScript desacoplados.
 
 ## theme
-Configuración visual global Material UI.
+
+Theme institucional Material UI.
 
 ---
 
 # Base de Datos Versionada
 
-La estructura de base de datos se administra mediante Flyway.
+Administrada mediante Flyway.
 
 ## Migraciones actuales
 
@@ -363,17 +402,20 @@ V3__create_rele_domain.sql
 V4__create_movimiento_and_usuario.sql
 V5__seed_initial_data.sql
 V6__insert_real_operational_data.sql
+V7__improve_catalog_management.sql
+V8__seed_modelo_tensiones.sql
 ```
 
 ---
 
 # Seed Data Operacional
 
-La aplicación implementa bootstrap automático de datos iniciales y operacionales mediante Flyway.
+El sistema implementa bootstrap automático de datos reales y operativos.
 
 ## Datos incluidos
 
 ### Catálogos
+
 - Provincias
 - Localidades
 - Estados
@@ -381,6 +423,7 @@ La aplicación implementa bootstrap automático de datos iniciales y operacional
 - Tipos
 
 ### Operación
+
 - Destinos reales
 - Posiciones reales
 - Modelos reales
@@ -389,6 +432,7 @@ La aplicación implementa bootstrap automático de datos iniciales y operacional
 - Usuario sistema
 
 ### Datos operativos simulados
+
 - ABB REL670
 - ABB REG670
 - Siemens SIPROTEC
@@ -399,134 +443,185 @@ Esto permite levantar el entorno completamente funcional sin inserciones manuale
 
 ---
 
-# Modelo Implementado en PostgreSQL
+# Modelo Relacional
 
-## Tablas actuales
+```mermaid
+erDiagram
 
-- tipo
-- marca
-- estado
-- provincia
-- localidad
-- proveedor
-- destino
-- posicion
-- modelo
-- remito
-- rele
-- usuario
-- movimiento
-- flyway_schema_history
+    TIPO ||--o{ MODELO : clasifica
+    MARCA ||--o{ MODELO : fabrica
+
+    MODELO ||--o{ RELE : define
+
+    RELE ||--o{ MOVIMIENTO : posee
+
+    ESTADO ||--o{ MOVIMIENTO : determina
+
+    POSICION ||--o{ MOVIMIENTO : registra
+
+    USUARIO ||--o{ MOVIMIENTO : realiza
+
+    PROVINCIA ||--o{ LOCALIDAD : contiene
+
+    LOCALIDAD ||--o{ DESTINO : ubica
+
+    DESTINO ||--o{ POSICION : contiene
+
+    LOCALIDAD ||--o{ PROVEEDOR : ubica
+
+    PROVEEDOR ||--o{ REMITO : emite
+
+    REMITO ||--o{ RELE : incluye
+```
 
 ---
 
-# Entidades JPA Implementadas
+# Entidades Implementadas
 
 ## Catálogos
-- Tipo
+
 - Marca
+- Tipo
 - Estado
 - Provincia
 - Localidad
 
-## Dominio principal
+## Dominio Principal
+
 - Modelo
 - Rele
 - Movimiento
 
 ## Ubicaciones
+
 - Destino
 - Posicion
 
-## Gestión logística
+## Gestión Logística
+
 - Proveedor
 - Remito
 
 ## Usuarios
+
 - Usuario
 
 ---
 
-# Capacidades Actuales del Backend
+# Gestión de Marcas
 
-## Persistencia
-- Hibernate/JPA
-- PostgreSQL
-- Repositories Spring Data
+## Funcionalidades implementadas
 
-## Arquitectura
-- Arquitectura por capas
-- DTOs
+- Crear marcas
+- Editar marcas
+- Eliminar marcas
 - Validaciones
-- Exception Handling global
-- Responses REST desacopladas
-
-## REST API
-- CRUD base
-- Status HTTP correctos
-- JSON responses
-- ResponseEntity
-
-## Documentación
-- Swagger/OpenAPI
-- Documentación automática
-
-## Trazabilidad
-- Historial de movimientos
-- Estado actual derivado
-- Tracking operativo
-
-## Queries y búsquedas
-- Búsqueda exacta por serial
-- Búsqueda parcial por serial
-- Filtros por estado actual
-- Queries derivadas JPA
-
-## Escalabilidad
-- Paginación
-- Sorting dinámico
-- Consultas configurables
+- Prevención de eliminación con relaciones activas
+- Confirmación visual
+- Snackbar enterprise
+- CRUD fullstack real
 
 ---
 
-# Capacidades Actuales del Frontend
+# Gestión de Modelos
 
-## Arquitectura
-- React + TypeScript
-- Arquitectura desacoplada
-- React Router
-- Componentización
-- Services desacoplados
-- Axios centralizado
+## Funcionalidades implementadas
 
-## UI/UX
-- Material UI
-- Theme institucional EPEC
-- Navbar corporativa
-- Branding Transmisión
-- Formularios enterprise
-- Selects dinámicos
-- Catálogos operativos
-- Tabla enterprise
-- Loading states
-- Feedback visual
-- Snackbars de éxito/error
-- Responsive layout
+- Crear modelos
+- Editar modelos
+- Eliminar modelos
+- Asociación Marca ↔ Modelo
+- Asociación Tipo ↔ Modelo
+- Gestión de tensiones auxiliares
+- UX enterprise
+- CRUD fullstack real
 
-## Fullstack
-- Consumo API real
-- CRUD operativo
-- Integración React ↔ Spring Boot
-- Persistencia fullstack funcional
-- Gestión de movimientos
+---
+
+# Gestión de Tensiones
+
+El sistema implementa modelado estructurado de tensiones auxiliares.
+
+## Campos
+
+- tensionDesde
+- tensionHasta
+- tipoTension
+
+## Ejemplos
+
+- 48 - 250 VCC
+- 24 - 220 VCA
+- 110 VCC
+
+## Campo derivado
+
+```text
+tensionCompleta
+```
+
+generado automáticamente desde backend.
+
+---
+
+# Gestión de Relés
+
+## Funcionalidades implementadas
+
+- Alta de relés
+- Asociación con modelos
+- Número de serie
+- Garantía
 - Historial operativo
-- Dropdowns dinámicos conectados al backend
+- Asociación logística
+
+## Próxima mejora
+
+Adaptar la pantalla de relés tomando como referencia el Access original:
+
+- Marca
+- Modelo
+- Tensión auxiliar
+- Número de serie
+- Garantía
+- Proveedor
+- Remito
+- Fecha de inicio garantía
+
+---
+
+# Gestión de Movimientos
+
+## Funcionalidades implementadas
+
+- Registro de movimientos
+- Estados operativos
+- Posiciones
+- Historial de trazabilidad
+- Notas operativas
+- Responsable
+- Fecha de movimiento
+
+## Próxima mejora
+
+Implementar lógica operacional similar al sistema Access:
+
+- Provincia
+- Localidad
+- Destino
+- Posición
+- Estado
+- Responsable
+- Fecha movimiento
+- Etiquetas operativas
+- filtros dinámicos
 
 ---
 
 # APIs REST Implementadas
 
 ## Catálogos
+
 - /api/tipos
 - /api/marcas
 - /api/estados
@@ -535,26 +630,27 @@ Esto permite levantar el entorno completamente funcional sin inserciones manuale
 - /api/posiciones
 
 ## Dominio principal
+
 - /api/modelos
 - /api/reles
 - /api/movimientos
 
-## Opciones frontend
-- /api/reles/opciones
-
 ## Ubicaciones
+
 - /api/destinos
 
 ## Gestión logística
+
 - /api/proveedores
 - /api/remitos
 
 ## Usuarios
+
 - /api/usuarios
 
 ---
 
-# Endpoints Avanzados Implementados
+# Endpoints Avanzados
 
 ## Relés
 
@@ -570,19 +666,19 @@ GET /api/reles?page=0&size=10
 GET /api/reles?page=0&size=10&sort=numeroSerie,asc
 ```
 
-### Buscar por serial exacto
+### Buscar serial exacto
 
 ```http
 GET /api/reles/serial/REL-001
 ```
 
-### Buscar por serial parcial
+### Buscar serial parcial
 
 ```http
 GET /api/reles/buscar?serial=REL
 ```
 
-### Obtener historial de movimientos
+### Historial de movimientos
 
 ```http
 GET /api/reles/1/movimientos
@@ -600,7 +696,7 @@ GET /api/reles/1/estado-actual
 GET /api/reles/estado/INSTALADO
 ```
 
-### Obtener opciones para dropdowns
+### Opciones frontend
 
 ```http
 GET /api/reles/opciones
@@ -608,7 +704,7 @@ GET /api/reles/opciones
 
 ---
 
-# Swagger / OpenAPI
+# Swagger/OpenAPI
 
 ## Acceso local
 
@@ -618,52 +714,124 @@ http://localhost:8082/swagger-ui/index.html
 
 ---
 
-# Estado Actual
+# Docker
 
-## Backend implementado
+## PostgreSQL persistente
 
-- Docker
-- PostgreSQL
-- Spring Boot
-- Flyway
-- Hibernate/JPA
-- Arquitectura backend por capas
-- Modelo relacional completo
-- Versionado de base de datos
-- DTOs
-- Validaciones Bean Validation
-- Exception Handling global
-- Swagger/OpenAPI
-- Repositories
-- Services
-- Controllers REST
-- CRUD base
-- Historial de movimientos
-- Estado actual derivado
-- Persistencia funcional
-- Seed data automática
-- APIs catálogo
-- DTOs desacoplados
+El sistema utiliza volúmenes Docker persistentes:
+
+```yaml
+volumes:
+  - postgres_data:/var/lib/postgresql/data
+```
+
+Esto permite conservar la información incluso si el contenedor es eliminado.
 
 ---
 
-## Frontend implementado
+# Puertos Utilizados
 
-- React + Vite
-- TypeScript
-- Axios
+| Componente | Puerto |
+|---|---|
+| Frontend React/Vite | 5173 |
+| Spring Boot API | 8082 |
+| PostgreSQL Host | 5433 |
+| PostgreSQL Interno Docker | 5432 |
+
+---
+
+# Dashboard Futuro
+
+El sistema fue diseñado para soportar dashboards operativos.
+
+## Métricas previstas
+
+- Relés por estado
+- Relés por destino
+- Relés instalados
+- Equipos en reparación
+- Garantías próximas a vencer
+- Últimos movimientos
+- Modelos más utilizados
+- Marcas más utilizadas
+
+## Tecnologías previstas
+
+- Recharts
+- MUI Charts
+- KPIs operativos
+
+---
+
+# Capacidades Backend
+
+## Persistencia
+
+- Hibernate/JPA
+- PostgreSQL
+- Spring Data JPA
+
+## Arquitectura
+
+- Arquitectura por capas
+- DTOs desacoplados
+- Bean Validation
+- Exception Handling
+- Responses REST profesionales
+
+## REST API
+
+- CRUD completo
+- Status HTTP correctos
+- JSON responses
+- ResponseEntity
+
+## Trazabilidad
+
+- Historial de movimientos
+- Estado actual derivado
+- Tracking operativo
+
+## Queries avanzadas
+
+- búsqueda exacta por serial
+- búsqueda parcial
+- filtros por estado
+- paginación
+- sorting dinámico
+
+---
+
+# Capacidades Frontend
+
+## Arquitectura
+
+- React + TypeScript
+- Arquitectura desacoplada
 - React Router
+- Axios centralizado
+- Componentización
+
+## UI/UX
+
 - Material UI
-- Theme corporativo
-- Navbar institucional
-- Branding EPEC Transmisión
-- HomePage corporativa
-- CRUD operativo
-- Gestión de movimientos
-- Integración fullstack funcional
+- Theme institucional EPEC
+- Navbar corporativa
+- Branding Transmisión
+- Formularios enterprise
 - Selects dinámicos
-- Catálogos conectados al backend
-- UX enterprise
+- Tablas operativas
+- Loading states
+- Snackbars
+- Dialogs
+- Feedback visual
+
+## Fullstack
+
+- Consumo API real
+- CRUD operativo
+- Persistencia funcional
+- Integración React ↔ Spring Boot
 
 ---
 
@@ -671,25 +839,22 @@ http://localhost:8082/swagger-ui/index.html
 
 ## Frontend
 
+- Mejorar módulo Relés
+- Mejorar módulo Movimientos
 - Dashboard operativo
 - DataGrid avanzado
-- Dialogs
 - Filtros visuales
+- KPIs operativos
 - Paginación frontend
-- Dark mode
-- Métricas operativas
-- Dashboard stock operativo
 
 ## Backend
 
 - Queries avanzadas
-- Filtros múltiples
-- Auditoría automática
 - Soft delete
-- Seguridad/JWT
+- Auditoría automática
+- Seguridad JWT
 - Roles y permisos
 - Optimización de queries
-- Dockerización completa backend
 
 ## Integraciones futuras
 
@@ -705,11 +870,10 @@ http://localhost:8082/swagger-ui/index.html
 - Un commit por cambio lógico
 - Arquitectura desacoplada
 - Base de datos versionada con Flyway
-- Convención REST para endpoints
 - Uso de migraciones incrementales
-- Separación entre lógica de negocio y persistencia
-- No modificar migrations ya ejecutadas
-- Toda modificación estructural debe realizarse mediante una nueva versión Flyway
+- No modificar migrations ejecutadas
+- Separación entre lógica y persistencia
+- Convención REST para endpoints
 
 ---
 
@@ -743,7 +907,7 @@ npm run dev
 
 ---
 
-## Acceder Frontend
+## Frontend
 
 ```text
 http://localhost:5173
@@ -751,7 +915,7 @@ http://localhost:5173
 
 ---
 
-## Acceder Swagger
+## Swagger
 
 ```text
 http://localhost:8082/swagger-ui/index.html
@@ -759,7 +923,7 @@ http://localhost:8082/swagger-ui/index.html
 
 ---
 
-## Verificar contenedores Docker
+## Verificar Docker
 
 ```bash
 docker ps
@@ -767,7 +931,7 @@ docker ps
 
 ---
 
-## Reinicio completo de entorno
+## Reinicio completo
 
 ```bash
 docker compose down -v
@@ -799,30 +963,6 @@ flowchart LR
 
 ---
 
-# Estado Arquitectónico Actual
-
-```text
-Aplicación fullstack enterprise base funcional
-```
-
-Con:
-
-- backend REST profesional
-- frontend React desacoplado
-- Material UI
-- identidad visual institucional
-- arquitectura escalable
-- persistencia fullstack
-- trazabilidad histórica
-- documentación OpenAPI
-- integración React ↔ Spring Boot
-- seed data automática
-- bootstrap completo de entorno
-- catálogos dinámicos
-- UX operacional enterprise
-
----
-
 # Autor
 
-Proyecto desarrollado como iniciativa de mejora y digitalización de procesos para el área de Protecciones y Teleoperación de EPEC Transmisión.
+Proyecto desarrollado como iniciativa de modernización y digitalización operativa para el área de Protecciones y Teleoperación de EPEC Transmisión.

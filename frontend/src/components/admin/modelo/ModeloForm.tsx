@@ -62,11 +62,11 @@ function ModeloForm({
 
     const [tensionDesde,
         setTensionDesde] =
-            useState<number | "">("");
+            useState<number | null>(null);
 
     const [tensionHasta,
         setTensionHasta] =
-            useState<number | "">("");
+            useState<number | null>(null);
 
     const [tipoTension,
         setTipoTension] =
@@ -93,15 +93,15 @@ function ModeloForm({
             );
 
             setTensionDesde(
-                modeloEditando.tensionDesde
+                modeloEditando.tensionDesde ?? null
             );
 
             setTensionHasta(
-                modeloEditando.tensionHasta
+                modeloEditando.tensionHasta ?? null
             );
 
             setTipoTension(
-                modeloEditando.tipoTension
+                modeloEditando.tipoTension ?? ""
             );
 
             setMarcaId(
@@ -124,9 +124,9 @@ function ModeloForm({
 
         setNombre("");
 
-        setTensionDesde("");
+        setTensionDesde(null);
 
-        setTensionHasta("");
+        setTensionHasta(null);
 
         setTipoTension("");
 
@@ -148,7 +148,7 @@ function ModeloForm({
             return false;
         }
 
-        if (!tensionDesde) {
+        if (tensionDesde === null) {
 
             setError(
                 "Debe ingresar tensión desde"
@@ -157,7 +157,7 @@ function ModeloForm({
             return false;
         }
 
-        if (!tensionHasta) {
+        if (tensionHasta === null) {
 
             setError(
                 "Debe ingresar tensión hasta"
@@ -226,10 +226,10 @@ function ModeloForm({
                     nombre.trim(),
 
                 tensionDesde:
-                    Number(tensionDesde),
+                    tensionDesde!,
 
                 tensionHasta:
-                    Number(tensionHasta),
+                    tensionHasta!,
 
                 tipoTension:
                     tipoTension,
@@ -294,28 +294,26 @@ function ModeloForm({
                     <TextField
                         label="Tensión Desde"
                         type="number"
-                        value={tensionDesde}
-                        onChange={(e) =>
+                        value={tensionDesde ?? ""}
+                        onChange={(e) => {
+                            const value = e.target.value;
                             setTensionDesde(
-                                Number(
-                                    e.target.value
-                                )
-                            )
-                        }
+                                value === "" ? null : Number(value)
+                            );
+                        }}
                         fullWidth
                     />
 
                     <TextField
                         label="Tensión Hasta"
                         type="number"
-                        value={tensionHasta}
-                        onChange={(e) =>
+                        value={tensionHasta ?? ""}
+                        onChange={(e) => {
+                            const value = e.target.value;
                             setTensionHasta(
-                                Number(
-                                    e.target.value
-                                )
-                            )
-                        }
+                                value === "" ? null : Number(value)
+                            );
+                        }}
                         fullWidth
                     />
 

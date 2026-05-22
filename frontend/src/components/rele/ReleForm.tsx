@@ -234,7 +234,7 @@ function ReleForm({
                                         value={modelo.id}
                                     >
 
-                                        {modelo.marca}
+                                        {modelo.marcaNombre}
                                         {" - "}
                                         {modelo.nombre}
 

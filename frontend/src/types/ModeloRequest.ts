@@ -2,7 +2,11 @@ export interface ModeloRequest {
 
     nombre: string;
 
-    tension: string;
+    tensionDesde: number;
+
+    tensionHasta: number;
+
+    tipoTension: string;
 
     marcaId: number;
 

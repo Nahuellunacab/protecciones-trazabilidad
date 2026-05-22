@@ -4,13 +4,19 @@ export interface Modelo {
 
     nombre: string;
 
-    tension: string;
+    tensionDesde: number | null;
+
+    tensionHasta: number | null;
+
+    tipoTension: string | null;
+
+    tensionCompleta: string;
 
     marcaId: number;
 
-    marca: string;
+    marcaNombre: string;
 
     tipoId: number;
 
-    tipo: string;
+    tipoNombre: string;
 }
