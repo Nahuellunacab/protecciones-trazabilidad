@@ -68,6 +68,8 @@ Actualmente el sistema ya posee:
 - integración React ↔ Spring Boot
 - arquitectura escalable
 - UX enterprise
+- build frontend verificado y sin errores de compilación
+- fluidez en el CRUD de modelos con envío de datos alineado al backend
 
 ---
 
@@ -533,6 +535,7 @@ erDiagram
 - Asociación Marca ↔ Modelo
 - Asociación Tipo ↔ Modelo
 - Gestión de tensiones auxiliares
+- Validación y envío de datos de modelo ajustados al backend
 - UX enterprise
 - CRUD fullstack real
 
@@ -903,6 +906,15 @@ cd backend
 cd frontend
 npm install
 npm run dev
+```
+
+---
+
+## Verificar compilación frontend
+
+```bash
+cd frontend
+npm run build
 ```
 
 ---
