@@ -1,15 +1,29 @@
 package protecciones.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+
 import protecciones.entity.Rele;
 
 import java.util.List;
 import java.util.Optional;
 
-public interface ReleRepository extends JpaRepository<Rele, Long> {
+public interface ReleRepository
+        extends JpaRepository<Rele, Long> {
 
-    Optional<Rele> findByNumeroSerie(String numeroSerie);
+    boolean existsByNumeroSerie(
+            String numeroSerie
+    );
+
+    boolean existsByNumeroSerieAndIdNot(
+            String numeroSerie,
+            Long id
+    );
 
     List<Rele> findByNumeroSerieContainingIgnoreCase(
-            String numeroSerie);
+            String numeroSerie
+    );
+
+    Optional<Rele> findByNumeroSerie(
+            String numeroSerie
+    );
 }

@@ -111,4 +111,16 @@ public class ReleController {
         return releService
                 .obtenerOpciones();
     }
+
+    @PutMapping("/{id}")
+        public ReleResponseDTO actualizar(
+                @PathVariable Long id,
+                @RequestBody ReleRequestDTO dto
+        ) {
+
+            return releService.actualizar(
+                    id,
+                    dto
+            );
+        }
 }

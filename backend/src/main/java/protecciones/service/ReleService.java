@@ -95,6 +95,17 @@ public class ReleService {
                     );
         }
 
+        if (
+                releRepository.existsByNumeroSerie(
+                        dto.getNumeroSerie()
+                )
+        ) {
+
+        throw new RuntimeException(
+                "Ya existe un relé con ese número de serie"
+        );
+        }
+
         Rele rele =
                 new Rele();
 
@@ -488,6 +499,107 @@ public class ReleService {
                 )
                 .toList();
     }
+
+    public ReleResponseDTO actualizar(
+                Long id,
+                ReleRequestDTO dto
+        ) {
+
+        Rele rele =
+                releRepository.findById(id)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Relé no encontrado"
+                                )
+                        );
+
+        if (
+                releRepository.existsByNumeroSerieAndIdNot(
+                        dto.getNumeroSerie(),
+                        id
+                )
+        ) {
+
+                throw new RuntimeException(
+                        "Ya existe un relé con ese número de serie"
+                );
+        }
+
+        Modelo modelo =
+                modeloRepository.findById(
+                        dto.getModeloId()
+                ).orElseThrow(() ->
+                        new RuntimeException(
+                                "Modelo no encontrado"
+                        )
+                );
+
+        Remito remito = null;
+
+        if (dto.getRemitoId() != null) {
+
+                remito =
+                        remitoRepository.findById(
+                                dto.getRemitoId()
+                        ).orElseThrow(() ->
+                                new RuntimeException(
+                                        "Remito no encontrado"
+                                )
+                        );
+        }
+
+        rele.setNumeroSerie(
+                dto.getNumeroSerie()
+        );
+
+        rele.setModelo(modelo);
+
+        rele.setRemito(remito);
+
+        if (
+                Boolean.TRUE.equals(
+                        dto.getCargarGarantia()
+                )
+        ) {
+
+                rele.setGarantiaMeses(
+                        dto.getGarantiaMeses()
+                );
+
+                rele.setInicioGarantia(
+                        dto.getInicioGarantia()
+                );
+
+                if (
+                        dto.getInicioGarantia() != null
+                                &&
+                        dto.getGarantiaMeses() != null
+                ) {
+
+                rele.setFinGarantia(
+                        dto.getInicioGarantia()
+                                .plusMonths(
+                                        dto.getGarantiaMeses()
+                                )
+                );
+                }
+
+        } else {
+
+                rele.setGarantiaMeses(null);
+
+                rele.setInicioGarantia(null);
+
+                rele.setFinGarantia(null);
+        }
+
+        Rele actualizado =
+                releRepository.save(rele);
+
+        return mapToResponseDTO(
+                actualizado
+        );
+        }
 
     private MovimientoResponseDTO
     mapMovimientoToDTO(

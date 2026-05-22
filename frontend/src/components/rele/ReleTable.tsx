@@ -1,23 +1,35 @@
-import type { Rele } from "../../types/Rele";
+// ReleTable.tsx
+
+import type { Rele }
+from "../../types/Rele";
 
 import {
-    Chip,
     Paper,
-    Stack,
     Table,
     TableBody,
     TableCell,
     TableContainer,
     TableHead,
     TableRow,
-    Typography
+    Typography,
+    Chip,
+    Stack,
+    Button
 } from "@mui/material";
 
 interface Props {
+
     reles: Rele[];
+
+    onEditar: (
+        rele: Rele
+    ) => void;
 }
 
-function ReleTable({ reles }: Props) {
+function ReleTable({
+    reles,
+    onEditar
+}: Props) {
 
     return (
 
@@ -57,6 +69,10 @@ function ReleTable({ reles }: Props) {
                             <strong>Remito</strong>
                         </TableCell>
 
+                        <TableCell>
+                            <strong>Acciones</strong>
+                        </TableCell>
+
                     </TableRow>
 
                 </TableHead>
@@ -65,7 +81,7 @@ function ReleTable({ reles }: Props) {
 
                     {reles.map((rele) => (
 
-                        <TableRow key={rele.id} hover>
+                        <TableRow key={rele.id}>
 
                             <TableCell>
                                 {rele.numeroSerie}
@@ -98,52 +114,59 @@ function ReleTable({ reles }: Props) {
 
                             <TableCell>
 
-                                {
-                                    rele.estadoGarantia === "VIGENTE" && (
+                                <Stack
+                                    direction="row"
+                                    spacing={1}
+                                >
 
-                                        <Chip
-                                            label={
-                                                `${rele.mesesRestantesGarantia} meses restantes`
-                                            }
-                                            color="success"
-                                            size="small"
-                                        />
-                                    )
-                                }
+                                    {
+                                        rele.estadoGarantia === "VIGENTE" && (
 
-                                {
-                                    rele.estadoGarantia === "POR VENCER" && (
+                                            <Chip
+                                                label={
+                                                    `${rele.mesesRestantesGarantia} meses restantes`
+                                                }
+                                                color="success"
+                                                size="small"
+                                            />
+                                        )
+                                    }
 
-                                        <Chip
-                                            label={
-                                                `${rele.mesesRestantesGarantia} meses restantes`
-                                            }
-                                            color="warning"
-                                            size="small"
-                                        />
-                                    )
-                                }
+                                    {
+                                        rele.estadoGarantia === "POR VENCER" && (
 
-                                {
-                                    rele.estadoGarantia === "VENCIDA" && (
+                                            <Chip
+                                                label={
+                                                    `${rele.mesesRestantesGarantia} meses restantes`
+                                                }
+                                                color="warning"
+                                                size="small"
+                                            />
+                                        )
+                                    }
 
-                                        <Chip
-                                            label="Garantía vencida"
-                                            color="error"
-                                            size="small"
-                                        />
-                                    )
-                                }
+                                    {
+                                        rele.estadoGarantia === "VENCIDA" && (
 
-                                {
-                                    rele.estadoGarantia === "Sin garantía" && (
+                                            <Chip
+                                                label="Garantía vencida"
+                                                color="error"
+                                                size="small"
+                                            />
+                                        )
+                                    }
 
-                                        <Chip
-                                            label="Sin garantía"
-                                            size="small"
-                                        />
-                                    )
-                                }
+                                    {
+                                        rele.estadoGarantia === "Sin garantía" && (
+
+                                            <Chip
+                                                label="Sin garantía"
+                                                size="small"
+                                            />
+                                        )
+                                    }
+
+                                </Stack>
 
                             </TableCell>
 
@@ -151,13 +174,23 @@ function ReleTable({ reles }: Props) {
 
                                 {
                                     rele.remitoId
-                                            ? (
-                                                <Stack>
-                                                    {rele.remitoId}
-                                                </Stack>
-                                            )
-                                            : "-"
+                                        ? rele.remitoId
+                                        : "-"
                                 }
+
+                            </TableCell>
+
+                            <TableCell>
+
+                                <Button
+                                    size="small"
+                                    variant="outlined"
+                                    onClick={() =>
+                                        onEditar(rele)
+                                    }
+                                >
+                                    Editar
+                                </Button>
 
                             </TableCell>
 
@@ -169,7 +202,7 @@ function ReleTable({ reles }: Props) {
                         <TableRow>
 
                             <TableCell
-                                colSpan={7}
+                                colSpan={8}
                                 align="center"
                             >
 
@@ -189,4 +222,5 @@ function ReleTable({ reles }: Props) {
         </TableContainer>
     );
 }
+
 export default ReleTable;

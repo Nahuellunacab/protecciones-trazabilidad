@@ -4,11 +4,11 @@ export interface ReleRequest {
 
     modeloId: number;
 
-    remitoId?: number;
+    cargarGarantia: boolean;
 
-    cargarGarantia?: boolean;
+    garantiaMeses: number;
 
-    garantiaMeses?: number;
+    inicioGarantia: string;
 
-    inicioGarantia?: string;
+    remitoId: number | null;
 }

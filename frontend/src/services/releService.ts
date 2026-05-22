@@ -20,6 +20,20 @@ export const crearRele = async (
     await api.post("/reles", rele);
 };
 
+export async function actualizar(
+    id: number,
+    rele: ReleRequest
+) {
+
+    const response =
+        await api.put(
+            `/reles/${id}`,
+            rele
+        );
+
+    return response.data;
+}
+
 export async function obtenerOpciones():
 Promise<ReleOption[]> {
 

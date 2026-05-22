@@ -1,73 +1,63 @@
 import { useEffect, useState } from "react";
 
-import type {
-    ReleRequest
-} from "../../types/ReleRequest";
-
-import type {
-    Modelo
-} from "../../types/Modelo";
-
-import type {
-    Marca
-} from "../../types/Marca";
-
 import {
+    Alert,
+    Box,
+    Button,
+    Checkbox,
+    FormControl,
+    FormControlLabel,
+    Grid,
+    InputLabel,
+    MenuItem,
+    Paper,
+    Select,
+    TextField,
+    Typography
+} from "@mui/material";
 
-    obtenerModelosPorMarca
+import type { Modelo }
+from "../../types/Modelo";
 
-} from "../../services/modeloService";
+import type { Marca }
+from "../../types/Marca";
+
+import type { Rele }
+from "../../types/Rele";
+
+import type { ReleRequest }
+from "../../types/ReleRequest";
 
 import {
     obtenerMarcas
 } from "../../services/marcaService";
 
 import {
-
-    Alert,
-    Box,
-    Button,
-    Checkbox,
-    CircularProgress,
-    FormControl,
-    FormControlLabel,
-    InputLabel,
-    MenuItem,
-    Paper,
-    Select,
-    Snackbar,
-    Stack,
-    TextField,
-    Typography
-
-} from "@mui/material";
+    obtenerModelos
+} from "../../services/modeloService";
 
 interface Props {
 
     onCreate: (
         data: ReleRequest
     ) => Promise<void>;
+
+    onUpdate: (
+        id: number,
+        data: ReleRequest
+    ) => Promise<void>;
+
+    releEditando: Rele | null;
+
+    onCancelEdit: () => void;
 }
 
 function ReleForm({
-    onCreate
+    onCreate,
+    onUpdate,
+    releEditando,
+    onCancelEdit
 }: Props) {
-
-    const [formData, setFormData] =
-        useState<ReleRequest>({
-
-            numeroSerie: "",
-
-            modeloId: 0,
-
-            remitoId: 1,
-
-            cargarGarantia: false,
-
-            garantiaMeses: 12,
-
-            inicioGarantia: ""
-        });
 
     const [marcas, setMarcas] =
         useState<Marca[]>([]);
@@ -76,90 +66,174 @@ function ReleForm({
         useState<Modelo[]>([]);
 
     const [marcaId, setMarcaId] =
-        useState<number>(0);
+        useState<number | "">("");
 
-    const [modeloSeleccionado,
-        setModeloSeleccionado] =
-            useState<Modelo | null>(null);
+    const [modelosFiltrados,
+        setModelosFiltrados] =
+        useState<Modelo[]>([]);
 
     const [loading, setLoading] =
         useState(false);
 
-    const [successOpen, setSuccessOpen] =
-        useState(false);
+    const [error, setError] =
+        useState("");
 
-    const [errorOpen, setErrorOpen] =
-        useState(false);
+    const [formData, setFormData] =
+        useState<ReleRequest>({
+            numeroSerie: "",
+            modeloId: 0,
+            cargarGarantia: false,
+            garantiaMeses: 12,
+            inicioGarantia: "",
+            remitoId: null
+        });
 
     useEffect(() => {
 
-        cargarMarcas();
+        cargarDatos();
 
     }, []);
 
-    const cargarMarcas =
-        async () => {
+    useEffect(() => {
 
-        const data =
-            await obtenerMarcas();
+        if (marcaId) {
 
-        setMarcas(data);
-    };
+            const filtrados =
+                modelos.filter(
+                    (modelo) =>
+                        modelo.marcaId ===
+                        Number(marcaId)
+                );
 
-    const cargarModelos =
-        async (marcaId: number) => {
-
-        const data =
-            await obtenerModelosPorMarca(
-                marcaId
+            setModelosFiltrados(
+                filtrados
             );
-
-        setModelos(data);
-    };
-
-    const handleMarcaChange =
-        async (value: number) => {
-
-        setMarcaId(value);
-
-        setFormData({
-
-            ...formData,
-
-            modeloId: 0
-        });
-
-        setModeloSeleccionado(null);
-
-        if (value > 0) {
-
-            await cargarModelos(value);
 
         } else {
 
-            setModelos([]);
+            setModelosFiltrados([]);
+        }
+
+    }, [marcaId, modelos]);
+
+    useEffect(() => {
+
+        if (releEditando) {
+
+            const modelo =
+                modelos.find(
+                    (m) =>
+                        m.id ===
+                        releEditando.modeloId
+                );
+
+            setMarcaId(
+                modelo?.marcaId || ""
+            );
+
+            setFormData({
+
+                numeroSerie:
+                    releEditando.numeroSerie,
+
+                modeloId:
+                    releEditando.modeloId ?? 0,
+
+                cargarGarantia:
+                    releEditando.garantiaMeses
+                    !== null,
+
+                garantiaMeses:
+                    releEditando.garantiaMeses
+                    || 12,
+
+                inicioGarantia:
+                    releEditando.inicioGarantia
+                    || "",
+
+                remitoId:
+                    releEditando.remitoId
+                    || null
+            });
+
+        } else {
+
+            limpiarFormulario();
+        }
+
+    }, [releEditando, modelos]);
+
+    const cargarDatos = async () => {
+
+        try {
+
+            const [
+                marcasData,
+                modelosData
+            ] = await Promise.all([
+
+                obtenerMarcas(),
+
+                obtenerModelos()
+            ]);
+
+            setMarcas(
+                marcasData
+            );
+
+            setModelos(
+                modelosData
+            );
+
+        } catch {
+
+            setError(
+                "Error al cargar datos"
+            );
         }
     };
 
-    const handleModeloChange =
-        (modeloId: number) => {
+    const obtenerTension = () => {
 
         const modelo =
             modelos.find(
                 (m) =>
-                    m.id === modeloId
-            ) || null;
+                    m.id ===
+                    formData.modeloId
+            );
 
-        setModeloSeleccionado(
-            modelo
-        );
+        if (!modelo) {
+
+            return "-";
+        }
+
+        return `${modelo.tensionDesde}
+        - ${modelo.tensionHasta}
+        ${modelo.tipoTension}`;
+    };
+
+    const limpiarFormulario = () => {
 
         setFormData({
 
-            ...formData,
+            numeroSerie: "",
 
-            modeloId
+            modeloId: 0,
+
+            cargarGarantia: false,
+
+            garantiaMeses: 12,
+
+            inicioGarantia: "",
+
+            remitoId: null
         });
+
+        setMarcaId("");
+
+        setError("");
+
+        onCancelEdit();
     };
 
     const handleChange = (
@@ -168,111 +242,57 @@ function ReleForm({
 
         const {
             name,
-            value
+            value,
+            type,
+            checked
         } = e.target;
 
-        setFormData({
+        setFormData((prev) => ({
 
-            ...formData,
+            ...prev,
 
             [name]:
-
-                name === "garantiaMeses"
-                || name === "modeloId"
-                || name === "remitoId"
-
-                    ? Number(value)
-
+                type === "checkbox"
+                    ? checked
                     : value
-        });
-    };
-
-    const handleCheckbox =
-        (
-            e: React.ChangeEvent<HTMLInputElement>
-        ) => {
-
-        setFormData({
-
-            ...formData,
-
-            cargarGarantia:
-                e.target.checked
-        });
-    };
-
-    const obtenerTension =
-        () => {
-
-        if (!modeloSeleccionado) {
-            return "-";
-        }
-
-        const desde =
-            modeloSeleccionado.tensionDesde;
-
-        const hasta =
-            modeloSeleccionado.tensionHasta;
-
-        const tipo =
-            modeloSeleccionado.tipoTension;
-
-        if (
-            desde &&
-            hasta
-        ) {
-
-            return `${desde} - ${hasta} ${tipo}`;
-        }
-
-        if (desde) {
-
-            return `${desde} ${tipo}`;
-        }
-
-        return tipo || "-";
+        }));
     };
 
     const handleSubmit = async (
-        e: React.FormEvent
+        e: any
     ) => {
 
         e.preventDefault();
 
+        setLoading(true);
+
+        setError("");
+
         try {
 
-            setLoading(true);
+            if (releEditando) {
 
-            await onCreate(formData);
+                await onUpdate(
+                    releEditando.id,
+                    formData
+                );
 
-            setSuccessOpen(true);
+            } else {
 
-            setFormData({
+                await onCreate(
+                    formData
+                );
+            }
 
-                numeroSerie: "",
+            limpiarFormulario();
 
-                modeloId: 0,
+        } catch (err: any) {
 
-                remitoId: 1,
-
-                cargarGarantia: false,
-
-                garantiaMeses: 12,
-
-                inicioGarantia: ""
-            });
-
-            setMarcaId(0);
-
-            setModeloSeleccionado(null);
-
-            setModelos([]);
-
-        } catch (error) {
-
-            console.error(error);
-
-            setErrorOpen(true);
+            setError(
+                err?.response?.data?.message
+                ||
+                "Error al guardar relé"
+            );
 
         } finally {
 
@@ -282,64 +302,53 @@ function ReleForm({
 
     return (
 
-        <>
+        <Paper
+            sx={{
+                p: 3,
+                mb: 4,
+                borderRadius: 4
+            }}
+        >
 
-            <Snackbar
-                open={successOpen}
-                autoHideDuration={3000}
-                onClose={() =>
-                    setSuccessOpen(false)
+            <Typography
+                variant="h5"
+                sx={{ mb: 3 }}
+            >
+
+                {
+                    releEditando
+                        ? "Editar Relé"
+                        : "Crear Relé"
                 }
+
+            </Typography>
+
+            {
+                error && (
+
+                    <Alert
+                        severity="error"
+                        sx={{ mb: 2 }}
+                    >
+                        {error}
+                    </Alert>
+                )
+            }
+
+            <form
+                onSubmit={handleSubmit}
             >
 
-                <Alert severity="success">
-
-                    Relé creado correctamente
-
-                </Alert>
-
-            </Snackbar>
-
-            <Snackbar
-                open={errorOpen}
-                autoHideDuration={3000}
-                onClose={() =>
-                    setErrorOpen(false)
-                }
-            >
-
-                <Alert severity="error">
-
-                    Error al crear relé
-
-                </Alert>
-
-            </Snackbar>
-
-            <Paper
-                elevation={3}
-                sx={{
-                    padding: 3,
-                    marginBottom: 4,
-                    borderRadius: 4
-                }}
-            >
-
-                <Typography
-                    variant="h6"
-                    gutterBottom
-                >
-                    Crear Relé
-                </Typography>
-
-                <Box
-                    component="form"
-                    onSubmit={handleSubmit}
+                <Grid
+                    container
+                    spacing={2}
                 >
 
-                    <Stack spacing={2}>
+                    <Grid size={12}>
 
-                        <FormControl fullWidth>
+                        <FormControl
+                            fullWidth
+                        >
 
                             <InputLabel>
                                 Marca
@@ -348,68 +357,87 @@ function ReleForm({
                             <Select
                                 value={marcaId}
                                 label="Marca"
-                                onChange={(e) =>
-                                    handleMarcaChange(
+                                onChange={(e) => {
+
+                                    setMarcaId(
                                         Number(
                                             e.target.value
                                         )
-                                    )
-                                }
+                                    );
+
+                                    setFormData(
+                                        (prev) => ({
+                                            ...prev,
+                                            modeloId: 0
+                                        })
+                                    );
+                                }}
                             >
 
-                                {marcas.map(
-                                    (marca) => (
+                                {
+                                    marcas.map(
+                                        (marca) => (
 
-                                    <MenuItem
-                                        key={marca.id}
-                                        value={marca.id}
-                                    >
+                                        <MenuItem
+                                            key={marca.id}
+                                            value={marca.id}
+                                        >
 
-                                        {marca.nombre}
+                                            {marca.nombre}
 
-                                    </MenuItem>
-                                ))}
+                                        </MenuItem>
+                                    ))
+                                }
 
                             </Select>
 
                         </FormControl>
 
-                        <FormControl fullWidth>
+                    </Grid>
+
+                    <Grid size={12}>
+
+                        <FormControl
+                            fullWidth
+                        >
 
                             <InputLabel>
                                 Modelo
                             </InputLabel>
 
                             <Select
+                                name="modeloId"
                                 value={
                                     formData.modeloId
                                 }
                                 label="Modelo"
-                                onChange={(e) =>
-                                    handleModeloChange(
-                                        Number(
-                                            e.target.value
-                                        )
-                                    )
+                                onChange={
+                                    handleChange
                                 }
                             >
 
-                                {modelos.map(
-                                    (modelo) => (
+                                {
+                                    modelosFiltrados.map(
+                                        (modelo) => (
 
-                                    <MenuItem
-                                        key={modelo.id}
-                                        value={modelo.id}
-                                    >
+                                        <MenuItem
+                                            key={modelo.id}
+                                            value={modelo.id}
+                                        >
 
-                                        {modelo.nombre}
+                                            {modelo.nombre}
 
-                                    </MenuItem>
-                                ))}
+                                        </MenuItem>
+                                    ))
+                                }
 
                             </Select>
 
                         </FormControl>
+
+                    </Grid>
+
+                    <Grid size={12}>
 
                         <TextField
                             label="Tensión"
@@ -424,93 +452,140 @@ function ReleForm({
                             fullWidth
                         />
 
+                    </Grid>
+
+                    <Grid size={12}>
+
                         <TextField
                             label="Número Serie"
                             name="numeroSerie"
                             value={
                                 formData.numeroSerie
                             }
-                            onChange={handleChange}
+                            onChange={
+                                handleChange
+                            }
                             fullWidth
+                            required
                         />
+
+                    </Grid>
+
+                    <Grid size={12}>
 
                         <FormControlLabel
                             control={
 
                                 <Checkbox
+                                    name="cargarGarantia"
                                     checked={
                                         formData.cargarGarantia
                                     }
                                     onChange={
-                                        handleCheckbox
+                                        handleChange
                                     }
                                 />
                             }
                             label="Cargar garantía"
                         />
 
-                        {formData.cargarGarantia && (
+                    </Grid>
+
+                    {
+                        formData.cargarGarantia && (
 
                             <>
 
-                                <TextField
-                                    label="Garantía Meses"
-                                    name="garantiaMeses"
-                                    type="number"
-                                    value={
-                                        formData.garantiaMeses
-                                    }
-                                    onChange={handleChange}
-                                    fullWidth
-                                />
+                                <Grid size={6}>
 
-                                <TextField
-                                    label="Inicio Garantía"
-                                    name="inicioGarantia"
-                                    type="date"
-                                    value={
-                                        formData.inicioGarantia
-                                    }
-                                    onChange={handleChange}
-                                    slotProps={{
-                                        inputLabel: {
-                                            shrink: true
+                                    <TextField
+                                        label="Meses Garantía"
+                                        name="garantiaMeses"
+                                        type="number"
+                                        value={
+                                            formData.garantiaMeses
                                         }
-                                    }}
-                                    fullWidth
-                                />
+                                        onChange={
+                                            handleChange
+                                        }
+                                        fullWidth
+                                    />
+
+                                </Grid>
+
+                                <Grid size={6}>
+
+                                    <TextField
+                                        label="Inicio Garantía"
+                                        name="inicioGarantia"
+                                        type="date"
+                                        value={
+                                            formData.inicioGarantia
+                                        }
+                                        onChange={
+                                            handleChange
+                                        }
+                                        slotProps={{
+                                            inputLabel: {
+                                                shrink: true
+                                            }
+                                        }}
+                                        fullWidth
+                                    />
+
+                                </Grid>
 
                             </>
-                        )}
+                        )
+                    }
 
-                        <Button
-                            variant="contained"
-                            type="submit"
-                            disabled={loading}
+                    <Grid size={12}>
+
+                        <Box
+                            sx={{ display: "flex", gap: 2 }}
                         >
 
-                            {loading ? (
+                            <Button
+                                variant="contained"
+                                type="submit"
+                                disabled={loading}
+                                fullWidth
+                            >
 
-                                <CircularProgress
-                                    size={24}
-                                    color="inherit"
-                                />
+                                {
+                                    releEditando
+                                        ? "GUARDAR CAMBIOS"
+                                        : "CREAR RELÉ"
+                                }
 
-                            ) : (
+                            </Button>
 
-                                "Crear Relé"
-                            )}
+                            {
+                                releEditando && (
 
-                        </Button>
+                                    <Button
+                                        variant="outlined"
+                                        color="inherit"
+                                        onClick={
+                                            limpiarFormulario
+                                        }
+                                    >
 
-                    </Stack>
+                                        CANCELAR
 
-                </Box>
+                                    </Button>
+                                )
+                            }
 
-            </Paper>
+                        </Box>
 
-        </>
+                    </Grid>
+
+                </Grid>
+
+            </form>
+
+        </Paper>
     );
 }
-
 export default ReleForm;
