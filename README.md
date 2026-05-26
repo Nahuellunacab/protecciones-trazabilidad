@@ -109,6 +109,120 @@ Actualmente el sistema ya posee:
 
 ---
 
+# Arquitectura General
+
+```mermaid
+flowchart LR
+
+    A[Frontend React]
+        -->|REST API| B[Spring Boot API]
+
+    B --> C[Controllers]
+    C --> D[Services]
+    D --> E[Repositories]
+    E --> F[Hibernate]
+    F --> G[(PostgreSQL)]
+
+    subgraph Frontend
+        A
+    end
+
+    subgraph Backend
+        B
+        C
+        D
+        E
+        F
+    end
+
+    subgraph Docker
+        G
+    end
+```
+
+---
+
+# Arquitectura Backend
+
+```mermaid
+flowchart TD
+
+    A[HTTP Request]
+        --> B[Controller]
+
+    B --> C[Service]
+
+    C --> D[Repository]
+
+    D --> E[(PostgreSQL)]
+
+    E --> D
+    D --> C
+    C --> B
+
+    B --> F[JSON Response]
+```
+
+---
+
+# Arquitectura Frontend
+
+```mermaid
+flowchart TD
+
+    A[Pages]
+        --> B[Components]
+
+    B --> C[Services]
+
+    C --> D[Axios API]
+
+    D --> E[Spring Boot Backend]
+
+    A --> F[Layouts]
+
+    A --> G[Routes]
+
+    A --> H[Types]
+
+    A --> I[Theme]
+```
+
+---
+
+# Flujo Fullstack Actual
+
+```mermaid
+flowchart TD
+
+    A[Usuario React]
+        --> B[Axios HTTP Request]
+
+    B --> C[Spring Boot REST API]
+
+    C --> D[DTO Request]
+
+    D --> E[Bean Validation]
+
+    E --> F[Service]
+
+    F --> G[JPA Repository]
+
+    G --> H[(PostgreSQL)]
+
+    H --> G
+
+    G --> F
+
+    F --> I[DTO Response]
+
+    I --> J[JSON Response]
+
+    J --> K[React Render UI]
+```
+
+---
+
 # Modelo Conceptual Operacional
 
 ## Concepto principal
@@ -149,6 +263,71 @@ Esto permite evolucionar posteriormente hacia:
 - máquina de estados
 - dashboards operativos
 - integración con sistemas corporativos
+
+---
+
+# Modelo Relacional
+
+```mermaid
+erDiagram
+
+    TIPO ||--o{ MODELO : clasifica
+    MARCA ||--o{ MODELO : fabrica
+
+    MODELO ||--o{ RELE : define
+
+    RELE ||--o{ MOVIMIENTO : posee
+
+    ESTADO ||--o{ MOVIMIENTO : determina
+
+    POSICION ||--o{ MOVIMIENTO : registra
+
+    USUARIO ||--o{ MOVIMIENTO : realiza
+
+    PROVINCIA ||--o{ LOCALIDAD : contiene
+
+    LOCALIDAD ||--o{ DESTINO : ubica
+
+    DESTINO ||--o{ POSICION : contiene
+
+    LOCALIDAD ||--o{ PROVEEDOR : ubica
+
+    PROVEEDOR ||--o{ REMITO : emite
+
+    REMITO ||--o{ RELE : incluye
+```
+
+---
+
+# Entidades Implementadas
+
+## Catálogos
+
+- Marca
+- Tipo
+- Estado
+- Provincia
+- Localidad
+
+## Dominio Principal
+
+- Modelo
+- Rele
+- Movimiento
+
+## Ubicaciones
+
+- Destino
+- Posicion
+
+## Gestión Logística
+
+- Proveedor
+- Remito
+
+## Usuarios
+
+- Usuario
 
 ---
 
