@@ -1,16 +1,13 @@
 services:
   postgres:
-    image: postgres:16
+    image: postgres:${POSTGRES_VERSION:-16}
     container_name: protecciones-db
-
     environment:
-      POSTGRES_DB: protecciones
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 9988776655
-
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
-      - "5433:5432"
-
+      - "${DB_PORT}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
