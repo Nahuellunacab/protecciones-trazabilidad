@@ -7,7 +7,8 @@ import {
     TableHead,
     TableRow,
     Button,
-    Stack
+    Stack,
+    Chip
 } from "@mui/material";
 
 import type { Modelo }
@@ -46,7 +47,7 @@ function ModeloTable({
 
         return `
             ${modelo.tensionDesde}
-            - 
+            -
             ${modelo.tensionHasta}
             ${modelo.tipoTension}
         `;
@@ -88,6 +89,18 @@ function ModeloTable({
                         </TableCell>
 
                         <TableCell>
+                            <strong>Activos</strong>
+                        </TableCell>
+
+                        <TableCell>
+                            <strong>Baja</strong>
+                        </TableCell>
+
+                        <TableCell>
+                            <strong>Total</strong>
+                        </TableCell>
+
+                        <TableCell>
                             <strong>Acciones</strong>
                         </TableCell>
 
@@ -103,6 +116,18 @@ function ModeloTable({
                             <TableRow
                                 key={modelo.id}
                                 hover
+                                sx={{
+
+                                    backgroundColor:
+                                        modelo.cantidadRelesActivos === 0
+                                            ? "#f5f5f5"
+                                            : "inherit",
+
+                                    opacity:
+                                        modelo.cantidadRelesActivos === 0
+                                            ? 0.8
+                                            : 1
+                                }}
                             >
 
                                 <TableCell>
@@ -123,6 +148,42 @@ function ModeloTable({
 
                                 <TableCell>
                                     {modelo.tipo}
+                                </TableCell>
+
+                                <TableCell>
+
+                                    <Chip
+                                        label={
+                                            modelo.cantidadRelesActivos
+                                        }
+                                        color="success"
+                                        size="small"
+                                    />
+
+                                </TableCell>
+
+                                <TableCell>
+
+                                    <Chip
+                                        label={
+                                            modelo.cantidadRelesBaja
+                                        }
+                                        color="error"
+                                        size="small"
+                                    />
+
+                                </TableCell>
+
+                                <TableCell>
+
+                                    <Chip
+                                        label={
+                                            modelo.cantidadTotalReles
+                                        }
+                                        color="primary"
+                                        size="small"
+                                    />
+
                                 </TableCell>
 
                                 <TableCell>

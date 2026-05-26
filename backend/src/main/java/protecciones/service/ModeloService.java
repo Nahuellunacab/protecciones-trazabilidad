@@ -15,6 +15,7 @@ import protecciones.exception.BusinessException;
 
 import protecciones.repository.MarcaRepository;
 import protecciones.repository.ModeloRepository;
+import protecciones.repository.ReleRepository;
 import protecciones.repository.TipoRepository;
 
 import java.util.List;
@@ -31,13 +32,18 @@ public class ModeloService {
     private final TipoRepository
             tipoRepository;
 
+    private final ReleRepository
+            releRepository;
+
     public ModeloService(
 
             ModeloRepository modeloRepository,
 
             MarcaRepository marcaRepository,
 
-            TipoRepository tipoRepository
+            TipoRepository tipoRepository,
+
+            ReleRepository releRepository
     ) {
 
         this.modeloRepository =
@@ -48,6 +54,9 @@ public class ModeloService {
 
         this.tipoRepository =
                 tipoRepository;
+
+        this.releRepository =
+                releRepository;
     }
 
     public List<ModeloResponseDTO>
@@ -213,6 +222,21 @@ public class ModeloService {
             Modelo modelo
     ) {
 
+        long activos =
+                releRepository
+                        .countByModeloIdAndActivoTrue(
+                                modelo.getId()
+                        );
+
+        long baja =
+                releRepository
+                        .countByModeloIdAndActivoFalse(
+                                modelo.getId()
+                        );
+
+        long total =
+                activos + baja;
+
         return new ModeloResponseDTO(
 
                 modelo.getId(),
@@ -235,7 +259,13 @@ public class ModeloService {
                         .getId(),
 
                 modelo.getTipo()
-                        .getNombre()
+                        .getNombre(),
+
+                activos,
+
+                baja,
+
+                total
         );
     }
 }

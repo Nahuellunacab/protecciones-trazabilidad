@@ -20,6 +20,12 @@ public class ModeloResponseDTO {
 
     private String tipo;
 
+    private Long cantidadRelesActivos;
+
+    private Long cantidadRelesBaja;
+
+    private Long cantidadTotalReles;
+
     public ModeloResponseDTO(
 
             Long id,
@@ -38,7 +44,13 @@ public class ModeloResponseDTO {
 
             Long tipoId,
 
-            String tipo
+            String tipo,
+
+            Long cantidadRelesActivos,
+
+            Long cantidadRelesBaja,
+
+            Long cantidadTotalReles
     ) {
 
         this.id = id;
@@ -58,6 +70,15 @@ public class ModeloResponseDTO {
         this.tipoId = tipoId;
 
         this.tipo = tipo;
+
+        this.cantidadRelesActivos =
+                cantidadRelesActivos;
+
+        this.cantidadRelesBaja =
+                cantidadRelesBaja;
+
+        this.cantidadTotalReles =
+                cantidadTotalReles;
     }
 
     public Long getId() {
@@ -94,5 +115,17 @@ public class ModeloResponseDTO {
 
     public String getTipo() {
         return tipo;
+    }
+
+    public Long getCantidadRelesActivos() {
+        return cantidadRelesActivos;
+    }
+
+    public Long getCantidadRelesBaja() {
+        return cantidadRelesBaja;
+    }
+
+    public Long getCantidadTotalReles() {
+        return cantidadTotalReles;
     }
 }

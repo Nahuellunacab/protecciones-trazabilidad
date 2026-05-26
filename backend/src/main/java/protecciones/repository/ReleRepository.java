@@ -49,4 +49,12 @@ public interface ReleRepository
     findByNumeroSerie(
             String numeroSerie
     );
+
+    long countByModeloIdAndActivoTrue(
+            Long modeloId
+    );
+
+    long countByModeloIdAndActivoFalse(
+            Long modeloId
+    );
 }
