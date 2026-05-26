@@ -1,6 +1,6 @@
 # Protecciones Trazabilidad
 
-Sistema fullstack enterprise de gestión y trazabilidad de relés de protección para EPEC Transmisión — Departamento de Teleoperaciones y Protecciones.
+Sistema fullstack enterprise de gestión y trazabilidad operativa de relés de protección para EPEC Transmisión — Departamento de Teleoperaciones y Protecciones.
 
 La aplicación permite administrar:
 
@@ -69,7 +69,7 @@ Actualmente el sistema ya posee:
 - arquitectura escalable
 - UX enterprise
 - build frontend verificado y sin errores de compilación
-- fluidez en el CRUD de modelos con envío de datos alineado al backend
+- flujo operacional inspirado en el Access original del área
 
 ---
 
@@ -109,419 +109,46 @@ Actualmente el sistema ya posee:
 
 ---
 
-# Identidad Visual
+# Modelo Conceptual Operacional
 
-La aplicación implementa una interfaz institucional basada en EPEC Transmisión.
-
-## Características UI/UX
-
-- Theme corporativo institucional
-- Navbar enterprise
-- Branding EPEC
-- Logo institucional
-- Layout responsive
-- Material UI
-- Formularios modernos
-- Snackbar notifications
-- Dialogs de confirmación
-- Feedback visual
-- Loading states
-- Diseño orientado a operación técnica
-- UX enterprise
-
----
-
-# Arquitectura General
-
-```mermaid
-flowchart LR
-
-    A[Frontend React]
-        -->|REST API| B[Spring Boot API]
-
-    B --> C[Controllers]
-    C --> D[Services]
-    D --> E[Repositories]
-    E --> F[Hibernate]
-    F --> G[(PostgreSQL)]
-
-    subgraph Frontend
-        A
-    end
-
-    subgraph Backend
-        B
-        C
-        D
-        E
-        F
-    end
-
-    subgraph Docker
-        G
-    end
-```
-
----
-
-# Arquitectura Backend
-
-```mermaid
-flowchart TD
-
-    A[HTTP Request]
-        --> B[Controller]
-
-    B --> C[Service]
-
-    C --> D[Repository]
-
-    D --> E[(PostgreSQL)]
-
-    E --> D
-    D --> C
-    C --> B
-
-    B --> F[JSON Response]
-```
-
----
-
-# Arquitectura Frontend
-
-```mermaid
-flowchart TD
-
-    A[Pages]
-        --> B[Components]
-
-    B --> C[Services]
-
-    C --> D[Axios API]
-
-    D --> E[Spring Boot Backend]
-
-    A --> F[Layouts]
-
-    A --> G[Routes]
-
-    A --> H[Types]
-
-    A --> I[Theme]
-```
-
----
-
-# Flujo Fullstack Actual
-
-```mermaid
-flowchart TD
-
-    A[Usuario React]
-        --> B[Axios HTTP Request]
-
-    B --> C[Spring Boot REST API]
-
-    C --> D[DTO Request]
-
-    D --> E[Bean Validation]
-
-    E --> F[Service]
-
-    F --> G[JPA Repository]
-
-    G --> H[(PostgreSQL)]
-
-    H --> G
-
-    G --> F
-
-    F --> I[DTO Response]
-
-    I --> J[JSON Response]
-
-    J --> K[React Render UI]
-```
-
----
-
-# Flujo de Persistencia
-
-```mermaid
-flowchart TD
-
-    A[Migration SQL]
-        --> B[Flyway]
-
-    B --> C[(PostgreSQL)]
-
-    D[Spring Boot]
-        --> E[Hibernate/JPA]
-
-    E --> C
-
-    C --> F[Trazabilidad de Relés]
-```
-
----
-
-# Estructura del Proyecto
+## Concepto principal
 
 ```text
-backend/
-├── src/main/java/
-│
-│   ├── controller/
-│   ├── service/
-│   ├── repository/
-│   ├── entity/
-│   ├── dto/
-│   ├── mapper/
-│   ├── config/
-│   ├── exception/
-│   └── security/
-│
-├── src/main/resources/
-│   ├── db/migration/
-│   └── application.properties
-│
-└── pom.xml
-
-frontend/
-├── src/
-│
-│   ├── api/
-│   ├── assets/
-│   ├── components/
-│   ├── layouts/
-│   ├── pages/
-│   ├── routes/
-│   ├── services/
-│   ├── theme/
-│   ├── types/
-│   └── App.tsx
-│
-├── public/
-│
-└── package.json
-
-docker/
-└── docker-compose.yml
+Modelo = tipo técnico de relé
+Número de serie = unidad física real
 ```
 
----
+Puede haber múltiples relés asociados al mismo modelo.
 
-# Responsabilidad Backend
-
-## controller
-
-Expone endpoints REST y maneja requests HTTP.
-
-## service
-
-Contiene la lógica de negocio.
-
-## repository
-
-Acceso a base de datos mediante Spring Data JPA.
-
-## entity
-
-Entidades persistentes mapeadas a PostgreSQL.
-
-## dto
-
-Objetos desacoplados utilizados por la API.
-
-## mapper
-
-Conversión entre DTOs y entidades.
-
-## config
-
-Configuraciones generales del sistema.
-
-## exception
-
-Manejo centralizado de excepciones.
-
-## security
-
-Preparado para futura autenticación y autorización.
-
-## db/migration
-
-Migraciones SQL versionadas mediante Flyway.
-
----
-
-# Responsabilidad Frontend
-
-## pages
-
-Pantallas principales del sistema.
-
-## components
-
-Componentes reutilizables de UI.
-
-## layouts
-
-Layouts globales y navegación.
-
-## routes
-
-Configuración React Router.
-
-## services
-
-Comunicación HTTP con backend.
-
-## api
-
-Configuración Axios global.
-
-## types
-
-Tipos TypeScript desacoplados.
-
-## theme
-
-Theme institucional Material UI.
-
----
-
-# Base de Datos Versionada
-
-Administrada mediante Flyway.
-
-## Migraciones actuales
+La trazabilidad y operación se realiza sobre:
 
 ```text
-V1__initial_catalogs.sql
-V2__create_location_and_provider.sql
-V3__create_rele_domain.sql
-V4__create_movimiento_and_usuario.sql
-V5__seed_initial_data.sql
-V6__insert_real_operational_data.sql
-V7__improve_catalog_management.sql
-V8__seed_modelo_tensiones.sql
+la unidad física
 ```
 
----
-
-# Seed Data Operacional
-
-El sistema implementa bootstrap automático de datos reales y operativos.
-
-## Datos incluidos
-
-### Catálogos
-
-- Provincias
-- Localidades
-- Estados
-- Marcas
-- Tipos
-
-### Operación
-
-- Destinos reales
-- Posiciones reales
-- Modelos reales
-- Relés reales
-- Remitos
-- Usuario sistema
-
-### Datos operativos simulados
-
-- ABB REL670
-- ABB REG670
-- Siemens SIPROTEC
-- GE Multilin
-- AREVA MiCOM
-
-Esto permite levantar el entorno completamente funcional sin inserciones manuales.
+identificada mediante el número de serie.
 
 ---
 
-# Modelo Relacional
+# Arquitectura Operacional
 
-```mermaid
-erDiagram
+El sistema NO se comporta como un CRUD tradicional.
 
-    TIPO ||--o{ MODELO : clasifica
-    MARCA ||--o{ MODELO : fabrica
+Conceptualmente:
 
-    MODELO ||--o{ RELE : define
+- Relés = inventario operacional
+- Movimientos = eventos históricos
+- Historial = trazabilidad
+- Estado actual = derivado del último movimiento
+- Posición actual = derivada del último movimiento
 
-    RELE ||--o{ MOVIMIENTO : posee
+Esto permite evolucionar posteriormente hacia:
 
-    ESTADO ||--o{ MOVIMIENTO : determina
-
-    POSICION ||--o{ MOVIMIENTO : registra
-
-    USUARIO ||--o{ MOVIMIENTO : realiza
-
-    PROVINCIA ||--o{ LOCALIDAD : contiene
-
-    LOCALIDAD ||--o{ DESTINO : ubica
-
-    DESTINO ||--o{ POSICION : contiene
-
-    LOCALIDAD ||--o{ PROVEEDOR : ubica
-
-    PROVEEDOR ||--o{ REMITO : emite
-
-    REMITO ||--o{ RELE : incluye
-```
-
----
-
-# Entidades Implementadas
-
-## Catálogos
-
-- Marca
-- Tipo
-- Estado
-- Provincia
-- Localidad
-
-## Dominio Principal
-
-- Modelo
-- Rele
-- Movimiento
-
-## Ubicaciones
-
-- Destino
-- Posicion
-
-## Gestión Logística
-
-- Proveedor
-- Remito
-
-## Usuarios
-
-- Usuario
-
----
-
-# Gestión de Marcas
-
-## Funcionalidades implementadas
-
-- Crear marcas
-- Editar marcas
-- Eliminar marcas
-- Validaciones
-- Prevención de eliminación con relaciones activas
-- Confirmación visual
-- Snackbar enterprise
-- CRUD fullstack real
+- workflows operacionales
+- auditoría automática
+- máquina de estados
+- dashboards operativos
+- integración con sistemas corporativos
 
 ---
 
@@ -529,41 +156,26 @@ erDiagram
 
 ## Funcionalidades implementadas
 
-- Crear modelos
-- Editar modelos
-- Eliminar modelos
+- Alta de modelos
+- Edición de modelos
+- Eliminación de modelos
 - Asociación Marca ↔ Modelo
 - Asociación Tipo ↔ Modelo
 - Gestión de tensiones auxiliares
-- Validación y envío de datos de modelo ajustados al backend
-- UX enterprise
-- CRUD fullstack real
+- Validación de duplicados
+- Métricas operativas por modelo
+- Conteo de relés activos
+- Conteo de relés dados de baja
+- Conteo total de relés
+- Visualización operacional de uso real
 
----
+## Estado visual
 
-# Gestión de Tensiones
+Los modelos sin relés activos:
 
-El sistema implementa modelado estructurado de tensiones auxiliares.
-
-## Campos
-
-- tensionDesde
-- tensionHasta
-- tipoTension
-
-## Ejemplos
-
-- 48 - 250 VCC
-- 24 - 220 VCA
-- 110 VCC
-
-## Campo derivado
-
-```text
-tensionCompleta
-```
-
-generado automáticamente desde backend.
+- continúan visibles
+- aparecen visualmente atenuados
+- mantienen trazabilidad histórica
 
 ---
 
@@ -572,57 +184,170 @@ generado automáticamente desde backend.
 ## Funcionalidades implementadas
 
 - Alta de relés
+- Edición de relés
 - Asociación con modelos
-- Número de serie
-- Garantía
-- Historial operativo
+- Número de serie único
+- Gestión de garantía
 - Asociación logística
+- Estado operacional actual
+- Posición actual
+- Destino actual
+- Historial operativo
+- Relación con movimientos
+- Búsqueda por serial
+- Búsqueda parcial
+- Paginación
+- Sorting dinámico
 
-- Edición de relés (alta/editar/actualizar) implementada en frontend y backend.
-- Formulario de relés corregido y compatible con Material UI + TypeScript (`frontend/src/components/rele/ReleForm.tsx`).
-- Servicio frontend `releService` con método `actualizar` agregado (`frontend/src/services/releService.ts`).
-- Ajustes en el backend para el mapeo de DTOs en `backend/src/main/java/protecciones/service/ReleService.java` y `backend/src/main/java/protecciones/service/MovimientoService.java`.
+---
 
-## Próxima mejora
+# Baja Lógica de Relés
 
-Adaptar la pantalla de relés tomando como referencia el Access original:
+## Funcionalidades implementadas
 
-- Marca
-- Modelo
-- Tensión auxiliar
-- Número de serie
-- Garantía
-- Proveedor
-- Remito
-- Fecha de inicio garantía
+El sistema implementa:
+
+```text
+soft delete operacional
+```
+
+mediante:
+
+- activo
+- motivoBaja
+- fechaBaja
+
+## Beneficios
+
+- preservación histórica
+- trazabilidad completa
+- integridad operacional
+- protección de movimientos históricos
+- auditoría futura
+
+## Frontend
+
+- botón "Dar de baja"
+- dialog de confirmación
+- motivo obligatorio
+- visualización ACTIVO / BAJA
+- filtros:
+  - activos
+  - inactivos
+  - todos
+
+## Backend
+
+Endpoint:
+
+```http
+PATCH /api/reles/{id}/baja
+```
 
 ---
 
 # Gestión de Movimientos
 
-## Funcionalidades implementadas
+## Concepto operacional
+
+Los movimientos representan:
+
+```text
+eventos históricos operativos
+```
+
+y constituyen:
+
+- la trazabilidad del equipo
+- los cambios de estado
+- los cambios de ubicación
+- el historial técnico
+
+---
+
+# Funcionalidades implementadas
 
 - Registro de movimientos
 - Estados operativos
 - Posiciones
-- Historial de trazabilidad
+- Destinos
+- Responsable
+- Fecha automática
 - Notas operativas
-- Responsable
-- Fecha de movimiento
+- Historial operativo
+- Orden descendente por fecha
+- Timeline operacional básico
 
-## Próxima mejora
+---
 
-Implementar lógica operacional similar al sistema Access:
+# UX Operacional Implementada
 
-- Provincia
-- Localidad
-- Destino
-- Posición
-- Estado
-- Responsable
-- Fecha movimiento
-- Etiquetas operativas
-- filtros dinámicos
+## Selector inteligente de relés
+
+Se reemplazó el selector tradicional por:
+
+```text
+Autocomplete operacional
+```
+
+permitiendo búsqueda por:
+
+- número de serie
+- marca
+- modelo
+- tensión
+
+## Visualización contextual
+
+Formato visual:
+
+```text
+REL-001 | ABB | REL670 | 110-250 VCC
+```
+
+---
+
+# Panel Contextual Operacional
+
+Al seleccionar un relé:
+
+el sistema muestra automáticamente:
+
+- estado actual
+- posición actual
+- destino actual
+- garantía
+- marca
+- modelo
+- tensión
+
+Esto reduce:
+
+- errores operativos
+- movimientos incorrectos
+- ambigüedad operacional
+
+---
+
+# Historial por Relé
+
+## Funcionalidades implementadas
+
+- visualización histórica
+- consulta por relé
+- dialog operacional
+- movimientos ordenados
+- fechas formateadas
+- notas operativas
+- responsable
+- estado histórico
+- destino histórico
+
+## Endpoint
+
+```http
+GET /api/reles/{id}/movimientos
+```
 
 ---
 
@@ -689,19 +414,25 @@ GET /api/reles/buscar?serial=REL
 ### Historial de movimientos
 
 ```http
-GET /api/reles/1/movimientos
+GET /api/reles/{id}/movimientos
+```
+
+### Obtener relé por ID
+
+```http
+GET /api/reles/{id}
 ```
 
 ### Obtener estado actual
 
 ```http
-GET /api/reles/1/estado-actual
+GET /api/reles/{id}/estado-actual
 ```
 
 ### Filtrar por estado actual
 
 ```http
-GET /api/reles/estado/INSTALADO
+GET /api/reles/estado/{estado}
 ```
 
 ### Opciones frontend
@@ -710,70 +441,11 @@ GET /api/reles/estado/INSTALADO
 GET /api/reles/opciones
 ```
 
-### Actualizar relé
+### Dar de baja
 
 ```http
-PUT /api/reles/{id}
+PATCH /api/reles/{id}/baja
 ```
-
----
-
-# Swagger/OpenAPI
-
-## Acceso local
-
-```text
-http://localhost:8082/swagger-ui/index.html
-```
-
----
-
-# Docker
-
-## PostgreSQL persistente
-
-El sistema utiliza volúmenes Docker persistentes:
-
-```yaml
-volumes:
-  - postgres_data:/var/lib/postgresql/data
-```
-
-Esto permite conservar la información incluso si el contenedor es eliminado.
-
----
-
-# Puertos Utilizados
-
-| Componente | Puerto |
-|---|---|
-| Frontend React/Vite | 5173 |
-| Spring Boot API | 8082 |
-| PostgreSQL Host | 5433 |
-| PostgreSQL Interno Docker | 5432 |
-
----
-
-# Dashboard Futuro
-
-El sistema fue diseñado para soportar dashboards operativos.
-
-## Métricas previstas
-
-- Relés por estado
-- Relés por destino
-- Relés instalados
-- Equipos en reparación
-- Garantías próximas a vencer
-- Últimos movimientos
-- Modelos más utilizados
-- Marcas más utilizadas
-
-## Tecnologías previstas
-
-- Recharts
-- MUI Charts
-- KPIs operativos
 
 ---
 
@@ -804,7 +476,9 @@ El sistema fue diseñado para soportar dashboards operativos.
 
 - Historial de movimientos
 - Estado actual derivado
+- Posición actual derivada
 - Tracking operativo
+- Soft delete operacional
 
 ## Queries avanzadas
 
@@ -826,8 +500,6 @@ El sistema fue diseñado para soportar dashboards operativos.
 - Axios centralizado
 - Componentización
 
-- Correcciones recientes de compatibilidad TypeScript ↔ Material UI en componentes clave (PageHeader, ModeloForm, ReleForm).
-
 ## UI/UX
 
 - Material UI
@@ -836,13 +508,13 @@ El sistema fue diseñado para soportar dashboards operativos.
 - Branding Transmisión
 - Formularios enterprise
 - Selects dinámicos
+- Autocomplete operacional
 - Tablas operativas
-- Loading states
-- Snackbars
-- Dialogs
+- Historial contextual
+- Chips operativos
 - Feedback visual
-
-- Formularios de relés actualizados y validados (`frontend/src/components/rele/ReleForm.tsx`) y servicio de edición `releService.actualizar`.
+- Loading states
+- Dialogs operacionales
 
 ## Fullstack
 
@@ -853,22 +525,48 @@ El sistema fue diseñado para soportar dashboards operativos.
 
 ---
 
+# Dashboard Futuro
+
+## Métricas previstas
+
+- Relés por estado
+- Relés por destino
+- Relés instalados
+- Equipos en reparación
+- Garantías próximas a vencer
+- Últimos movimientos
+- Modelos más utilizados
+- Marcas más utilizadas
+
+## Tecnologías previstas
+
+- Recharts
+- MUI Charts
+- KPIs operativos
+
+---
+
 # Próximos Pasos
+
+## Operación
+
+- workflow de estados
+- validaciones operacionales
+- transiciones válidas
+- auditoría automática
 
 ## Frontend
 
-- Mejorar módulo Relés
-- Mejorar módulo Movimientos
 - Dashboard operativo
 - DataGrid avanzado
-- Filtros visuales
 - KPIs operativos
-- Paginación frontend
+- filtros visuales
+- timeline visual
+- búsqueda avanzada
 
 ## Backend
 
-- Queries avanzadas
-- Soft delete
+- Soft delete global
 - Auditoría automática
 - Seguridad JWT
 - Roles y permisos
@@ -950,42 +648,11 @@ http://localhost:8082/swagger-ui/index.html
 
 ---
 
-## Verificar Docker
+# Commit actual recomendado
 
 ```bash
-docker ps
-```
-
----
-
-## Reinicio completo
-
-```bash
-docker compose down -v
-docker compose up -d
-```
-
----
-
-# Flujo de Trabajo Actual
-
-```mermaid
-flowchart LR
-
-    A[Crear Migration SQL]
-        --> B[Ejecutar Spring Boot]
-
-    B --> C[Flyway actualiza PostgreSQL]
-
-    C --> D[Hibernate valida Entities]
-
-    D --> E[Exposición API REST]
-
-    E --> F[Frontend React consume API]
-
-    F --> G[Material UI Render]
-
-    G --> H[Pruebas Fullstack]
+git add .
+git commit -m "feat: implementar trazabilidad operacional de relés"
 ```
 
 ---
