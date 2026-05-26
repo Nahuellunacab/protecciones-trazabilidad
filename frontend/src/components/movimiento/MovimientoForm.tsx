@@ -13,6 +13,10 @@ import type {
 } from "../../types/Posicion";
 
 import type {
+    Rele
+} from "../../types/Rele";
+
+import type {
     ReleOption
 } from "../../types/ReleOption";
 
@@ -25,15 +29,22 @@ import {
 } from "../../services/posicionService";
 
 import {
-    obtenerOpciones
+
+    obtenerOpciones,
+
+    obtenerRelePorId
+
 } from "../../services/releService";
 
 import {
 
     Alert,
+    Autocomplete,
     Box,
     Button,
+    Chip,
     CircularProgress,
+    Divider,
     FormControl,
     InputLabel,
     MenuItem,
@@ -68,6 +79,10 @@ function MovimientoForm({
 
     const [reles, setReles] =
         useState<ReleOption[]>([]);
+
+    const [releSeleccionado,
+        setReleSeleccionado] =
+        useState<Rele | null>(null);
 
     const [estados, setEstados] =
         useState<Estado[]>([]);
@@ -127,6 +142,45 @@ function MovimientoForm({
         });
     };
 
+    const handleSeleccionRele =
+    async (
+        value: ReleOption | null
+    ) => {
+
+        setFormData({
+
+            ...formData,
+
+            releId:
+                value
+                    ? value.id
+                    : 0
+        });
+
+        if (!value) {
+
+            setReleSeleccionado(null);
+
+            return;
+        }
+
+        try {
+
+            const rele =
+                await obtenerRelePorId(
+                    value.id
+                );
+
+            setReleSeleccionado(
+                rele
+            );
+
+        } catch (error) {
+
+            console.error(error);
+        }
+    };
+
     const handleSubmit = async (
         e: React.FormEvent
     ) => {
@@ -147,6 +201,8 @@ function MovimientoForm({
                 posicionId: 0,
                 notas: ""
             });
+
+            setReleSeleccionado(null);
 
         } catch (error) {
 
@@ -218,39 +274,183 @@ function MovimientoForm({
 
                     <Stack spacing={2}>
 
-                        <FormControl fullWidth>
+                        <Autocomplete
 
-                            <InputLabel>
-                                Relé
-                            </InputLabel>
+                            options={reles}
 
-                            <Select
-                                name="releId"
-                                value={
-                                    formData.releId
-                                }
-                                label="Relé"
-                                onChange={handleChange}
-                            >
+                            getOptionLabel={(option) =>
 
-                                {reles.map(
-                                    (rele) => (
+                                `${option.numeroSerie} | ${option.marca} | ${option.modelo} | ${option.tension}`
+                            }
 
-                                    <MenuItem
-                                        key={rele.id}
-                                        value={rele.id}
+                            value={
+                                reles.find(
+                                    (r) =>
+                                        r.id === formData.releId
+                                ) || null
+                            }
+
+                            onChange={(_, value) =>
+                                handleSeleccionRele(
+                                    value
+                                )
+                            }
+
+                            renderInput={(params) => (
+
+                                <TextField
+                                    {...params}
+                                    label="Relé"
+                                />
+                            )}
+
+                            renderOption={(props, option) => (
+
+                                <Box
+                                    component="li"
+                                    {...props}
+                                >
+
+                                    <Stack>
+
+                                        <Typography
+                                            fontWeight={600}
+                                        >
+
+                                            {option.numeroSerie}
+
+                                        </Typography>
+
+                                        <Typography
+                                            variant="body2"
+                                            color="text.secondary"
+                                        >
+
+                                            {
+                                                `${option.marca} | ${option.modelo} | ${option.tension}`
+                                            }
+
+                                        </Typography>
+
+                                    </Stack>
+
+                                </Box>
+                            )}
+                        />
+
+                        {
+                            releSeleccionado && (
+
+                                <Paper
+                                    variant="outlined"
+                                    sx={{
+                                        padding: 2,
+                                        backgroundColor:
+                                            "#fafafa"
+                                    }}
+                                >
+
+                                    <Typography
+                                        variant="subtitle1"
+                                        fontWeight={600}
+                                        gutterBottom
+                                    >
+                                        Estado Operacional Actual
+                                    </Typography>
+
+                                    <Divider
+                                        sx={{ mb: 2 }}
+                                    />
+
+                                    <Stack
+                                        direction="row"
+                                        spacing={1}
+                                        flexWrap="wrap"
+                                        useFlexGap
                                     >
 
-                                        {
-                                            rele.numeroSerie
-                                        }
+                                        <Chip
+                                            label={
+                                                `Estado: ${releSeleccionado.estadoActual}`
+                                            }
+                                            color="primary"
+                                        />
 
-                                    </MenuItem>
-                                ))}
+                                        <Chip
+                                            label={
+                                                `Posición: ${releSeleccionado.posicionActual}`
+                                            }
+                                            color="secondary"
+                                        />
 
-                            </Select>
+                                        <Chip
+                                            label={
+                                                `Destino: ${releSeleccionado.localidadActual}`
+                                            }
+                                            color="info"
+                                        />
 
-                        </FormControl>
+                                        <Chip
+                                            label={
+                                                `Garantía: ${releSeleccionado.estadoGarantia}`
+                                            }
+                                            color={
+                                                releSeleccionado.estadoGarantia === "VIGENTE"
+                                                    ? "success"
+                                                    : releSeleccionado.estadoGarantia === "POR VENCER"
+                                                        ? "warning"
+                                                        : "error"
+                                            }
+                                        />
+
+                                    </Stack>
+
+                                    <Stack
+                                        spacing={1}
+                                        sx={{ mt: 2 }}
+                                    >
+
+                                        <Typography
+                                            variant="body2"
+                                        >
+
+                                            <strong>Marca:</strong>
+                                            {" "}
+                                            {
+                                                releSeleccionado.marca
+                                            }
+
+                                        </Typography>
+
+                                        <Typography
+                                            variant="body2"
+                                        >
+
+                                            <strong>Modelo:</strong>
+                                            {" "}
+                                            {
+                                                releSeleccionado.modelo
+                                            }
+
+                                        </Typography>
+
+                                        <Typography
+                                            variant="body2"
+                                        >
+
+                                            <strong>Tensión:</strong>
+                                            {" "}
+                                            {
+                                                releSeleccionado.tension
+                                            }
+
+                                        </Typography>
+
+                                    </Stack>
+
+                                </Paper>
+                            )
+                        }
 
                         <FormControl fullWidth>
 
@@ -312,7 +512,7 @@ function MovimientoForm({
                                         {
                                             posicion.destino
                                         }
-                                        {" - "}
+                                        {" | "}
                                         {
                                             posicion.nombre
                                         }
@@ -325,7 +525,7 @@ function MovimientoForm({
                         </FormControl>
 
                         <TextField
-                            label="Notas"
+                            label="Notas operativas"
                             name="notas"
                             value={formData.notas}
                             onChange={handleChange}

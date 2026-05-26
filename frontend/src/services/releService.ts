@@ -41,6 +41,18 @@ Promise<ReleOption[]> {
     return response.data;
 }
 
+export async function obtenerRelePorId(
+    id: number
+): Promise<Rele> {
+
+    const response =
+        await api.get(
+            `/reles/${id}`
+        );
+
+    return response.data;
+}
+
 export async function darDeBaja(
     id: number,
     motivo: string

@@ -1,9 +1,16 @@
-// ReleTable.tsx
-
 import { useState } from "react";
 
 import type { Rele }
 from "../../types/Rele";
+
+import type { Movimiento }
+from "../../types/Movimiento";
+
+import {
+
+    obtenerHistorialPorRele
+
+} from "../../services/movimientoService";
 
 import {
     Paper,
@@ -23,7 +30,8 @@ import {
     DialogActions,
     TextField,
     ToggleButton,
-    ToggleButtonGroup
+    ToggleButtonGroup,
+    CircularProgress
 } from "@mui/material";
 
 interface Props {
@@ -71,6 +79,26 @@ function ReleTable({
         |
         "TODOS"
     >("ACTIVOS");
+
+    const [
+        historialOpen,
+        setHistorialOpen
+    ] = useState(false);
+
+    const [
+        historial,
+        setHistorial
+    ] = useState<Movimiento[]>([]);
+
+    const [
+        historialLoading,
+        setHistorialLoading
+    ] = useState(false);
+
+    const [
+        releHistorial,
+        setReleHistorial
+    ] = useState<Rele | null>(null);
 
     const relesFiltrados =
         reles.filter((rele) => {
@@ -122,6 +150,58 @@ function ReleTable({
 
             setLoading(false);
         }
+    };
+
+    const handleVerHistorial =
+    async (
+        rele: Rele
+    ) => {
+
+        try {
+
+            setHistorialLoading(true);
+
+            setReleHistorial(rele);
+
+            const data =
+                await obtenerHistorialPorRele(
+                    rele.id
+                );
+
+            setHistorial(data);
+
+            setHistorialOpen(true);
+
+        } catch (error) {
+
+            console.error(error);
+
+        } finally {
+
+            setHistorialLoading(false);
+        }
+    };
+
+    const formatearFecha = (
+        fecha: string
+    ) => {
+
+        return new Date(fecha)
+            .toLocaleString(
+                "es-AR",
+                {
+
+                    day: "2-digit",
+
+                    month: "2-digit",
+
+                    year: "numeric",
+
+                    hour: "2-digit",
+
+                    minute: "2-digit"
+                }
+            );
     };
 
     return (
@@ -195,10 +275,6 @@ function ReleTable({
 
                             <TableCell>
                                 <strong>Garantía</strong>
-                            </TableCell>
-
-                            <TableCell>
-                                <strong>Remito</strong>
                             </TableCell>
 
                             <TableCell>
@@ -340,19 +416,11 @@ function ReleTable({
 
                                 <TableCell>
 
-                                    {
-                                        rele.remitoId
-                                            ? rele.remitoId
-                                            : "-"
-                                    }
-
-                                </TableCell>
-
-                                <TableCell>
-
                                     <Stack
                                         direction="row"
                                         spacing={1}
+                                        flexWrap="wrap"
+                                        useFlexGap
                                     >
 
                                         <Button
@@ -363,6 +431,16 @@ function ReleTable({
                                             }
                                         >
                                             Editar
+                                        </Button>
+
+                                        <Button
+                                            size="small"
+                                            variant="outlined"
+                                            onClick={() =>
+                                                handleVerHistorial(rele)
+                                            }
+                                        >
+                                            Historial
                                         </Button>
 
                                         <Button
@@ -387,24 +465,6 @@ function ReleTable({
 
                             </TableRow>
                         ))}
-
-                        {relesFiltrados.length === 0 && (
-
-                            <TableRow>
-
-                                <TableCell
-                                    colSpan={9}
-                                    align="center"
-                                >
-
-                                    <Typography>
-                                        No hay relés cargados
-                                    </Typography>
-
-                                </TableCell>
-
-                            </TableRow>
-                        )}
 
                     </TableBody>
 
@@ -468,6 +528,162 @@ function ReleTable({
                         }
                     >
                         Confirmar baja
+                    </Button>
+
+                </DialogActions>
+
+            </Dialog>
+
+            <Dialog
+                open={historialOpen}
+                onClose={() =>
+                    setHistorialOpen(false)
+                }
+                maxWidth="lg"
+                fullWidth
+            >
+
+                <DialogTitle>
+
+                    Historial de movimientos
+                    {
+                        releHistorial
+                        &&
+                        ` - ${releHistorial.numeroSerie}`
+                    }
+
+                </DialogTitle>
+
+                <DialogContent>
+
+                    {
+                        historialLoading ? (
+
+                            <Stack
+                                alignItems="center"
+                                sx={{ py: 4 }}
+                            >
+
+                                <CircularProgress />
+
+                            </Stack>
+
+                        ) : historial.length === 0 ? (
+
+                            <Typography>
+
+                                No hay movimientos registrados
+
+                            </Typography>
+
+                        ) : (
+
+                            <TableContainer>
+
+                                <Table>
+
+                                    <TableHead>
+
+                                        <TableRow>
+
+                                            <TableCell>
+                                                Estado
+                                            </TableCell>
+
+                                            <TableCell>
+                                                Destino
+                                            </TableCell>
+
+                                            <TableCell>
+                                                Posición
+                                            </TableCell>
+
+                                            <TableCell>
+                                                Responsable
+                                            </TableCell>
+
+                                            <TableCell>
+                                                Fecha
+                                            </TableCell>
+
+                                            <TableCell>
+                                                Notas
+                                            </TableCell>
+
+                                        </TableRow>
+
+                                    </TableHead>
+
+                                    <TableBody>
+
+                                        {
+                                            historial.map(
+                                                (mov) => (
+
+                                                <TableRow
+                                                    key={mov.id}
+                                                >
+
+                                                    <TableCell>
+
+                                                        <Chip
+                                                            label={
+                                                                mov.estado
+                                                            }
+                                                            size="small"
+                                                            color="primary"
+                                                        />
+
+                                                    </TableCell>
+
+                                                    <TableCell>
+                                                        {mov.destino}
+                                                    </TableCell>
+
+                                                    <TableCell>
+                                                        {mov.posicion}
+                                                    </TableCell>
+
+                                                    <TableCell>
+                                                        {mov.responsable}
+                                                    </TableCell>
+
+                                                    <TableCell>
+
+                                                        {
+                                                            formatearFecha(
+                                                                mov.fechaMovimiento
+                                                            )
+                                                        }
+
+                                                    </TableCell>
+
+                                                    <TableCell>
+                                                        {mov.notas || "-"}
+                                                    </TableCell>
+
+                                                </TableRow>
+                                            ))
+                                        }
+
+                                    </TableBody>
+
+                                </Table>
+
+                            </TableContainer>
+                        )
+                    }
+
+                </DialogContent>
+
+                <DialogActions>
+
+                    <Button
+                        onClick={() =>
+                            setHistorialOpen(false)
+                        }
+                    >
+                        Cerrar
                     </Button>
 
                 </DialogActions>

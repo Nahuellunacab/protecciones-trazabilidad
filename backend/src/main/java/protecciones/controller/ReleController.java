@@ -23,7 +23,6 @@ import org.springframework.http.ResponseEntity;
 
 import protecciones.dto.BajaReleRequestDTO;
 
-
 @RestController
 @RequestMapping("/api/reles")
 @Tag(name = "Relés", description = "Gestión de relés de protección")
@@ -60,6 +59,16 @@ public class ReleController {
             @PathVariable String numeroSerie) {
 
         return releService.buscarPorNumeroSerie(numeroSerie);
+    }
+
+    @GetMapping("/{id}")
+    @Operation(summary = "Obtener relé por ID")
+    public ReleResponseDTO obtenerPorId(
+            @PathVariable Long id
+    ) {
+
+        return releService
+                .obtenerPorId(id);
     }
 
     @GetMapping("/{id}/movimientos")
@@ -115,16 +124,16 @@ public class ReleController {
     }
 
     @PutMapping("/{id}")
-        public ReleResponseDTO actualizar(
-                @PathVariable Long id,
-                @RequestBody ReleRequestDTO dto
-        ) {
+    public ReleResponseDTO actualizar(
+            @PathVariable Long id,
+            @RequestBody ReleRequestDTO dto
+    ) {
 
-            return releService.actualizar(
-                    id,
-                    dto
-            );
-        }
+        return releService.actualizar(
+                id,
+                dto
+        );
+    }
 
     @PatchMapping("/{id}/baja")
     public ResponseEntity<Void>

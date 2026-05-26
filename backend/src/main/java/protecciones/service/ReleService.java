@@ -191,6 +191,22 @@ public class ReleService {
         );
     }
 
+    public ReleResponseDTO
+    obtenerPorId(
+            Long id
+    ) {
+
+        Rele rele =
+                releRepository.findById(id)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Relé no encontrado"
+                                )
+                        );
+
+        return mapToResponseDTO(rele);
+    }
+
     public List<MovimientoResponseDTO>
     obtenerHistorial(
             Long releId
