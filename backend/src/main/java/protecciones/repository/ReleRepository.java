@@ -1,5 +1,8 @@
 package protecciones.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import protecciones.entity.Rele;
@@ -19,11 +22,31 @@ public interface ReleRepository
             Long id
     );
 
-    List<Rele> findByNumeroSerieContainingIgnoreCase(
+    List<Rele>
+    findByActivoTrue();
+
+    Page<Rele>
+    findByActivoTrue(
+            Pageable pageable
+    );
+
+    List<Rele>
+    findByNumeroSerieContainingIgnoreCaseAndActivoTrue(
             String numeroSerie
     );
 
-    Optional<Rele> findByNumeroSerie(
+    Optional<Rele>
+    findByNumeroSerieAndActivoTrue(
+            String numeroSerie
+    );
+
+    List<Rele>
+    findByNumeroSerieContainingIgnoreCase(
+            String numeroSerie
+    );
+
+    Optional<Rele>
+    findByNumeroSerie(
             String numeroSerie
     );
 }

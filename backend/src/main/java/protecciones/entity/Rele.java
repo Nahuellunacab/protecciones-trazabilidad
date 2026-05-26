@@ -3,6 +3,7 @@ package protecciones.entity;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "rele")
@@ -24,6 +25,15 @@ public class Rele {
     @Column(name = "fin_garantia")
     private LocalDate finGarantia;
 
+    @Column(nullable = false)
+    private Boolean activo = true;
+
+    @Column(name = "motivo_baja")
+    private String motivoBaja;
+
+    @Column(name = "fecha_baja")
+    private LocalDateTime fechaBaja;
+
     @ManyToOne
     @JoinColumn(name = "modelo_id", nullable = false)
     private Modelo modelo;
@@ -35,13 +45,15 @@ public class Rele {
     public Rele() {
     }
 
-    public Rele(Long id,
-                String numeroSerie,
-                Integer garantiaMeses,
-                LocalDate inicioGarantia,
-                LocalDate finGarantia,
-                Modelo modelo,
-                Remito remito) {
+    public Rele(
+            Long id,
+            String numeroSerie,
+            Integer garantiaMeses,
+            LocalDate inicioGarantia,
+            LocalDate finGarantia,
+            Modelo modelo,
+            Remito remito
+    ) {
 
         this.id = id;
         this.numeroSerie = numeroSerie;
@@ -72,6 +84,18 @@ public class Rele {
         return finGarantia;
     }
 
+    public Boolean getActivo() {
+        return activo;
+    }
+
+    public String getMotivoBaja() {
+        return motivoBaja;
+    }
+
+    public LocalDateTime getFechaBaja() {
+        return fechaBaja;
+    }
+
     public Modelo getModelo() {
         return modelo;
     }
@@ -98,6 +122,18 @@ public class Rele {
 
     public void setFinGarantia(LocalDate finGarantia) {
         this.finGarantia = finGarantia;
+    }
+
+    public void setActivo(Boolean activo) {
+        this.activo = activo;
+    }
+
+    public void setMotivoBaja(String motivoBaja) {
+        this.motivoBaja = motivoBaja;
+    }
+
+    public void setFechaBaja(LocalDateTime fechaBaja) {
+        this.fechaBaja = fechaBaja;
     }
 
     public void setModelo(Modelo modelo) {

@@ -2,9 +2,7 @@ import api from "../api/axios";
 
 import type { Rele } from "../types/Rele";
 import type { ReleRequest } from "../types/ReleRequest";
-import type {
-    ReleOption
-} from "../types/ReleOption";
+import type { ReleOption } from "../types/ReleOption";
 
 export const obtenerReles = async (): Promise<Rele[]> => {
 
@@ -41,4 +39,17 @@ Promise<ReleOption[]> {
         await api.get("/reles/opciones");
 
     return response.data;
+}
+
+export async function darDeBaja(
+    id: number,
+    motivo: string
+): Promise<void> {
+
+    await api.patch(
+        `/reles/${id}/baja`,
+        {
+            motivo
+        }
+    );
 }

@@ -31,4 +31,10 @@ export interface Rele {
     estadoGarantia: string;
 
     mesesRestantesGarantia: number | null;
+
+    activo: boolean;
+
+    motivoBaja: string | null;
+
+    fechaBaja: string | null;
 }

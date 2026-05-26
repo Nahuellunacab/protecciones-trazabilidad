@@ -21,6 +21,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import protecciones.dto.BajaReleRequestDTO;
+
 
 @RestController
 @RequestMapping("/api/reles")
@@ -123,4 +125,26 @@ public class ReleController {
                     dto
             );
         }
+
+    @PatchMapping("/{id}/baja")
+    public ResponseEntity<Void>
+    darDeBaja(
+
+            @PathVariable
+            Long id,
+
+            @Valid
+            @RequestBody
+            BajaReleRequestDTO dto
+    ) {
+
+        releService.darDeBaja(
+                id,
+                dto.getMotivo()
+        );
+
+        return ResponseEntity
+                .noContent()
+                .build();
+    }
 }

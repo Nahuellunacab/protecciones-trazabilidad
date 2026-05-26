@@ -8,7 +8,8 @@ from "../components/common/PageHeader";
 import {
     obtenerReles,
     crearRele,
-    actualizar
+    actualizar,
+    darDeBaja
 } from "../services/releService";
 
 import type { Rele }
@@ -69,6 +70,19 @@ function RelePage() {
         await cargarReles();
     };
 
+    const handleBaja = async (
+        id: number,
+        motivo: string
+    ) => {
+
+        await darDeBaja(
+            id,
+            motivo
+        );
+
+        await cargarReles();
+    };
+
     return (
 
         <div>
@@ -93,6 +107,7 @@ function RelePage() {
             <ReleTable
                 reles={reles}
                 onEditar={setReleEditando}
+                onDarDeBaja={handleBaja}
             />
 
         </div>

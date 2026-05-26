@@ -18,6 +18,7 @@ import protecciones.repository.ReleRepository;
 import protecciones.repository.RemitoRepository;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
 import java.util.List;
@@ -101,9 +102,9 @@ public class ReleService {
                 )
         ) {
 
-        throw new RuntimeException(
-                "Ya existe un relé con ese número de serie"
-        );
+            throw new RuntimeException(
+                    "Ya existe un relé con ese número de serie"
+            );
         }
 
         Rele rele =
@@ -120,6 +121,8 @@ public class ReleService {
         rele.setRemito(
                 remito
         );
+
+        rele.setActivo(true);
 
         if (
                 Boolean.TRUE.equals(
@@ -175,7 +178,7 @@ public class ReleService {
     ) {
 
         Rele rele =
-                releRepository.findByNumeroSerie(
+                releRepository.findByNumeroSerieAndActivoTrue(
                         numeroSerie
                 ).orElseThrow(() ->
                         new RuntimeException(
@@ -231,25 +234,25 @@ public class ReleService {
 
                 tension =
                         desde
-                        + " - "
-                        + hasta
-                        + " "
-                        + (
-                        tipo != null
-                                ? tipo
-                                : ""
-                );
+                                + " - "
+                                + hasta
+                                + " "
+                                + (
+                                tipo != null
+                                        ? tipo
+                                        : ""
+                        );
 
             } else if (desde != null) {
 
                 tension =
                         desde
-                        + " "
-                        + (
-                        tipo != null
-                                ? tipo
-                                : ""
-                );
+                                + " "
+                                + (
+                                tipo != null
+                                        ? tipo
+                                        : ""
+                        );
 
             } else {
 
@@ -375,7 +378,13 @@ public class ReleService {
 
                 estadoGarantia,
 
-                mesesRestantesGarantia
+                mesesRestantesGarantia,
+
+                rele.getActivo(),
+
+                rele.getMotivoBaja(),
+
+                rele.getFechaBaja()
         );
     }
 
@@ -474,7 +483,7 @@ public class ReleService {
     ) {
 
         return releRepository
-                .findByNumeroSerieContainingIgnoreCase(
+                .findByNumeroSerieContainingIgnoreCaseAndActivoTrue(
                         serial
                 )
                 .stream()
@@ -486,7 +495,7 @@ public class ReleService {
     obtenerOpciones() {
 
         return releRepository
-                .findAll()
+                .findByActivoTrue()
                 .stream()
                 .map(rele ->
 
@@ -494,16 +503,26 @@ public class ReleService {
 
                                 rele.getId(),
 
-                                rele.getNumeroSerie()
+                                rele.getNumeroSerie(),
+
+                                rele.getModelo()
+                                        .getNombre(),
+
+                                rele.getModelo()
+                                        .getMarca()
+                                        .getNombre(),
+
+                                mapToResponseDTO(rele)
+                                        .getTension()
                         )
                 )
                 .toList();
     }
 
     public ReleResponseDTO actualizar(
-                Long id,
-                ReleRequestDTO dto
-        ) {
+            Long id,
+            ReleRequestDTO dto
+    ) {
 
         Rele rele =
                 releRepository.findById(id)
@@ -520,9 +539,9 @@ public class ReleService {
                 )
         ) {
 
-                throw new RuntimeException(
-                        "Ya existe un relé con ese número de serie"
-                );
+            throw new RuntimeException(
+                    "Ya existe un relé con ese número de serie"
+            );
         }
 
         Modelo modelo =
@@ -538,14 +557,14 @@ public class ReleService {
 
         if (dto.getRemitoId() != null) {
 
-                remito =
-                        remitoRepository.findById(
-                                dto.getRemitoId()
-                        ).orElseThrow(() ->
-                                new RuntimeException(
-                                        "Remito no encontrado"
-                                )
-                        );
+            remito =
+                    remitoRepository.findById(
+                            dto.getRemitoId()
+                    ).orElseThrow(() ->
+                            new RuntimeException(
+                                    "Remito no encontrado"
+                            )
+                    );
         }
 
         rele.setNumeroSerie(
@@ -562,19 +581,19 @@ public class ReleService {
                 )
         ) {
 
-                rele.setGarantiaMeses(
-                        dto.getGarantiaMeses()
-                );
+            rele.setGarantiaMeses(
+                    dto.getGarantiaMeses()
+            );
 
-                rele.setInicioGarantia(
-                        dto.getInicioGarantia()
-                );
+            rele.setInicioGarantia(
+                    dto.getInicioGarantia()
+            );
 
-                if (
-                        dto.getInicioGarantia() != null
-                                &&
-                        dto.getGarantiaMeses() != null
-                ) {
+            if (
+                    dto.getInicioGarantia() != null
+                            &&
+                    dto.getGarantiaMeses() != null
+            ) {
 
                 rele.setFinGarantia(
                         dto.getInicioGarantia()
@@ -582,15 +601,15 @@ public class ReleService {
                                         dto.getGarantiaMeses()
                                 )
                 );
-                }
+            }
 
         } else {
 
-                rele.setGarantiaMeses(null);
+            rele.setGarantiaMeses(null);
 
-                rele.setInicioGarantia(null);
+            rele.setInicioGarantia(null);
 
-                rele.setFinGarantia(null);
+            rele.setFinGarantia(null);
         }
 
         Rele actualizado =
@@ -599,7 +618,33 @@ public class ReleService {
         return mapToResponseDTO(
                 actualizado
         );
-        }
+    }
+
+    public void darDeBaja(
+            Long id,
+            String motivo
+    ) {
+
+        Rele rele =
+                releRepository.findById(id)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Relé no encontrado"
+                                )
+                        );
+
+        rele.setActivo(false);
+
+        rele.setMotivoBaja(
+                motivo.trim()
+        );
+
+        rele.setFechaBaja(
+                LocalDateTime.now()
+        );
+
+        releRepository.save(rele);
+    }
 
     private MovimientoResponseDTO
     mapMovimientoToDTO(

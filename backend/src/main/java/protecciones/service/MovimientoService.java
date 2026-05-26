@@ -80,6 +80,15 @@ public class MovimientoService {
                 releRepository.findById(
                         dto.getReleId()
                 ).orElseThrow();
+        
+                if (!Boolean.TRUE.equals(
+                rele.getActivo()
+        )) {
+
+        throw new RuntimeException(
+                "No se pueden registrar movimientos sobre un relé dado de baja"
+        );
+        }
 
         Estado estado =
                 estadoRepository.findById(

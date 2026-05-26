@@ -1,6 +1,7 @@
 package protecciones.dto;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public class ReleResponseDTO {
 
@@ -36,6 +37,12 @@ public class ReleResponseDTO {
 
     private Long mesesRestantesGarantia;
 
+    private Boolean activo;
+
+    private String motivoBaja;
+
+    private LocalDateTime fechaBaja;
+
     public ReleResponseDTO() {
     }
 
@@ -55,7 +62,10 @@ public class ReleResponseDTO {
             Long modeloId,
             Long remitoId,
             String estadoGarantia,
-            Long mesesRestantesGarantia
+            Long mesesRestantesGarantia,
+            Boolean activo,
+            String motivoBaja,
+            LocalDateTime fechaBaja
     ) {
 
         this.id = id;
@@ -74,6 +84,9 @@ public class ReleResponseDTO {
         this.remitoId = remitoId;
         this.estadoGarantia = estadoGarantia;
         this.mesesRestantesGarantia = mesesRestantesGarantia;
+        this.activo = activo;
+        this.motivoBaja = motivoBaja;
+        this.fechaBaja = fechaBaja;
     }
 
     public Long getId() {
@@ -140,6 +153,18 @@ public class ReleResponseDTO {
         return mesesRestantesGarantia;
     }
 
+    public Boolean getActivo() {
+        return activo;
+    }
+
+    public String getMotivoBaja() {
+        return motivoBaja;
+    }
+
+    public LocalDateTime getFechaBaja() {
+        return fechaBaja;
+    }
+
     public void setId(Long id) {
         this.id = id;
     }
@@ -202,5 +227,17 @@ public class ReleResponseDTO {
 
     public void setMesesRestantesGarantia(Long mesesRestantesGarantia) {
         this.mesesRestantesGarantia = mesesRestantesGarantia;
+    }
+
+    public void setActivo(Boolean activo) {
+        this.activo = activo;
+    }
+
+    public void setMotivoBaja(String motivoBaja) {
+        this.motivoBaja = motivoBaja;
+    }
+
+    public void setFechaBaja(LocalDateTime fechaBaja) {
+        this.fechaBaja = fechaBaja;
     }
 }
