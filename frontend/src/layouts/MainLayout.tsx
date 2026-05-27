@@ -171,6 +171,14 @@ function MainLayout() {
                         Localidades
                     </Button>
 
+                    <Button
+                        color="inherit"
+                        component={Link}
+                        to="/admin/proveedores"
+                    >
+                        Proveedores
+                    </Button>
+
                 </Toolbar>
 
             </AppBar>
