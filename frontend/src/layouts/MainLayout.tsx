@@ -155,6 +155,14 @@ function MainLayout() {
                         Posiciones
                     </Button>
 
+                    <Button
+                        color="inherit"
+                        component={Link}
+                        to="/admin/provincias"
+                    >
+                        Provincias
+                    </Button>
+
                 </Toolbar>
 
             </AppBar>

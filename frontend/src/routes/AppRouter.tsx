@@ -28,6 +28,9 @@ from "../pages/admin/DestinoPage";
 import PosicionPage
 from "../pages/admin/PosicionPage";
 
+import ProvinciaPage
+from "../pages/admin/ProvinciaPage";
+
 function AppRouter() {
 
     return (
@@ -76,7 +79,14 @@ function AppRouter() {
                         element={<PosicionPage />}
                     />
 
+                    <Route
+                        path="admin/provincias"
+                        element={<ProvinciaPage />}
+                    />
+
                 </Route>
+
+                
 
             </Routes>
 
