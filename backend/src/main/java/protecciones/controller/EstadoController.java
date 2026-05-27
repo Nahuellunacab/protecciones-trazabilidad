@@ -30,4 +30,16 @@ public class EstadoController {
         return estadoService
                 .obtenerTodos();
     }
+
+    @GetMapping("/transiciones/{releId}")
+    public List<EstadoResponseDTO>
+    obtenerEstadosPermitidos(
+            @PathVariable Long releId
+    ) {
+
+        return estadoService
+                .obtenerEstadosPermitidos(
+                        releId
+                );
+    }
 }

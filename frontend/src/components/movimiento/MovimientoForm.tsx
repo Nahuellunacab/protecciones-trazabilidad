@@ -21,7 +21,10 @@ import type {
 } from "../../types/ReleOption";
 
 import {
-    obtenerEstados
+
+    obtenerEstados,
+    obtenerEstadosPermitidos
+
 } from "../../services/estadoService";
 
 import {
@@ -80,8 +83,10 @@ function MovimientoForm({
     const [reles, setReles] =
         useState<ReleOption[]>([]);
 
-    const [releSeleccionado,
-        setReleSeleccionado] =
+    const [
+        releSeleccionado,
+        setReleSeleccionado
+    ] =
         useState<Rele | null>(null);
 
     const [estados, setEstados] =
@@ -154,12 +159,19 @@ function MovimientoForm({
             releId:
                 value
                     ? value.id
-                    : 0
+                    : 0,
+
+            estadoId: 0
         });
 
         if (!value) {
 
             setReleSeleccionado(null);
+
+            const estadosData =
+                await obtenerEstados();
+
+            setEstados(estadosData);
 
             return;
         }
@@ -173,6 +185,15 @@ function MovimientoForm({
 
             setReleSeleccionado(
                 rele
+            );
+
+            const estadosPermitidos =
+                await obtenerEstadosPermitidos(
+                    value.id
+                );
+
+            setEstados(
+                estadosPermitidos
             );
 
         } catch (error) {
@@ -203,6 +224,11 @@ function MovimientoForm({
             });
 
             setReleSeleccionado(null);
+
+            const estadosData =
+                await obtenerEstados();
+
+            setEstados(estadosData);
 
         } catch (error) {
 

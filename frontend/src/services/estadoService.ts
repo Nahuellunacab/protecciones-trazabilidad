@@ -12,3 +12,16 @@ Promise<Estado[]> {
 
     return response.data;
 }
+
+export async function
+obtenerEstadosPermitidos(
+    releId: number
+): Promise<Estado[]> {
+
+    const response =
+        await api.get(
+            `/estados/transiciones/${releId}`
+        );
+
+    return response.data;
+}
