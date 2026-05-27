@@ -173,7 +173,7 @@ public class MovimientoService {
         return mapToDTO(guardado);
     }
 
-    private MovimientoResponseDTO mapToDTO(
+    public MovimientoResponseDTO mapToDTO(
             Movimiento movimiento
     ) {
 

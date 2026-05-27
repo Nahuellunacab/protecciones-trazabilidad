@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import protecciones.entity.Rele;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -56,5 +57,13 @@ public interface ReleRepository
 
     long countByModeloIdAndActivoFalse(
             Long modeloId
+    );
+
+    long countByActivoTrue();
+
+    long countByActivoFalse();
+
+    long countByFinGarantiaBefore(
+            LocalDate fecha
     );
 }
