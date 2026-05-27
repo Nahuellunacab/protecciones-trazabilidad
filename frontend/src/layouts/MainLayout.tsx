@@ -139,6 +139,14 @@ function MainLayout() {
                         Modelos
                     </Button>
 
+                    <Button
+                        color="inherit"
+                        component={Link}
+                        to="/admin/destinos"
+                    >
+                        Destinos
+                    </Button>
+
                 </Toolbar>
 
             </AppBar>

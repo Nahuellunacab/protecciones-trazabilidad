@@ -1,7 +1,9 @@
 package protecciones.controller;
 
 import org.springframework.web.bind.annotation.*;
-import protecciones.entity.Localidad;
+
+import protecciones.dto.LocalidadResponseDTO;
+
 import protecciones.service.LocalidadService;
 
 import java.util.List;
@@ -10,19 +12,22 @@ import java.util.List;
 @RequestMapping("/api/localidades")
 public class LocalidadController {
 
-    private final LocalidadService localidadService;
+    private final LocalidadService
+            localidadService;
 
-    public LocalidadController(LocalidadService localidadService) {
-        this.localidadService = localidadService;
+    public LocalidadController(
+            LocalidadService localidadService
+    ) {
+
+        this.localidadService =
+                localidadService;
     }
 
     @GetMapping
-    public List<Localidad> obtenerTodas() {
-        return localidadService.obtenerTodas();
-    }
+    public List<LocalidadResponseDTO>
+    obtenerTodas() {
 
-    @PostMapping
-    public Localidad guardar(@RequestBody Localidad localidad) {
-        return localidadService.guardar(localidad);
+        return localidadService
+                .obtenerTodas();
     }
 }

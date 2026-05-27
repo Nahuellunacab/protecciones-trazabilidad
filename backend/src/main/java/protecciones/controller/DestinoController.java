@@ -1,7 +1,15 @@
 package protecciones.controller;
 
+import jakarta.validation.Valid;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+
 import org.springframework.web.bind.annotation.*;
-import protecciones.entity.Destino;
+
+import protecciones.dto.DestinoRequestDTO;
+import protecciones.dto.DestinoResponseDTO;
+
 import protecciones.service.DestinoService;
 
 import java.util.List;
@@ -10,19 +18,79 @@ import java.util.List;
 @RequestMapping("/api/destinos")
 public class DestinoController {
 
-    private final DestinoService destinoService;
+    private final DestinoService
+            destinoService;
 
-    public DestinoController(DestinoService destinoService) {
-        this.destinoService = destinoService;
+    public DestinoController(
+            DestinoService destinoService
+    ) {
+
+        this.destinoService =
+                destinoService;
     }
 
     @GetMapping
-    public List<Destino> obtenerTodos() {
-        return destinoService.obtenerTodos();
+    public List<DestinoResponseDTO>
+    obtenerTodos() {
+
+        return destinoService
+                .obtenerTodos();
     }
 
     @PostMapping
-    public Destino guardar(@RequestBody Destino destino) {
-        return destinoService.guardar(destino);
+    public ResponseEntity<
+            DestinoResponseDTO
+    >
+    guardar(
+
+            @Valid
+            @RequestBody
+            DestinoRequestDTO dto
+    ) {
+
+        DestinoResponseDTO response =
+                destinoService.guardar(
+                        dto
+                );
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(response);
+    }
+
+    @PutMapping("/{id}")
+    public DestinoResponseDTO
+    actualizar(
+
+            @PathVariable
+            Long id,
+
+            @Valid
+            @RequestBody
+            DestinoRequestDTO dto
+    ) {
+
+        return destinoService
+                .actualizar(
+                        id,
+                        dto
+                );
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void>
+    eliminar(
+
+            @PathVariable
+            Long id
+    ) {
+
+        destinoService.eliminar(
+                id
+        );
+
+        return ResponseEntity
+                .noContent()
+                .build();
     }
 }
