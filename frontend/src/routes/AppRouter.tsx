@@ -25,6 +25,9 @@ from "../pages/admin/ModeloPage";
 import DestinoPage
 from "../pages/admin/DestinoPage";
 
+import PosicionPage
+from "../pages/admin/PosicionPage";
+
 function AppRouter() {
 
     return (
@@ -66,6 +69,11 @@ function AppRouter() {
                     <Route
                         path="admin/destinos"
                         element={<DestinoPage />}
+                    />
+
+                    <Route
+                        path="admin/posiciones"
+                        element={<PosicionPage />}
                     />
 
                 </Route>

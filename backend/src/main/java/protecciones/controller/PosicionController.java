@@ -1,7 +1,13 @@
 package protecciones.controller;
 
+import jakarta.validation.Valid;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+
 import org.springframework.web.bind.annotation.*;
 
+import protecciones.dto.PosicionRequestDTO;
 import protecciones.dto.PosicionResponseDTO;
 
 import protecciones.service.PosicionService;
@@ -25,9 +31,58 @@ public class PosicionController {
 
     @GetMapping
     public List<PosicionResponseDTO>
-    obtenerTodos() {
+    obtenerTodas() {
 
         return posicionService
                 .obtenerTodos();
+    }
+
+    @PostMapping
+    public ResponseEntity<PosicionResponseDTO>
+    guardar(
+
+            @Valid
+            @RequestBody
+            PosicionRequestDTO dto
+    ) {
+
+        PosicionResponseDTO response =
+                posicionService
+                        .guardar(dto);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(response);
+    }
+
+    @PutMapping("/{id}")
+    public PosicionResponseDTO actualizar(
+
+            @PathVariable Long id,
+
+            @Valid
+            @RequestBody
+            PosicionRequestDTO dto
+    ) {
+
+        return posicionService
+                .actualizar(
+                        id,
+                        dto
+                );
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void>
+    eliminar(
+            @PathVariable Long id
+    ) {
+
+        posicionService
+                .eliminar(id);
+
+        return ResponseEntity
+                .noContent()
+                .build();
     }
 }

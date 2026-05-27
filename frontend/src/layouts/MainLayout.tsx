@@ -147,6 +147,14 @@ function MainLayout() {
                         Destinos
                     </Button>
 
+                    <Button
+                        color="inherit"
+                        component={Link}
+                        to="/admin/posiciones"
+                    >
+                        Posiciones
+                    </Button>
+
                 </Toolbar>
 
             </AppBar>
