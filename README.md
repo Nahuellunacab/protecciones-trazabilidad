@@ -827,15 +827,6 @@ http://localhost:8082/swagger-ui/index.html
 
 ---
 
-# Commit actual recomendado
-
-```bash
-git add .
-git commit -m "feat: implementar trazabilidad operacional de relés"
-```
-
----
-
 # Autor
 
 Proyecto desarrollado como iniciativa de modernización y digitalización operativa para el área de Protecciones y Teleoperación de EPEC Transmisión.
