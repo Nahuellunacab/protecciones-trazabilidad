@@ -282,19 +282,17 @@ erDiagram
 
     POSICION ||--o{ MOVIMIENTO : registra
 
-    USUARIO ||--o{ MOVIMIENTO : realiza
-
-    PROVINCIA ||--o{ LOCALIDAD : contiene
+    DESTINO ||--o{ POSICION : contiene
 
     LOCALIDAD ||--o{ DESTINO : ubica
 
-    DESTINO ||--o{ POSICION : contiene
-
-    LOCALIDAD ||--o{ PROVEEDOR : ubica
+    PROVINCIA ||--o{ LOCALIDAD : contiene
 
     PROVEEDOR ||--o{ REMITO : emite
 
     REMITO ||--o{ RELE : incluye
+
+    USUARIO ||--o{ MOVIMIENTO : realiza
 ```
 
 ---
@@ -365,9 +363,9 @@ Los modelos sin relés activos:
 - Alta de relés
 - Edición de relés
 - Asociación con modelos
+- Asociación logística con remitos
 - Número de serie único
 - Gestión de garantía
-- Asociación logística
 - Estado operacional actual
 - Posición actual
 - Destino actual
@@ -456,77 +454,61 @@ y constituyen:
 - Historial operativo
 - Orden descendente por fecha
 - Timeline operacional básico
+- Validación de relés activos
+- Relación completa con trazabilidad física
 
 ---
 
-# UX Operacional Implementada
+# Gestión Geográfica Operacional
 
-## Selector inteligente de relés
+## Provincias
 
-Se reemplazó el selector tradicional por:
+- CRUD completo
+- validación de duplicados
+- integridad referencial
+- ordenamiento alfabético
 
-```text
-Autocomplete operacional
-```
+## Localidades
 
-permitiendo búsqueda por:
+- CRUD completo
+- relación Localidad ↔ Provincia
+- validación de duplicados por provincia
+- integración con destinos
 
-- número de serie
-- marca
-- modelo
-- tensión
+## Destinos
 
-## Visualización contextual
+- CRUD completo
+- relación Destino ↔ Localidad
+- integración operacional
+- reutilización en posiciones
 
-Formato visual:
+## Posiciones
 
-```text
-REL-001 | ABB | REL670 | 110-250 VCC
-```
-
----
-
-# Panel Contextual Operacional
-
-Al seleccionar un relé:
-
-el sistema muestra automáticamente:
-
-- estado actual
-- posición actual
-- destino actual
-- garantía
-- marca
-- modelo
-- tensión
-
-Esto reduce:
-
-- errores operativos
-- movimientos incorrectos
-- ambigüedad operacional
+- CRUD completo
+- relación Posición ↔ Destino
+- integración directa con movimientos
+- validación de duplicados por destino
 
 ---
 
-# Historial por Relé
+# Gestión Logística
 
-## Funcionalidades implementadas
+## Proveedores
 
-- visualización histórica
-- consulta por relé
-- dialog operacional
-- movimientos ordenados
-- fechas formateadas
-- notas operativas
-- responsable
-- estado histórico
-- destino histórico
+- CRUD completo
+- domicilio
+- teléfono
+- validaciones
+- integridad referencial
 
-## Endpoint
+## Remitos
 
-```http
-GET /api/reles/{id}/movimientos
-```
+- CRUD completo
+- número de remito
+- fecha
+- proveedor asociado
+- integración logística con relés
+- validación de duplicados
 
 ---
 
@@ -539,22 +521,19 @@ GET /api/reles/{id}/movimientos
 - /api/estados
 - /api/provincias
 - /api/localidades
+- /api/destinos
 - /api/posiciones
+
+## Gestión logística
+
+- /api/proveedores
+- /api/remitos
 
 ## Dominio principal
 
 - /api/modelos
 - /api/reles
 - /api/movimientos
-
-## Ubicaciones
-
-- /api/destinos
-
-## Gestión logística
-
-- /api/proveedores
-- /api/remitos
 
 ## Usuarios
 
@@ -628,100 +607,23 @@ PATCH /api/reles/{id}/baja
 
 ---
 
-# Capacidades Backend
+# Dashboard Actual
 
-## Persistencia
+## Métricas implementadas
 
-- Hibernate/JPA
-- PostgreSQL
-- Spring Data JPA
+- total de relés
+- relés activos
+- relés dados de baja
+- relés instalados
+- relés en stock operativo
+- últimos movimientos
 
-## Arquitectura
+## Dashboard operacional
 
-- Arquitectura por capas
-- DTOs desacoplados
-- Bean Validation
-- Exception Handling
-- Responses REST profesionales
-
-## REST API
-
-- CRUD completo
-- Status HTTP correctos
-- JSON responses
-- ResponseEntity
-
-## Trazabilidad
-
-- Historial de movimientos
-- Estado actual derivado
-- Posición actual derivada
-- Tracking operativo
-- Soft delete operacional
-
-## Queries avanzadas
-
-- búsqueda exacta por serial
-- búsqueda parcial
-- filtros por estado
-- paginación
-- sorting dinámico
-
----
-
-# Capacidades Frontend
-
-## Arquitectura
-
-- React + TypeScript
-- Arquitectura desacoplada
-- React Router
-- Axios centralizado
-- Componentización
-
-## UI/UX
-
-- Material UI
-- Theme institucional EPEC
-- Navbar corporativa
-- Branding Transmisión
-- Formularios enterprise
-- Selects dinámicos
-- Autocomplete operacional
-- Tablas operativas
-- Historial contextual
-- Chips operativos
-- Feedback visual
-- Loading states
-- Dialogs operacionales
-
-## Fullstack
-
-- Consumo API real
-- CRUD operativo
-- Persistencia funcional
-- Integración React ↔ Spring Boot
-
----
-
-# Dashboard Futuro
-
-## Métricas previstas
-
-- Relés por estado
-- Relés por destino
-- Relés instalados
-- Equipos en reparación
-- Garantías próximas a vencer
-- Últimos movimientos
-- Modelos más utilizados
-- Marcas más utilizadas
-
-## Tecnologías previstas
-
-- Recharts
-- MUI Charts
-- KPIs operativos
+- KPIs visuales
+- cards operativas
+- tabla de últimos movimientos
+- métricas en tiempo real
 
 ---
 
@@ -736,7 +638,7 @@ PATCH /api/reles/{id}/baja
 
 ## Frontend
 
-- Dashboard operativo
+- Dashboard operativo avanzado
 - DataGrid avanzado
 - KPIs operativos
 - filtros visuales
@@ -760,18 +662,6 @@ PATCH /api/reles/{id}/baja
 
 ---
 
-# Convenciones de Desarrollo
-
-- Un commit por cambio lógico
-- Arquitectura desacoplada
-- Base de datos versionada con Flyway
-- Uso de migraciones incrementales
-- No modificar migrations ejecutadas
-- Separación entre lógica y persistencia
-- Convención REST para endpoints
-
----
-
 # Ejecución Local
 
 ## Levantar PostgreSQL
@@ -781,16 +671,12 @@ cd docker
 docker compose up -d
 ```
 
----
-
 ## Ejecutar Backend
 
 ```bash
 cd backend
 ./mvnw.cmd spring-boot:run
 ```
-
----
 
 ## Ejecutar Frontend
 
@@ -799,8 +685,6 @@ cd frontend
 npm install
 npm run dev
 ```
-
----
 
 ## Verificar compilación frontend
 
@@ -816,8 +700,6 @@ npm run build
 ```text
 http://localhost:5173
 ```
-
----
 
 ## Swagger
 
