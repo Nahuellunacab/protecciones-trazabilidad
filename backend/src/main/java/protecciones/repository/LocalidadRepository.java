@@ -1,7 +1,22 @@
 package protecciones.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+
 import protecciones.entity.Localidad;
 
-public interface LocalidadRepository extends JpaRepository<Localidad, Long> {
+import java.util.List;
+import java.util.Optional;
+
+public interface LocalidadRepository
+        extends JpaRepository<Localidad, Long> {
+
+    List<Localidad>
+    findAllByOrderByNombreAsc();
+
+    Optional<Localidad>
+    findByNombreIgnoreCaseAndProvinciaId(
+
+            String nombre,
+            Long provinciaId
+    );
 }

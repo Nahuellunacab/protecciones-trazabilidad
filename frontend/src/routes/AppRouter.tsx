@@ -31,6 +31,9 @@ from "../pages/admin/PosicionPage";
 import ProvinciaPage
 from "../pages/admin/ProvinciaPage";
 
+import LocalidadPage
+from "../pages/admin/LocalidadPage";
+
 function AppRouter() {
 
     return (
@@ -82,6 +85,11 @@ function AppRouter() {
                     <Route
                         path="admin/provincias"
                         element={<ProvinciaPage />}
+                    />
+
+                    <Route
+                        path="admin/localidades"
+                        element={<LocalidadPage />}
                     />
 
                 </Route>
