@@ -179,6 +179,14 @@ function MainLayout() {
                         Proveedores
                     </Button>
 
+                    <Button
+                        color="inherit"
+                        component={Link}
+                        to="/admin/remitos"
+                    >
+                        Remitos
+                    </Button>
+
                 </Toolbar>
 
             </AppBar>

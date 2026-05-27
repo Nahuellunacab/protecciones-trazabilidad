@@ -37,6 +37,9 @@ from "../pages/admin/LocalidadPage";
 import ProveedorPage
 from "../pages/admin/ProveedorPage";
 
+import RemitoPage
+from "../pages/admin/RemitoPage";
+
 function AppRouter() {
 
     return (
@@ -98,6 +101,11 @@ function AppRouter() {
                     <Route
                         path="admin/proveedores"
                         element={<ProveedorPage />}
+                    />
+
+                    <Route
+                        path="admin/remitos"
+                        element={<RemitoPage />}
                     />
 
                 </Route>

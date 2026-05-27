@@ -1,7 +1,15 @@
 package protecciones.controller;
 
+import jakarta.validation.Valid;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+
 import org.springframework.web.bind.annotation.*;
-import protecciones.entity.Remito;
+
+import protecciones.dto.RemitoRequestDTO;
+import protecciones.dto.RemitoResponseDTO;
+
 import protecciones.service.RemitoService;
 
 import java.util.List;
@@ -10,19 +18,74 @@ import java.util.List;
 @RequestMapping("/api/remitos")
 public class RemitoController {
 
-    private final RemitoService remitoService;
+    private final RemitoService
+            remitoService;
 
-    public RemitoController(RemitoService remitoService) {
-        this.remitoService = remitoService;
+    public RemitoController(
+            RemitoService remitoService
+    ) {
+
+        this.remitoService =
+                remitoService;
     }
 
     @GetMapping
-    public List<Remito> obtenerTodos() {
-        return remitoService.obtenerTodos();
+    public List<RemitoResponseDTO>
+    obtenerTodos() {
+
+        return remitoService
+                .obtenerTodos();
     }
 
     @PostMapping
-    public Remito guardar(@RequestBody Remito remito) {
-        return remitoService.guardar(remito);
+    public ResponseEntity<
+            RemitoResponseDTO
+    >
+    guardar(
+
+            @Valid
+            @RequestBody
+            RemitoRequestDTO dto
+    ) {
+
+        RemitoResponseDTO response =
+                remitoService
+                        .guardar(dto);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(response);
+    }
+
+    @PutMapping("/{id}")
+    public RemitoResponseDTO
+    actualizar(
+
+            @PathVariable Long id,
+
+            @Valid
+            @RequestBody
+            RemitoRequestDTO dto
+    ) {
+
+        return remitoService
+                .actualizar(
+                        id,
+                        dto
+                );
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void>
+    eliminar(
+            @PathVariable Long id
+    ) {
+
+        remitoService
+                .eliminar(id);
+
+        return ResponseEntity
+                .noContent()
+                .build();
     }
 }
