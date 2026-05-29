@@ -13,6 +13,11 @@ public interface DestinoRepository
     List<Destino>
     findAllByOrderByNombreAsc();
 
+    List<Destino>
+    findByLocalidadIdOrderByNombreAsc(
+            Long localidadId
+    );
+
     Optional<Destino>
     findByNombreIgnoreCase(
             String nombre

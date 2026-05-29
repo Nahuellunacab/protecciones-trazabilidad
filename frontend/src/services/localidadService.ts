@@ -19,6 +19,20 @@ Promise<Localidad[]> {
     return response.data;
 }
 
+export async function
+obtenerLocalidadesPorProvincia(
+    provinciaId: number
+): Promise<Localidad[]> {
+
+    const response =
+        await api.get(
+
+            `/localidades/provincia/${provinciaId}`
+        );
+
+    return response.data;
+}
+
 export async function crearLocalidad(
     data: LocalidadRequest
 ) {
@@ -35,12 +49,16 @@ export async function crearLocalidad(
 export async function actualizarLocalidad(
 
     id: number,
+
     data: LocalidadRequest
+
 ) {
 
     const response =
         await api.put(
+
             `/localidades/${id}`,
+
             data
         );
 

@@ -21,6 +21,7 @@ from "../../../types/Marca";
 import type { Tipo }
 from "../../../types/Tipo";
 
+
 interface Props {
 
     onSubmit: (
@@ -41,6 +42,10 @@ interface Props {
     tipos: Tipo[];
 
     cancelarEdicion: () => void;
+
+    marcaPreseleccionada?: number;
+
+    bloquearMarca?: boolean;
 }
 
 function ModeloForm({
@@ -53,9 +58,13 @@ function ModeloForm({
 
     tipos,
 
-    cancelarEdicion
+    cancelarEdicion,
 
-}: Props) {
+    marcaPreseleccionada,
+
+    bloquearMarca = false
+
+    }: Props) {
 
     const [nombre, setNombre] =
         useState("");
@@ -83,6 +92,7 @@ function ModeloForm({
 
     const [loading, setLoading] =
         useState(false);
+    
 
     useEffect(() => {
 
@@ -119,6 +129,19 @@ function ModeloForm({
 
     }, [modeloEditando]);
 
+    useEffect(() => {
+
+        if (
+            marcaPreseleccionada
+        ) {
+
+            setMarcaId(
+                marcaPreseleccionada
+            );
+        }
+
+    }, [marcaPreseleccionada]);
+
     const limpiarFormulario =
         () => {
 
@@ -130,7 +153,9 @@ function ModeloForm({
 
         setTipoTension("");
 
-        setMarcaId("");
+        setMarcaId(
+            marcaPreseleccionada ?? ""
+        );
 
         setTipoId("");
 
@@ -345,6 +370,7 @@ function ModeloForm({
                     select
                     label="Marca"
                     value={marcaId}
+                    disabled={bloquearMarca}
                     onChange={(e) =>
                         setMarcaId(
                             Number(
@@ -356,7 +382,7 @@ function ModeloForm({
                 >
 
                     {
-                        marcas.map((marca) => (
+                        (marcas || []).map((marca) => (
 
                             <MenuItem
                                 key={marca.id}
@@ -386,7 +412,7 @@ function ModeloForm({
                 >
 
                     {
-                        tipos.map((tipo) => (
+                        (tipos || []).map((tipo) => (
 
                             <MenuItem
                                 key={tipo.id}

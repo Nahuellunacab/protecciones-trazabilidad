@@ -13,6 +13,11 @@ public interface LocalidadRepository
     List<Localidad>
     findAllByOrderByNombreAsc();
 
+    List<Localidad>
+    findByProvinciaIdOrderByNombreAsc(
+            Long provinciaId
+    );
+
     Optional<Localidad>
     findByNombreIgnoreCaseAndProvinciaId(
 

@@ -37,6 +37,18 @@ public class PosicionController {
                 .obtenerTodos();
     }
 
+    @GetMapping("/destino/{destinoId}")
+        public List<PosicionResponseDTO>
+        obtenerPorDestino(
+                @PathVariable Long destinoId
+        ) {
+
+        return posicionService
+                .obtenerPorDestino(
+                        destinoId
+                );
+        }
+
     @PostMapping
     public ResponseEntity<PosicionResponseDTO>
     guardar(

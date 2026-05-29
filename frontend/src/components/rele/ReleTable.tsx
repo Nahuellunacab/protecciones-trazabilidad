@@ -28,7 +28,6 @@ import {
     DialogTitle,
     DialogContent,
     DialogActions,
-    TextField,
     ToggleButton,
     ToggleButtonGroup,
     CircularProgress
@@ -41,33 +40,12 @@ interface Props {
     onEditar: (
         rele: Rele
     ) => void;
-
-    onDarDeBaja: (
-        id: number,
-        motivo: string
-    ) => Promise<void>;
 }
 
 function ReleTable({
     reles,
-    onEditar,
-    onDarDeBaja
+    onEditar
 }: Props) {
-
-    const [
-        releSeleccionado,
-        setReleSeleccionado
-    ] = useState<Rele | null>(null);
-
-    const [
-        motivo,
-        setMotivo
-    ] = useState("");
-
-    const [
-        loading,
-        setLoading
-    ] = useState(false);
 
     const [
         filtro,
@@ -113,44 +91,6 @@ function ReleTable({
 
             return true;
         });
-
-    const handleConfirmarBaja =
-    async () => {
-
-        if (
-            !releSeleccionado
-            ||
-            !motivo.trim()
-        ) {
-            return;
-        }
-
-        try {
-
-            setLoading(true);
-
-            await onDarDeBaja(
-                releSeleccionado.id,
-                motivo
-            );
-
-            setReleSeleccionado(null);
-
-            setMotivo("");
-
-        } catch (error) {
-
-            console.error(error);
-
-            alert(
-                "Error al dar de baja el relé"
-            );
-
-        } finally {
-
-            setLoading(false);
-        }
-    };
 
     const handleVerHistorial =
     async (
@@ -241,7 +181,12 @@ function ReleTable({
 
             </Stack>
 
-            <TableContainer component={Paper}>
+            <TableContainer
+                component={Paper}
+                sx={{
+                    borderRadius: 4
+                }}
+            >
 
                 <Table>
 
@@ -250,35 +195,41 @@ function ReleTable({
                         <TableRow>
 
                             <TableCell>
-                                <strong>Serie</strong>
+                                Serie
                             </TableCell>
 
                             <TableCell>
-                                <strong>Marca</strong>
+                                Marca
                             </TableCell>
 
                             <TableCell>
-                                <strong>Modelo</strong>
+                                Modelo
                             </TableCell>
 
                             <TableCell>
-                                <strong>Tensión</strong>
+                                Tensión
                             </TableCell>
 
                             <TableCell>
-                                <strong>Tipo</strong>
+                                Estado
                             </TableCell>
 
                             <TableCell>
-                                <strong>Estado</strong>
+                                Ubicación
                             </TableCell>
 
                             <TableCell>
-                                <strong>Garantía</strong>
+                                Posición
                             </TableCell>
 
                             <TableCell>
-                                <strong>Acciones</strong>
+                                Garantía
+                            </TableCell>
+
+                            <TableCell
+                                align="center"
+                            >
+                                Acciones
                             </TableCell>
 
                         </TableRow>
@@ -287,184 +238,138 @@ function ReleTable({
 
                     <TableBody>
 
-                        {relesFiltrados.map((rele) => (
+                        {
+                            relesFiltrados.map(
+                                (rele) => (
 
-                            <TableRow
-                                key={rele.id}
-                                sx={{
-                                    backgroundColor:
-                                        rele.activo
-                                            ? "inherit"
-                                            : "#f5f5f5",
+                                <TableRow
+                                    key={rele.id}
+                                    hover
+                                    sx={{
 
-                                    opacity:
-                                        rele.activo
-                                            ? 1
-                                            : 0.7
-                                }}
-                            >
+                                        opacity:
+                                            rele.activo
+                                                ? 1
+                                                : 0.55
+                                    }}
+                                >
 
-                                <TableCell>
-                                    {rele.numeroSerie}
-                                </TableCell>
-
-                                <TableCell>
-                                    {rele.marca}
-                                </TableCell>
-
-                                <TableCell>
-                                    {rele.modelo}
-                                </TableCell>
-
-                                <TableCell>
-                                    {rele.tension || "-"}
-                                </TableCell>
-
-                                <TableCell>
-
-                                    <Chip
-                                        label={
-                                            rele.tipo || "-"
+                                    <TableCell>
+                                        {
+                                            rele.numeroSerie
                                         }
-                                        size="small"
-                                        color="primary"
-                                        variant="outlined"
-                                    />
+                                    </TableCell>
 
-                                </TableCell>
+                                    <TableCell>
+                                        {rele.marca}
+                                    </TableCell>
 
-                                <TableCell>
+                                    <TableCell>
+                                        {rele.modelo}
+                                    </TableCell>
 
-                                    {
-                                        rele.activo ? (
-
-                                            <Chip
-                                                label="ACTIVO"
-                                                color="success"
-                                                size="small"
-                                            />
-
-                                        ) : (
-
-                                            <Chip
-                                                label="BAJA"
-                                                color="error"
-                                                size="small"
-                                            />
-                                        )
-                                    }
-
-                                </TableCell>
-
-                                <TableCell>
-
-                                    <Stack
-                                        direction="row"
-                                        spacing={1}
-                                    >
+                                    <TableCell>
 
                                         {
-                                            rele.estadoGarantia === "VIGENTE" && (
-
-                                                <Chip
-                                                    label={
-                                                        `${rele.mesesRestantesGarantia} meses restantes`
-                                                    }
-                                                    color="success"
-                                                    size="small"
-                                                />
-                                            )
+                                            rele.tension
+                                            || "-"
                                         }
 
-                                        {
-                                            rele.estadoGarantia === "POR VENCER" && (
+                                    </TableCell>
 
-                                                <Chip
-                                                    label={
-                                                        `${rele.mesesRestantesGarantia} meses restantes`
-                                                    }
-                                                    color="warning"
-                                                    size="small"
-                                                />
-                                            )
-                                        }
+                                    <TableCell>
 
-                                        {
-                                            rele.estadoGarantia === "VENCIDA" && (
-
-                                                <Chip
-                                                    label="Garantía vencida"
-                                                    color="error"
-                                                    size="small"
-                                                />
-                                            )
-                                        }
-
-                                        {
-                                            rele.estadoGarantia === "Sin garantía" && (
-
-                                                <Chip
-                                                    label="Sin garantía"
-                                                    size="small"
-                                                />
-                                            )
-                                        }
-
-                                    </Stack>
-
-                                </TableCell>
-
-                                <TableCell>
-
-                                    <Stack
-                                        direction="row"
-                                        spacing={1}
-                                        flexWrap="wrap"
-                                        useFlexGap
-                                    >
-
-                                        <Button
-                                            size="small"
-                                            variant="outlined"
-                                            onClick={() =>
-                                                onEditar(rele)
+                                        <Chip
+                                            label={
+                                                rele.estadoActual
+                                                ||
+                                                "Sin estado"
                                             }
-                                        >
-                                            Editar
-                                        </Button>
-
-                                        <Button
-                                            size="small"
-                                            variant="outlined"
-                                            onClick={() =>
-                                                handleVerHistorial(rele)
-                                            }
-                                        >
-                                            Historial
-                                        </Button>
-
-                                        <Button
-                                            size="small"
-                                            variant="contained"
-                                            color="error"
-                                            disabled={!rele.activo}
-                                            onClick={() =>
-                                                setReleSeleccionado(rele)
-                                            }
-                                        >
-                                            {
+                                            color={
                                                 rele.activo
-                                                    ? "Dar de baja"
-                                                    : "Inactivo"
+                                                    ? "success"
+                                                    : "default"
                                             }
-                                        </Button>
+                                            size="small"
+                                        />
 
-                                    </Stack>
+                                    </TableCell>
 
-                                </TableCell>
+                                    <TableCell>
 
-                            </TableRow>
-                        ))}
+                                        {
+                                            rele.localidadActual
+                                            ||
+                                            "-"
+                                        }
+
+                                    </TableCell>
+
+                                    <TableCell>
+
+                                        {
+                                            rele.posicionActual
+                                            ||
+                                            "-"
+                                        }
+
+                                    </TableCell>
+
+                                    <TableCell>
+
+                                        {
+                                            rele.finGarantia
+                                                ? formatearFecha(
+                                                    rele.finGarantia
+                                                )
+                                                : "-"
+                                        }
+
+                                    </TableCell>
+
+                                    <TableCell>
+
+                                        <Stack
+                                            direction="row"
+                                            spacing={1}
+                                            justifyContent="center"
+                                        >
+
+                                            <Button
+                                                size="small"
+                                                variant="outlined"
+                                                onClick={() =>
+                                                    onEditar(
+                                                        rele
+                                                    )
+                                                }
+                                            >
+
+                                                EDITAR
+
+                                            </Button>
+
+                                            <Button
+                                                size="small"
+                                                variant="contained"
+                                                onClick={() =>
+                                                    handleVerHistorial(
+                                                        rele
+                                                    )
+                                                }
+                                            >
+
+                                                HISTORIAL
+
+                                            </Button>
+
+                                        </Stack>
+
+                                    </TableCell>
+
+                                </TableRow>
+                            ))
+                        }
 
                     </TableBody>
 
@@ -473,95 +378,39 @@ function ReleTable({
             </TableContainer>
 
             <Dialog
-                open={
-                    releSeleccionado !== null
-                }
-                onClose={() =>
-                    setReleSeleccionado(null)
-                }
-                maxWidth="sm"
-                fullWidth
-            >
-
-                <DialogTitle>
-                    Dar de baja relé
-                </DialogTitle>
-
-                <DialogContent>
-
-                    <TextField
-                        fullWidth
-                        multiline
-                        rows={4}
-                        margin="normal"
-                        label="Motivo de baja"
-                        value={motivo}
-                        onChange={(e) =>
-                            setMotivo(
-                                e.target.value
-                            )
-                        }
-                    />
-
-                </DialogContent>
-
-                <DialogActions>
-
-                    <Button
-                        onClick={() =>
-                            setReleSeleccionado(null)
-                        }
-                    >
-                        Cancelar
-                    </Button>
-
-                    <Button
-                        variant="contained"
-                        color="error"
-                        disabled={
-                            loading
-                            ||
-                            !motivo.trim()
-                        }
-                        onClick={
-                            handleConfirmarBaja
-                        }
-                    >
-                        Confirmar baja
-                    </Button>
-
-                </DialogActions>
-
-            </Dialog>
-
-            <Dialog
                 open={historialOpen}
                 onClose={() =>
                     setHistorialOpen(false)
                 }
-                maxWidth="lg"
+                maxWidth="md"
                 fullWidth
             >
 
                 <DialogTitle>
 
-                    Historial de movimientos
+                    Historial de Movimientos
+
                     {
-                        releHistorial
-                        &&
-                        ` - ${releHistorial.numeroSerie}`
+                        releHistorial && (
+                            <>
+                                {" - "}
+                                {
+                                    releHistorial.numeroSerie
+                                }
+                            </>
+                        )
                     }
 
                 </DialogTitle>
 
-                <DialogContent>
+                <DialogContent dividers>
 
                     {
                         historialLoading ? (
 
                             <Stack
                                 alignItems="center"
-                                sx={{ py: 4 }}
+                                py={4}
                             >
 
                                 <CircularProgress />
@@ -572,105 +421,121 @@ function ReleTable({
 
                             <Typography>
 
-                                No hay movimientos registrados
+                                No hay movimientos registrados.
 
                             </Typography>
 
                         ) : (
 
-                            <TableContainer>
+                            <Table size="small">
 
-                                <Table>
+                                <TableHead>
 
-                                    <TableHead>
+                                    <TableRow>
 
-                                        <TableRow>
+                                        <TableCell>
+                                            Fecha
+                                        </TableCell>
 
-                                            <TableCell>
-                                                Estado
-                                            </TableCell>
+                                        <TableCell>
+                                            Estado
+                                        </TableCell>
 
-                                            <TableCell>
-                                                Destino
-                                            </TableCell>
+                                        <TableCell>
+                                            Ubicación
+                                        </TableCell>
 
-                                            <TableCell>
-                                                Posición
-                                            </TableCell>
+                                        <TableCell>
+                                            Posición
+                                        </TableCell>
 
-                                            <TableCell>
-                                                Responsable
-                                            </TableCell>
+                                        <TableCell>
+                                            Responsable
+                                        </TableCell>
 
-                                            <TableCell>
-                                                Fecha
-                                            </TableCell>
+                                        <TableCell>
+                                            Notas
+                                        </TableCell>
 
-                                            <TableCell>
-                                                Notas
-                                            </TableCell>
+                                    </TableRow>
 
-                                        </TableRow>
+                                </TableHead>
 
-                                    </TableHead>
+                                <TableBody>
 
-                                    <TableBody>
+                                    {
+                                        historial.map(
+                                            (movimiento) => (
 
-                                        {
-                                            historial.map(
-                                                (mov) => (
+                                            <TableRow
+                                                key={
+                                                    movimiento.id
+                                                }
+                                            >
 
-                                                <TableRow
-                                                    key={mov.id}
-                                                >
+                                                <TableCell>
 
-                                                    <TableCell>
+                                                    {
+                                                        formatearFecha(
+                                                            movimiento.fechaMovimiento
+                                                        )
+                                                    }
 
-                                                        <Chip
-                                                            label={
-                                                                mov.estado
-                                                            }
-                                                            size="small"
-                                                            color="primary"
-                                                        />
+                                                </TableCell>
 
-                                                    </TableCell>
+                                                <TableCell>
 
-                                                    <TableCell>
-                                                        {mov.destino}
-                                                    </TableCell>
+                                                    {
+                                                        movimiento.estado
+                                                    }
 
-                                                    <TableCell>
-                                                        {mov.posicion}
-                                                    </TableCell>
+                                                </TableCell>
 
-                                                    <TableCell>
-                                                        {mov.responsable}
-                                                    </TableCell>
+                                                <TableCell>
 
-                                                    <TableCell>
+                                                    {
+                                                        movimiento.localidad
+                                                        ||
+                                                        "-"
+                                                    }
 
-                                                        {
-                                                            formatearFecha(
-                                                                mov.fechaMovimiento
-                                                            )
-                                                        }
+                                                </TableCell>
 
-                                                    </TableCell>
+                                                <TableCell>
 
-                                                    <TableCell>
-                                                        {mov.notas || "-"}
-                                                    </TableCell>
+                                                    {
+                                                        movimiento.posicion
+                                                        ||
+                                                        "-"
+                                                    }
 
-                                                </TableRow>
-                                            ))
-                                        }
+                                                </TableCell>
 
-                                    </TableBody>
+                                                <TableCell>
 
-                                </Table>
+                                                    {
+                                                        movimiento.responsable
+                                                    }
 
-                            </TableContainer>
+                                                </TableCell>
+
+                                                <TableCell>
+
+                                                    {
+                                                        movimiento.notas
+                                                        ||
+                                                        "-"
+                                                    }
+
+                                                </TableCell>
+
+                                            </TableRow>
+                                        ))
+                                    }
+
+                                </TableBody>
+
+                            </Table>
                         )
                     }
 
@@ -683,7 +548,9 @@ function ReleTable({
                             setHistorialOpen(false)
                         }
                     >
-                        Cerrar
+
+                        CERRAR
+
                     </Button>
 
                 </DialogActions>

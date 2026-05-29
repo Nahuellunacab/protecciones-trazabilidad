@@ -2,7 +2,7 @@ export interface ReleRequest {
 
     numeroSerie: string;
 
-    modeloId: number;
+    modeloId: number | "";
 
     cargarGarantia: boolean;
 
@@ -11,4 +11,12 @@ export interface ReleRequest {
     inicioGarantia: string;
 
     remitoId: number | null;
+
+    provinciaId?: number;
+
+    localidadId?: number;
+
+    destinoId?: number;
+
+    posicionId?: number;
 }

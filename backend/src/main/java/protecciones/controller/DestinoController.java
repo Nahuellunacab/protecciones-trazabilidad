@@ -37,6 +37,18 @@ public class DestinoController {
                 .obtenerTodos();
     }
 
+    @GetMapping("/localidad/{localidadId}")
+        public List<DestinoResponseDTO>
+        obtenerPorLocalidad(
+                @PathVariable Long localidadId
+        ) {
+
+        return destinoService
+                .obtenerPorLocalidad(
+                        localidadId
+                );
+        }
+
     @PostMapping
     public ResponseEntity<
             DestinoResponseDTO

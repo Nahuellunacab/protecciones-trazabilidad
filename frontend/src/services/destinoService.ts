@@ -1,15 +1,12 @@
 import api from "../api/axios";
 
-import type {
-    Destino
-} from "../types/Destino";
+import type { Destino }
+from "../types/Destino";
 
-import type {
-    DestinoRequest
-} from "../types/DestinoRequest";
+import type { DestinoRequest }
+from "../types/DestinoRequest";
 
-export async function
-obtenerDestinos() {
+export async function obtenerDestinos() {
 
     const response =
         await api.get<Destino[]>(
@@ -19,8 +16,20 @@ obtenerDestinos() {
     return response.data;
 }
 
-export async function
-crearDestino(
+export async function obtenerDestinosPorLocalidad(
+    localidadId: number
+) {
+
+    const response =
+        await api.get<Destino[]>(
+
+            `/destinos/localidad/${localidadId}`
+        );
+
+    return response.data;
+}
+
+export async function crearDestino(
     data: DestinoRequest
 ) {
 
@@ -33,23 +42,26 @@ crearDestino(
     return response.data;
 }
 
-export async function
-actualizarDestino(
+export async function actualizarDestino(
+
     id: number,
+
     data: DestinoRequest
+
 ) {
 
     const response =
         await api.put(
+
             `/destinos/${id}`,
+
             data
         );
 
     return response.data;
 }
 
-export async function
-eliminarDestino(
+export async function eliminarDestino(
     id: number
 ) {
 

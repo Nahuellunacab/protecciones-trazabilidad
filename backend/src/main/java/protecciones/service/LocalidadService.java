@@ -50,6 +50,20 @@ public class LocalidadService {
                 .toList();
     }
 
+    public List<LocalidadResponseDTO>
+    obtenerPorProvincia(
+            Long provinciaId
+    ) {
+
+        return localidadRepository
+                .findByProvinciaIdOrderByNombreAsc(
+                        provinciaId
+                )
+                .stream()
+                .map(this::mapToDTO)
+                .toList();
+    }
+
     public LocalidadResponseDTO guardar(
             LocalidadRequestDTO dto
     ) {

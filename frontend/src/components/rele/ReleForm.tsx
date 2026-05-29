@@ -13,7 +13,10 @@ import {
     Paper,
     Select,
     TextField,
-    Typography
+    Typography,
+    Dialog,
+    DialogTitle,
+    DialogContent,
 } from "@mui/material";
 
 import type { Modelo }
@@ -28,13 +31,52 @@ from "../../types/Rele";
 import type { ReleRequest }
 from "../../types/ReleRequest";
 
+import type { Provincia }
+from "../../types/Provincia";
+
+import type { Localidad }
+from "../../types/Localidad";
+
+import type { Destino }
+from "../../types/Destino";
+
+import type { Posicion }
+from "../../types/Posicion";
+
+
 import {
+    crearMarca,
     obtenerMarcas
 } from "../../services/marcaService";
 
 import {
+    crearModelo,
     obtenerModelos
 } from "../../services/modeloService";
+
+import {
+    obtenerProvincias
+} from "../../services/provinciaService";
+
+import {
+    obtenerLocalidadesPorProvincia
+} from "../../services/localidadService";
+
+import {
+    obtenerDestinosPorLocalidad
+} from "../../services/destinoService";
+
+import {
+    obtenerPosicionesPorDestino
+} from "../../services/posicionService";
+
+import MarcaForm
+from "../admin/marca/MarcaForm";
+
+import ModeloForm
+from "../admin/modelo/ModeloForm";
+import type { Tipo } from "../../types/Tipo";
+import { obtenerTipos } from "../../services/tipoService";
 
 interface Props {
 
@@ -65,6 +107,21 @@ function ReleForm({
     const [modelos, setModelos] =
         useState<Modelo[]>([]);
 
+    const [tipos, setTipos] =
+        useState<Tipo[]>([]);
+
+    const [provincias, setProvincias] =
+        useState<Provincia[]>([]);
+
+    const [localidades, setLocalidades] =
+        useState<Localidad[]>([]);
+
+    const [destinos, setDestinos] =
+        useState<Destino[]>([]);
+
+    const [posiciones, setPosiciones] =
+        useState<Posicion[]>([]);
+
     const [marcaId, setMarcaId] =
         useState<number | "">("");
 
@@ -78,6 +135,21 @@ function ReleForm({
     const [error, setError] =
         useState("");
 
+    const [
+        openMarcaDialog,
+        setOpenMarcaDialog
+    ] = useState(false);
+
+    const [
+        mostrarModeloInline,
+        setMostrarModeloInline
+    ] = useState(false);
+
+    const [
+        marcaCreadaId,
+        setMarcaCreadaId
+    ] = useState<number | null>(null);
+
     const [formData, setFormData] =
         useState<ReleRequest>({
             numeroSerie: "",
@@ -85,7 +157,11 @@ function ReleForm({
             cargarGarantia: false,
             garantiaMeses: 12,
             inicioGarantia: "",
-            remitoId: null
+            remitoId: null,
+            provinciaId: undefined,
+            localidadId: undefined,
+            destinoId: undefined,
+            posicionId: undefined
         });
 
     useEffect(() => {
@@ -93,6 +169,90 @@ function ReleForm({
         cargarDatos();
 
     }, []);
+
+    const handleCrearMarcaInline =
+        async (
+            nombre: string
+        ) => {
+
+            try {
+
+                const nuevaMarca =
+                    await crearMarca({
+                        nombre
+                    });
+
+                const nuevasMarcas =
+                    await obtenerMarcas();
+
+                setMarcas(
+                    nuevasMarcas
+                );
+
+                setMarcaId(
+                    nuevaMarca.id
+                );
+
+                setMarcaCreadaId(
+                    nuevaMarca.id
+                );
+
+                setMostrarModeloInline(
+                    true
+                );
+
+            } catch {
+
+                setError(
+                    "Error al crear marca"
+                );
+            }
+        };
+
+    const handleCrearModeloInline =
+    async (
+        data: any
+    ) => {
+
+        try {
+
+            const nuevoModelo =
+                await crearModelo(
+                    data
+                );
+
+            const nuevosModelos =
+                await obtenerModelos();
+
+            setModelos(
+                nuevosModelos
+            );
+
+            setFormData(
+                (prev) => ({
+
+                    ...prev,
+
+                    modeloId:
+                        nuevoModelo.id
+                })
+            );
+
+            setMostrarModeloInline(
+                false
+            );
+
+            setOpenMarcaDialog(
+                false
+            );
+
+        } catch {
+
+            setError(
+                "Error al crear modelo"
+            );
+        }
+    };
 
     useEffect(() => {
 
@@ -115,6 +275,45 @@ function ReleForm({
         }
 
     }, [marcaId, modelos]);
+
+    useEffect(() => {
+
+        if (
+            formData.provinciaId
+        ) {
+
+            cargarLocalidades(
+                formData.provinciaId
+            );
+        }
+
+    }, [formData.provinciaId]);
+
+    useEffect(() => {
+
+        if (
+            formData.localidadId
+        ) {
+
+            cargarDestinos(
+                formData.localidadId
+            );
+        }
+
+    }, [formData.localidadId]);
+
+    useEffect(() => {
+
+        if (
+            formData.destinoId
+        ) {
+
+            cargarPosiciones(
+                formData.destinoId
+            );
+        }
+
+    }, [formData.destinoId]);
 
     useEffect(() => {
 
@@ -153,7 +352,15 @@ function ReleForm({
 
                 remitoId:
                     releEditando.remitoId
-                    || null
+                    || null,
+
+                provinciaId: undefined,
+
+                localidadId: undefined,
+
+                destinoId: undefined,
+
+                posicionId: undefined
             });
 
         } else {
@@ -169,12 +376,18 @@ function ReleForm({
 
             const [
                 marcasData,
-                modelosData
+                modelosData,
+                provinciasData,
+                tiposData
             ] = await Promise.all([
 
                 obtenerMarcas(),
 
-                obtenerModelos()
+                obtenerModelos(),
+
+                obtenerProvincias(),
+
+                obtenerTipos()
             ]);
 
             setMarcas(
@@ -185,12 +398,59 @@ function ReleForm({
                 modelosData
             );
 
+            setProvincias(
+                provinciasData
+            );
+
+            setTipos(
+                tiposData
+            );
+
         } catch {
 
             setError(
                 "Error al cargar datos"
             );
         }
+    };
+
+    const cargarLocalidades =
+    async (
+        provinciaId: number
+    ) => {
+
+        const data =
+            await obtenerLocalidadesPorProvincia(
+                provinciaId
+            );
+
+        setLocalidades(data);
+    };
+
+    const cargarDestinos =
+    async (
+        localidadId: number
+    ) => {
+
+        const data =
+            await obtenerDestinosPorLocalidad(
+                localidadId
+            );
+
+        setDestinos(data);
+    };
+
+    const cargarPosiciones =
+    async (
+        destinoId: number
+    ) => {
+
+        const data =
+            await obtenerPosicionesPorDestino(
+                destinoId
+            );
+
+        setPosiciones(data);
     };
 
     const obtenerTension = () => {
@@ -218,7 +478,7 @@ function ReleForm({
 
             numeroSerie: "",
 
-            modeloId: 0,
+            modeloId: "",
 
             cargarGarantia: false,
 
@@ -226,12 +486,26 @@ function ReleForm({
 
             inicioGarantia: "",
 
-            remitoId: null
+            remitoId: null,
+
+            provinciaId: undefined,
+
+            localidadId: undefined,
+
+            destinoId: undefined,
+
+            posicionId: undefined
         });
 
         setMarcaId("");
 
         setError("");
+
+        setLocalidades([]);
+
+        setDestinos([]);
+
+        setPosiciones([]);
 
         onCancelEdit();
     };
@@ -347,6 +621,7 @@ function ReleForm({
                     <Grid size={12}>
 
                         <FormControl
+                        
                             fullWidth
                         >
 
@@ -392,6 +667,21 @@ function ReleForm({
                             </Select>
 
                         </FormControl>
+
+                        <Button
+                            size="small"
+                            sx={{
+                                mt: 1,
+                                alignSelf: "flex-start"
+                            }}
+                            onClick={() =>
+                                setOpenMarcaDialog(true)
+                            }
+                        >
+
+                            + Nueva Marca
+
+                        </Button>
 
                     </Grid>
 
@@ -468,6 +758,225 @@ function ReleForm({
                             fullWidth
                             required
                         />
+
+                    </Grid>
+
+                    <Grid size={6}>
+
+                        <FormControl
+                            fullWidth
+                        >
+
+                            <InputLabel>
+                                Provincia
+                            </InputLabel>
+
+                            <Select
+                                name="provinciaId"
+                                value={
+                                    formData.provinciaId || ""
+                                }
+                                label="Provincia"
+                                onChange={(e) => {
+
+                                    handleChange(e);
+
+                                    setFormData(
+                                        (prev) => ({
+                                            ...prev,
+                                            provinciaId:
+                                                Number(
+                                                    e.target.value
+                                                ),
+                                            localidadId:
+                                                undefined,
+                                            destinoId:
+                                                undefined,
+                                            posicionId:
+                                                undefined
+                                        })
+                                    );
+
+                                    setDestinos([]);
+
+                                    setPosiciones([]);
+                                }}
+                            >
+
+                                {
+                                    provincias.map(
+                                        (provincia) => (
+
+                                        <MenuItem
+                                            key={provincia.id}
+                                            value={provincia.id}
+                                        >
+
+                                            {provincia.nombre}
+
+                                        </MenuItem>
+                                    ))
+                                }
+
+                            </Select>
+
+                        </FormControl>
+
+                    </Grid>
+
+                    <Grid size={6}>
+
+                        <FormControl
+                            fullWidth
+                        >
+
+                            <InputLabel>
+                                Localidad
+                            </InputLabel>
+
+                            <Select
+                                name="localidadId"
+                                value={
+                                    formData.localidadId || ""
+                                }
+                                label="Localidad"
+                                onChange={(e) => {
+
+                                    handleChange(e);
+
+                                    setFormData(
+                                        (prev) => ({
+                                            ...prev,
+                                            localidadId:
+                                                Number(
+                                                    e.target.value
+                                                ),
+                                            destinoId:
+                                                undefined,
+                                            posicionId:
+                                                undefined
+                                        })
+                                    );
+
+                                    setPosiciones([]);
+                                }}
+                            >
+
+                                {
+                                    localidades.map(
+                                        (localidad) => (
+
+                                        <MenuItem
+                                            key={localidad.id}
+                                            value={localidad.id}
+                                        >
+
+                                            {localidad.nombre}
+
+                                        </MenuItem>
+                                    ))
+                                }
+
+                            </Select>
+
+                        </FormControl>
+
+                    </Grid>
+
+                    <Grid size={6}>
+
+                        <FormControl
+                            fullWidth
+                        >
+
+                            <InputLabel>
+                                Destino
+                            </InputLabel>
+
+                            <Select
+                                name="destinoId"
+                                value={
+                                    formData.destinoId || ""
+                                }
+                                label="Destino"
+                                onChange={(e) => {
+
+                                    handleChange(e);
+
+                                    setFormData(
+                                        (prev) => ({
+                                            ...prev,
+                                            destinoId:
+                                                Number(
+                                                    e.target.value
+                                                ),
+                                            posicionId:
+                                                undefined
+                                        })
+                                    );
+                                }}
+                            >
+
+                                {
+                                    destinos.map(
+                                        (destino) => (
+
+                                        <MenuItem
+                                            key={destino.id}
+                                            value={destino.id}
+                                        >
+
+                                            {destino.nombre}
+
+                                        </MenuItem>
+                                    ))
+                                }
+
+                            </Select>
+
+                        </FormControl>
+
+                    </Grid>
+
+                    <Grid size={6}>
+
+                        <FormControl
+                            fullWidth
+                        >
+
+                            <InputLabel>
+                                Posición
+                            </InputLabel>
+
+                            <Select
+                                name="posicionId"
+                                value={
+                                    formData.posicionId || ""
+                                }
+                                label="Posición"
+                                onChange={
+                                    handleChange
+                                }
+                            >
+
+                                {
+                                    posiciones.map(
+                                        (posicion) => (
+
+                                        <MenuItem
+                                            key={posicion.id}
+                                            value={posicion.id}
+                                        >
+
+                                            {posicion.nombre}
+
+                                        </MenuItem>
+                                    ))
+                                }
+
+                            </Select>
+
+                        </FormControl>
 
                     </Grid>
 
@@ -585,7 +1094,79 @@ function ReleForm({
 
             </form>
 
+
+            <Dialog
+                open={openMarcaDialog}
+                onClose={() =>
+                    setOpenMarcaDialog(false)
+                }
+                maxWidth="md"
+                fullWidth
+            >
+
+                <DialogTitle>
+
+                    Nueva Marca
+
+                </DialogTitle>
+
+                <DialogContent>
+
+                    {
+                        !mostrarModeloInline && (
+
+                            <MarcaForm
+                                onSubmit={
+                                    handleCrearMarcaInline
+                                }
+                                cancelarEdicion={() =>
+                                    setOpenMarcaDialog(false)
+                                }
+                            />
+                        )
+                    }
+
+                    {
+                        mostrarModeloInline
+                        &&
+                        marcaCreadaId && (
+
+                            <ModeloForm
+
+                                onSubmit={
+                                    handleCrearModeloInline
+                                }
+
+                                marcas={marcas}
+
+                                tipos={tipos}
+
+                                cancelarEdicion={() => {
+
+                                    setMostrarModeloInline(
+                                        false
+                                    );
+
+                                    setOpenMarcaDialog(
+                                        false
+                                    );
+                                }}
+
+                                marcaPreseleccionada={
+                                    marcaCreadaId
+                                }
+
+                                bloquearMarca={true}
+                            />
+                        )
+                    }
+
+                </DialogContent>
+
+            </Dialog>
+
         </Paper>
     );
 }
+
 export default ReleForm;

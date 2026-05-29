@@ -47,6 +47,20 @@ public class DestinoService {
                 .toList();
     }
 
+    public List<DestinoResponseDTO>
+        obtenerPorLocalidad(
+                Long localidadId
+        ) {
+
+        return destinoRepository
+                .findByLocalidadIdOrderByNombreAsc(
+                        localidadId
+                )
+                .stream()
+                .map(this::mapToDTO)
+                .toList();
+        }
+
     public DestinoResponseDTO guardar(
             DestinoRequestDTO dto
     ) {
@@ -165,7 +179,10 @@ public class DestinoService {
                             "El destino ya existe"
                     );
                 });
+
     }
+
+    
 
     private DestinoResponseDTO
     mapToDTO(

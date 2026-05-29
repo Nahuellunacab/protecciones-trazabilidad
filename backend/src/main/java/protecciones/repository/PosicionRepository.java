@@ -13,6 +13,11 @@ public interface PosicionRepository
     List<Posicion>
     findAllByOrderByNombreAsc();
 
+    List<Posicion>
+    findByDestinoIdOrderByNombreAsc(
+            Long destinoId
+    );
+
     Optional<Posicion>
     findByNombreIgnoreCaseAndDestinoId(
 

@@ -37,6 +37,18 @@ public class LocalidadController {
                 .obtenerTodas();
     }
 
+    @GetMapping("/provincia/{provinciaId}")
+    public List<LocalidadResponseDTO>
+    obtenerPorProvincia(
+            @PathVariable Long provinciaId
+    ) {
+
+        return localidadService
+                .obtenerPorProvincia(
+                        provinciaId
+                );
+    }
+
     @PostMapping
     public ResponseEntity<
             LocalidadResponseDTO

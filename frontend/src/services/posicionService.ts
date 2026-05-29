@@ -19,6 +19,20 @@ Promise<Posicion[]> {
     return response.data;
 }
 
+export async function
+obtenerPosicionesPorDestino(
+    destinoId: number
+): Promise<Posicion[]> {
+
+    const response =
+        await api.get(
+
+            `/posiciones/destino/${destinoId}`
+        );
+
+    return response.data;
+}
+
 export async function crearPosicion(
     data: PosicionRequest
 ) {
@@ -35,12 +49,16 @@ export async function crearPosicion(
 export async function actualizarPosicion(
 
     id: number,
+
     data: PosicionRequest
+
 ) {
 
     const response =
         await api.put(
+
             `/posiciones/${id}`,
+
             data
         );
 

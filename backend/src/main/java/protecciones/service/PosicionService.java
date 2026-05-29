@@ -48,6 +48,20 @@ public class PosicionService {
                 .toList();
     }
 
+    public List<PosicionResponseDTO>
+        obtenerPorDestino(
+                Long destinoId
+        ) {
+
+        return posicionRepository
+                .findByDestinoIdOrderByNombreAsc(
+                        destinoId
+                )
+                .stream()
+                .map(this::mapToDTO)
+                .toList();
+        }
+
     public PosicionResponseDTO guardar(
             PosicionRequestDTO dto
     ) {
