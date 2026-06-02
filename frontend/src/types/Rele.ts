@@ -27,6 +27,8 @@ export interface Rele {
     modeloId: number | null;
 
     remitoId: number | null;
+    
+    tipoingreso: string;
 
     estadoGarantia: string;
 

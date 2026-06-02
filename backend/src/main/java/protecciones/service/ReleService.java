@@ -122,6 +122,10 @@ public class ReleService {
                 remito
         );
 
+        rele.setTipoIngreso(
+                dto.getTipoIngreso()
+        );
+
         rele.setActivo(true);
 
         if (
@@ -590,6 +594,10 @@ public class ReleService {
         rele.setModelo(modelo);
 
         rele.setRemito(remito);
+
+        rele.setTipoIngreso(
+                dto.getTipoIngreso()
+        );
 
         if (
                 Boolean.TRUE.equals(

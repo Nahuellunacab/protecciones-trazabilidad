@@ -6,7 +6,6 @@ import {
     Button,
     Checkbox,
     FormControl,
-    FormControlLabel,
     Grid,
     InputLabel,
     MenuItem,
@@ -17,6 +16,11 @@ import {
     Dialog,
     DialogTitle,
     DialogContent,
+    RadioGroup,
+    FormControlLabel,
+    FormLabel,
+    Radio
+
 } from "@mui/material";
 
 import type { Modelo }
@@ -153,7 +157,8 @@ function ReleForm({
     const [formData, setFormData] =
         useState<ReleRequest>({
             numeroSerie: "",
-            modeloId: 0,
+            modeloId: "",
+            tipoIngreso: "NUEVO",
             cargarGarantia: false,
             garantiaMeses: 12,
             inicioGarantia: "",
@@ -336,7 +341,10 @@ function ReleForm({
                     releEditando.numeroSerie,
 
                 modeloId:
-                    releEditando.modeloId ?? 0,
+                    releEditando.modeloId ?? "",
+
+                tipoIngreso:
+                    "NUEVO",
 
                 cargarGarantia:
                     releEditando.garantiaMeses
@@ -480,6 +488,8 @@ function ReleForm({
 
             modeloId: "",
 
+            tipoIngreso: "NUEVO",
+
             cargarGarantia: false,
 
             garantiaMeses: 12,
@@ -617,6 +627,44 @@ function ReleForm({
                     container
                     spacing={2}
                 >
+                    <Grid size={12}>
+
+                        <FormControl>
+
+                            <FormLabel>
+                                Tipo de ingreso
+                            </FormLabel>
+
+                            <RadioGroup
+                                row
+                                value={formData.tipoIngreso}
+                                onChange={(e) =>
+                                    setFormData((prev) => ({
+                                        ...prev,
+                                        tipoIngreso:
+                                            e.target.value as
+                                            "NUEVO" | "USADO"
+                                    }))
+                                }
+                            >
+
+                                <FormControlLabel
+                                    value="NUEVO"
+                                    control={<Radio />}
+                                    label="Nuevo"
+                                />
+
+                                <FormControlLabel
+                                    value="USADO"
+                                    control={<Radio />}
+                                    label="Usado"
+                                />
+
+                            </RadioGroup>
+
+                        </FormControl>
+
+                    </Grid>
 
                     <Grid size={12}>
 
@@ -724,6 +772,29 @@ function ReleForm({
                             </Select>
 
                         </FormControl>
+
+                    </Grid>
+
+                    <Grid size={12}>
+
+                        <TextField
+                            select
+                            label="Tipo de Ingreso"
+                            name="tipoIngreso"
+                            value={formData.tipoIngreso}
+                            onChange={handleChange}
+                            fullWidth
+                        >
+
+                            <MenuItem value="NUEVO">
+                                Nuevo
+                            </MenuItem>
+
+                            <MenuItem value="USADO">
+                                Usado
+                            </MenuItem>
+
+                        </TextField>
 
                     </Grid>
 
@@ -980,67 +1051,59 @@ function ReleForm({
 
                     </Grid>
 
-                    <Grid size={12}>
-
-                        <FormControlLabel
-                            control={
-
-                                <Checkbox
-                                    name="cargarGarantia"
-                                    checked={
-                                        formData.cargarGarantia
-                                    }
-                                    onChange={
-                                        handleChange
-                                    }
-                                />
-                            }
-                            label="Cargar garantía"
-                        />
-
-                    </Grid>
-
                     {
-                        formData.cargarGarantia && (
+                        formData.tipoIngreso ===
+                        "NUEVO" && (
 
                             <>
+                                <Grid size={12}>
 
+                                    <Alert severity="info">
+
+                                        Al tratarse de un relé nuevo,
+                                        deberá adjuntarse Remito y
+                                        Orden de Provisión.
+
+                                    </Alert>
+
+                                </Grid>
                                 <Grid size={6}>
 
-                                    <TextField
-                                        label="Meses Garantía"
-                                        name="garantiaMeses"
-                                        type="number"
-                                        value={
-                                            formData.garantiaMeses
-                                        }
-                                        onChange={
-                                            handleChange
-                                        }
+                                    <Button
+                                        component="label"
+                                        variant="outlined"
                                         fullWidth
-                                    />
+                                    >
+
+                                        PDF Remito
+
+                                        <input
+                                            type="file"
+                                            accept=".pdf"
+                                            hidden
+                                        />
+
+                                    </Button>
 
                                 </Grid>
 
                                 <Grid size={6}>
 
-                                    <TextField
-                                        label="Inicio Garantía"
-                                        name="inicioGarantia"
-                                        type="date"
-                                        value={
-                                            formData.inicioGarantia
-                                        }
-                                        onChange={
-                                            handleChange
-                                        }
-                                        slotProps={{
-                                            inputLabel: {
-                                                shrink: true
-                                            }
-                                        }}
+                                    <Button
+                                        component="label"
+                                        variant="outlined"
                                         fullWidth
-                                    />
+                                    >
+
+                                        PDF Orden de Provisión
+
+                                        <input
+                                            type="file"
+                                            accept=".pdf"
+                                            hidden
+                                        />
+
+                                    </Button>
 
                                 </Grid>
 

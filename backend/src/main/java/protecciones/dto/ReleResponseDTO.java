@@ -33,6 +33,8 @@ public class ReleResponseDTO {
 
     private Long remitoId;
 
+    private String tipoIngreso;
+
     private String estadoGarantia;
 
     private Long mesesRestantesGarantia;
@@ -165,6 +167,10 @@ public class ReleResponseDTO {
         return fechaBaja;
     }
 
+    public String getTipoIngreso() {
+        return tipoIngreso;
+    }
+
     public void setId(Long id) {
         this.id = id;
     }
@@ -239,5 +245,13 @@ public class ReleResponseDTO {
 
     public void setFechaBaja(LocalDateTime fechaBaja) {
         this.fechaBaja = fechaBaja;
+    }
+
+    public void setTipoIngreso(
+            String tipoIngreso
+    ) {
+
+        this.tipoIngreso =
+                tipoIngreso;
     }
 }

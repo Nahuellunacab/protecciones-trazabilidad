@@ -28,6 +28,11 @@ public class ReleRequestDTO {
     private Long modeloId;
 
     private Long remitoId;
+    @NotBlank(
+            message =
+                    "El tipo de ingreso es obligatorio"
+    )
+    private String tipoIngreso;
 
     public ReleRequestDTO() {
     }
@@ -54,6 +59,10 @@ public class ReleRequestDTO {
 
     public Long getRemitoId() {
         return remitoId;
+    }
+
+    public String getTipoIngreso() {
+        return tipoIngreso;
     }
 
     public void setNumeroSerie(
@@ -96,5 +105,13 @@ public class ReleRequestDTO {
     ) {
 
         this.remitoId = remitoId;
+    }
+
+    public void setTipoIngreso(
+            String tipoIngreso
+    ) {
+
+        this.tipoIngreso =
+                tipoIngreso;
     }
 }

@@ -42,6 +42,9 @@ public class Rele {
     @JoinColumn(name = "remito_id")
     private Remito remito;
 
+    @Column(name = "tipo_ingreso")
+    private String tipoIngreso;
+
     public Rele() {
     }
 
@@ -104,6 +107,10 @@ public class Rele {
         return remito;
     }
 
+    public String getTipoIngreso() {
+        return tipoIngreso;
+}
+
     public void setId(Long id) {
         this.id = id;
     }
@@ -143,4 +150,12 @@ public class Rele {
     public void setRemito(Remito remito) {
         this.remito = remito;
     }
+
+    public void setTipoIngreso(
+            String tipoIngreso
+    ) {
+
+        this.tipoIngreso =
+                tipoIngreso;
+}
 }

@@ -26,6 +26,7 @@ import protecciones.dto.BajaReleRequestDTO;
 @RestController
 @RequestMapping("/api/reles")
 @Tag(name = "Relés", description = "Gestión de relés de protección")
+
 public class ReleController {
 
     private final ReleService releService;
@@ -62,7 +63,7 @@ public class ReleController {
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Obtener relé por ID")
+    @Operation(summary = "Obtener relé por ID")         // Documentación para Swagger/OpenAPI
     public ReleResponseDTO obtenerPorId(
             @PathVariable Long id
     ) {

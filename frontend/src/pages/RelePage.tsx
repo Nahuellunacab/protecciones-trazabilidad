@@ -1,28 +1,32 @@
-// RelePage.tsx
-
+// -----------------------------------Importación de librerías-----------------------------------
 import { useEffect, useState } from "react";
 
-import PageHeader
-from "../components/common/PageHeader";
-
+// -----------------------------------Importación de servicios-----------------------------------
 import {
     obtenerReles,
     crearRele,
     actualizar,
-    darDeBaja
+    
 } from "../services/releService";
 
+// -----------------------------------Importación de tipos-----------------------------------------
 import type { Rele }
 from "../types/Rele";
 
 import type { ReleRequest }
 from "../types/ReleRequest";
 
+// -----------------------------------Importación de componentes-----------------------------------
 import ReleForm
 from "../components/rele/ReleForm";
 
 import ReleTable
 from "../components/rele/ReleTable";
+
+import PageHeader
+from "../components/common/PageHeader";
+
+// -----------------------------------Definición del componente-----------------------------------
 
 function RelePage() {
 
@@ -40,12 +44,14 @@ function RelePage() {
         setReles(data);
     };
 
+    // Cuándo la página aparezca por primera vez, cargar los relés
     useEffect(() => {
 
         cargarReles();
 
     }, []);
 
+    // Función para manejar la creación de un nuevo relé
     const handleCreate = async (
         data: ReleRequest
     ) => {
@@ -55,6 +61,7 @@ function RelePage() {
         await cargarReles();
     };
 
+    // Función para manejar la actualización de un relé existente
     const handleUpdate = async (
         id: number,
         data: ReleRequest
@@ -70,18 +77,6 @@ function RelePage() {
         await cargarReles();
     };
 
-    const handleBaja = async (
-        id: number,
-        motivo: string
-    ) => {
-
-        await darDeBaja(
-            id,
-            motivo
-        );
-
-        await cargarReles();
-    };
 
     return (
 
@@ -107,7 +102,7 @@ function RelePage() {
             <ReleTable
                 reles={reles}
                 onEditar={setReleEditando}
-                onDarDeBaja={handleBaja}
+                
             />
 
         </div>

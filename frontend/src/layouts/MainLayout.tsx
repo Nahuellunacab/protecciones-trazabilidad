@@ -81,7 +81,7 @@ function MainLayout() {
                                     opacity: 0.9
                                 }}
                             >
-                                Departamento de
+                                Depto. de
                                 Teleoperaciones y
                                 Protecciones
                             </Typography>
@@ -95,7 +95,7 @@ function MainLayout() {
                         component={Link}
                         to="/"
                     >
-                        Inicio
+                        Dashboard
                     </Button>
 
                     <Button

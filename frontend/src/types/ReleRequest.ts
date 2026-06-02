@@ -4,11 +4,7 @@ export interface ReleRequest {
 
     modeloId: number | "";
 
-    cargarGarantia: boolean;
-
-    garantiaMeses: number;
-
-    inicioGarantia: string;
+    tipoIngreso: "NUEVO" | "USADO";
 
     remitoId: number | null;
 
