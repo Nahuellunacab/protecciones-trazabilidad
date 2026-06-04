@@ -30,7 +30,8 @@ import {
     DialogActions,
     ToggleButton,
     ToggleButtonGroup,
-    CircularProgress
+    CircularProgress,
+    Box,
 } from "@mui/material";
 
 interface Props {
@@ -329,10 +330,13 @@ function ReleTable({
 
                                     <TableCell>
 
-                                        <Stack
-                                            direction="row"
-                                            spacing={1}
-                                            justifyContent="center"
+                                        <Box
+                                            sx={{
+                                                display: "flex",
+                                                flexDirection: "row",
+                                                gap: 1,
+                                                justifyContent: "center"
+                                            }}
                                         >
 
                                             <Button
@@ -363,7 +367,7 @@ function ReleTable({
 
                                             </Button>
 
-                                        </Stack>
+                                        </Box>
 
                                     </TableCell>
 
@@ -408,14 +412,18 @@ function ReleTable({
                     {
                         historialLoading ? (
 
-                            <Stack
-                                alignItems="center"
-                                py={4}
+                            <Box
+                                sx={{
+                                    display: "flex",
+                                    flexDirection: "row",
+                                    gap: 1,
+                                    justifyContent: "center"
+                                }}
                             >
 
                                 <CircularProgress />
 
-                            </Stack>
+                            </Box>
 
                         ) : historial.length === 0 ? (
 

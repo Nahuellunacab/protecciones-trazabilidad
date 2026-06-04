@@ -6,16 +6,20 @@ import protecciones.dto.MovimientoResponseDTO;
 import protecciones.dto.ReleOptionDTO;
 import protecciones.dto.ReleRequestDTO;
 import protecciones.dto.ReleResponseDTO;
-
+import protecciones.entity.Estado;
 import protecciones.entity.Modelo;
 import protecciones.entity.Movimiento;
+import protecciones.entity.Posicion;
 import protecciones.entity.Rele;
 import protecciones.entity.Remito;
-
+import protecciones.entity.Usuario;
 import protecciones.repository.ModeloRepository;
 import protecciones.repository.MovimientoRepository;
 import protecciones.repository.ReleRepository;
 import protecciones.repository.RemitoRepository;
+import protecciones.repository.EstadoRepository;
+import protecciones.repository.PosicionRepository;
+import protecciones.repository.UsuarioRepository;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -40,11 +44,20 @@ public class ReleService {
 
     private final MovimientoRepository movimientoRepository;
 
+    private final EstadoRepository estadoRepository;
+
+    private final PosicionRepository posicionRepository;
+
+    private final UsuarioRepository usuarioRepository;
+
     public ReleService(
             ReleRepository releRepository,
             ModeloRepository modeloRepository,
             RemitoRepository remitoRepository,
-            MovimientoRepository movimientoRepository
+            MovimientoRepository movimientoRepository,
+            EstadoRepository estadoRepository,
+            PosicionRepository posicionRepository,
+            UsuarioRepository usuarioRepository
     ) {
 
         this.releRepository =
@@ -58,6 +71,15 @@ public class ReleService {
 
         this.movimientoRepository =
                 movimientoRepository;
+
+        this.estadoRepository =
+                estadoRepository;
+
+        this.posicionRepository =
+                posicionRepository;
+
+        this.usuarioRepository =
+                usuarioRepository;
     }
 
     public List<ReleResponseDTO>
@@ -170,6 +192,61 @@ public class ReleService {
                 releRepository.save(
                         rele
                 );
+
+        Estado estadoIngresado =
+                estadoRepository.findById(6L)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Estado INGRESADO no encontrado"
+                                )
+                        );
+
+        Posicion posicionInicial =
+                posicionRepository.findById(1L)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Posición inicial no encontrada"
+                                )
+                        );
+
+        Usuario usuarioSistema =
+                usuarioRepository.findById(1L)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Usuario sistema no encontrado"
+                                )
+                        );
+
+        Movimiento movimientoInicial =
+                new Movimiento();
+
+        movimientoInicial.setRele(
+                releGuardado
+        );
+
+        movimientoInicial.setEstado(
+                estadoIngresado
+        );
+
+        movimientoInicial.setPosicion(
+                posicionInicial
+        );
+
+        movimientoInicial.setUsuario(
+                usuarioSistema
+        );
+
+        movimientoInicial.setFechaMovimiento(
+                LocalDateTime.now()
+        );
+
+        movimientoInicial.setNotas(
+                "Ingreso inicial del relé"
+        );
+
+        movimientoRepository.save(
+                movimientoInicial
+        );
 
         return mapToResponseDTO(
                 releGuardado

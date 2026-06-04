@@ -4,7 +4,9 @@ import {
     Alert,
     Box,
     Button,
-    Checkbox,
+    Dialog,
+    DialogTitle,
+    DialogContent,
     FormControl,
     Grid,
     InputLabel,
@@ -13,14 +15,8 @@ import {
     Select,
     TextField,
     Typography,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    RadioGroup,
-    FormControlLabel,
-    FormLabel,
-    Radio
-
+    ToggleButtonGroup,
+    ToggleButton,
 } from "@mui/material";
 
 import type { Modelo }
@@ -35,18 +31,6 @@ from "../../types/Rele";
 import type { ReleRequest }
 from "../../types/ReleRequest";
 
-import type { Provincia }
-from "../../types/Provincia";
-
-import type { Localidad }
-from "../../types/Localidad";
-
-import type { Destino }
-from "../../types/Destino";
-
-import type { Posicion }
-from "../../types/Posicion";
-
 
 import {
     crearMarca,
@@ -58,30 +42,11 @@ import {
     obtenerModelos
 } from "../../services/modeloService";
 
-import {
-    obtenerProvincias
-} from "../../services/provinciaService";
-
-import {
-    obtenerLocalidadesPorProvincia
-} from "../../services/localidadService";
-
-import {
-    obtenerDestinosPorLocalidad
-} from "../../services/destinoService";
-
-import {
-    obtenerPosicionesPorDestino
-} from "../../services/posicionService";
-
-import MarcaForm
-from "../admin/marca/MarcaForm";
-
-import ModeloForm
-from "../admin/modelo/ModeloForm";
 import type { Tipo } from "../../types/Tipo";
 import { obtenerTipos } from "../../services/tipoService";
 
+import MarcaForm from "../admin/marca/MarcaForm";
+import ModeloForm from "../admin/modelo/ModeloForm";
 interface Props {
 
     onCreate: (
@@ -113,18 +78,6 @@ function ReleForm({
 
     const [tipos, setTipos] =
         useState<Tipo[]>([]);
-
-    const [provincias, setProvincias] =
-        useState<Provincia[]>([]);
-
-    const [localidades, setLocalidades] =
-        useState<Localidad[]>([]);
-
-    const [destinos, setDestinos] =
-        useState<Destino[]>([]);
-
-    const [posiciones, setPosiciones] =
-        useState<Posicion[]>([]);
 
     const [marcaId, setMarcaId] =
         useState<number | "">("");
@@ -159,14 +112,7 @@ function ReleForm({
             numeroSerie: "",
             modeloId: "",
             tipoIngreso: "NUEVO",
-            cargarGarantia: false,
-            garantiaMeses: 12,
-            inicioGarantia: "",
             remitoId: null,
-            provinciaId: undefined,
-            localidadId: undefined,
-            destinoId: undefined,
-            posicionId: undefined
         });
 
     useEffect(() => {
@@ -281,103 +227,6 @@ function ReleForm({
 
     }, [marcaId, modelos]);
 
-    useEffect(() => {
-
-        if (
-            formData.provinciaId
-        ) {
-
-            cargarLocalidades(
-                formData.provinciaId
-            );
-        }
-
-    }, [formData.provinciaId]);
-
-    useEffect(() => {
-
-        if (
-            formData.localidadId
-        ) {
-
-            cargarDestinos(
-                formData.localidadId
-            );
-        }
-
-    }, [formData.localidadId]);
-
-    useEffect(() => {
-
-        if (
-            formData.destinoId
-        ) {
-
-            cargarPosiciones(
-                formData.destinoId
-            );
-        }
-
-    }, [formData.destinoId]);
-
-    useEffect(() => {
-
-        if (releEditando) {
-
-            const modelo =
-                modelos.find(
-                    (m) =>
-                        m.id ===
-                        releEditando.modeloId
-                );
-
-            setMarcaId(
-                modelo?.marcaId || ""
-            );
-
-            setFormData({
-
-                numeroSerie:
-                    releEditando.numeroSerie,
-
-                modeloId:
-                    releEditando.modeloId ?? "",
-
-                tipoIngreso:
-                    "NUEVO",
-
-                cargarGarantia:
-                    releEditando.garantiaMeses
-                    !== null,
-
-                garantiaMeses:
-                    releEditando.garantiaMeses
-                    || 12,
-
-                inicioGarantia:
-                    releEditando.inicioGarantia
-                    || "",
-
-                remitoId:
-                    releEditando.remitoId
-                    || null,
-
-                provinciaId: undefined,
-
-                localidadId: undefined,
-
-                destinoId: undefined,
-
-                posicionId: undefined
-            });
-
-        } else {
-
-            limpiarFormulario();
-        }
-
-    }, [releEditando, modelos]);
-
     const cargarDatos = async () => {
 
         try {
@@ -385,15 +234,12 @@ function ReleForm({
             const [
                 marcasData,
                 modelosData,
-                provinciasData,
                 tiposData
             ] = await Promise.all([
 
                 obtenerMarcas(),
 
                 obtenerModelos(),
-
-                obtenerProvincias(),
 
                 obtenerTipos()
             ]);
@@ -404,10 +250,6 @@ function ReleForm({
 
             setModelos(
                 modelosData
-            );
-
-            setProvincias(
-                provinciasData
             );
 
             setTipos(
@@ -422,44 +264,6 @@ function ReleForm({
         }
     };
 
-    const cargarLocalidades =
-    async (
-        provinciaId: number
-    ) => {
-
-        const data =
-            await obtenerLocalidadesPorProvincia(
-                provinciaId
-            );
-
-        setLocalidades(data);
-    };
-
-    const cargarDestinos =
-    async (
-        localidadId: number
-    ) => {
-
-        const data =
-            await obtenerDestinosPorLocalidad(
-                localidadId
-            );
-
-        setDestinos(data);
-    };
-
-    const cargarPosiciones =
-    async (
-        destinoId: number
-    ) => {
-
-        const data =
-            await obtenerPosicionesPorDestino(
-                destinoId
-            );
-
-        setPosiciones(data);
-    };
 
     const obtenerTension = () => {
 
@@ -490,32 +294,12 @@ function ReleForm({
 
             tipoIngreso: "NUEVO",
 
-            cargarGarantia: false,
-
-            garantiaMeses: 12,
-
-            inicioGarantia: "",
-
-            remitoId: null,
-
-            provinciaId: undefined,
-
-            localidadId: undefined,
-
-            destinoId: undefined,
-
-            posicionId: undefined
+            remitoId: null
         });
 
         setMarcaId("");
 
         setError("");
-
-        setLocalidades([]);
-
-        setDestinos([]);
-
-        setPosiciones([]);
 
         onCancelEdit();
     };
@@ -629,38 +413,39 @@ function ReleForm({
                 >
                     <Grid size={12}>
 
-                        <FormControl>
+                        <FormControl fullWidth>
 
-                            <FormLabel>
+                            <Typography
+                                variant="subtitle1"
+                                sx={{ mb: 1 }}
+                            >
                                 Tipo de ingreso
-                            </FormLabel>
+                            </Typography>
 
-                            <RadioGroup
-                                row
+                            <ToggleButtonGroup
                                 value={formData.tipoIngreso}
-                                onChange={(e) =>
+                                exclusive
+                                fullWidth
+                                onChange={(_, value) => {
+
+                                    if (!value) return;
+
                                     setFormData((prev) => ({
                                         ...prev,
-                                        tipoIngreso:
-                                            e.target.value as
-                                            "NUEVO" | "USADO"
-                                    }))
-                                }
+                                        tipoIngreso: value
+                                    }));
+                                }}
                             >
 
-                                <FormControlLabel
-                                    value="NUEVO"
-                                    control={<Radio />}
-                                    label="Nuevo"
-                                />
+                                <ToggleButton value="NUEVO">
+                                    Nuevo
+                                </ToggleButton>
 
-                                <FormControlLabel
-                                    value="USADO"
-                                    control={<Radio />}
-                                    label="Usado"
-                                />
+                                <ToggleButton value="USADO">
+                                    Usado
+                                </ToggleButton>
 
-                            </RadioGroup>
+                            </ToggleButtonGroup>
 
                         </FormControl>
 
@@ -778,29 +563,6 @@ function ReleForm({
                     <Grid size={12}>
 
                         <TextField
-                            select
-                            label="Tipo de Ingreso"
-                            name="tipoIngreso"
-                            value={formData.tipoIngreso}
-                            onChange={handleChange}
-                            fullWidth
-                        >
-
-                            <MenuItem value="NUEVO">
-                                Nuevo
-                            </MenuItem>
-
-                            <MenuItem value="USADO">
-                                Usado
-                            </MenuItem>
-
-                        </TextField>
-
-                    </Grid>
-
-                    <Grid size={12}>
-
-                        <TextField
                             label="Tensión"
                             value={
                                 obtenerTension()
@@ -832,225 +594,6 @@ function ReleForm({
 
                     </Grid>
 
-                    <Grid size={6}>
-
-                        <FormControl
-                            fullWidth
-                        >
-
-                            <InputLabel>
-                                Provincia
-                            </InputLabel>
-
-                            <Select
-                                name="provinciaId"
-                                value={
-                                    formData.provinciaId || ""
-                                }
-                                label="Provincia"
-                                onChange={(e) => {
-
-                                    handleChange(e);
-
-                                    setFormData(
-                                        (prev) => ({
-                                            ...prev,
-                                            provinciaId:
-                                                Number(
-                                                    e.target.value
-                                                ),
-                                            localidadId:
-                                                undefined,
-                                            destinoId:
-                                                undefined,
-                                            posicionId:
-                                                undefined
-                                        })
-                                    );
-
-                                    setDestinos([]);
-
-                                    setPosiciones([]);
-                                }}
-                            >
-
-                                {
-                                    provincias.map(
-                                        (provincia) => (
-
-                                        <MenuItem
-                                            key={provincia.id}
-                                            value={provincia.id}
-                                        >
-
-                                            {provincia.nombre}
-
-                                        </MenuItem>
-                                    ))
-                                }
-
-                            </Select>
-
-                        </FormControl>
-
-                    </Grid>
-
-                    <Grid size={6}>
-
-                        <FormControl
-                            fullWidth
-                        >
-
-                            <InputLabel>
-                                Localidad
-                            </InputLabel>
-
-                            <Select
-                                name="localidadId"
-                                value={
-                                    formData.localidadId || ""
-                                }
-                                label="Localidad"
-                                onChange={(e) => {
-
-                                    handleChange(e);
-
-                                    setFormData(
-                                        (prev) => ({
-                                            ...prev,
-                                            localidadId:
-                                                Number(
-                                                    e.target.value
-                                                ),
-                                            destinoId:
-                                                undefined,
-                                            posicionId:
-                                                undefined
-                                        })
-                                    );
-
-                                    setPosiciones([]);
-                                }}
-                            >
-
-                                {
-                                    localidades.map(
-                                        (localidad) => (
-
-                                        <MenuItem
-                                            key={localidad.id}
-                                            value={localidad.id}
-                                        >
-
-                                            {localidad.nombre}
-
-                                        </MenuItem>
-                                    ))
-                                }
-
-                            </Select>
-
-                        </FormControl>
-
-                    </Grid>
-
-                    <Grid size={6}>
-
-                        <FormControl
-                            fullWidth
-                        >
-
-                            <InputLabel>
-                                Destino
-                            </InputLabel>
-
-                            <Select
-                                name="destinoId"
-                                value={
-                                    formData.destinoId || ""
-                                }
-                                label="Destino"
-                                onChange={(e) => {
-
-                                    handleChange(e);
-
-                                    setFormData(
-                                        (prev) => ({
-                                            ...prev,
-                                            destinoId:
-                                                Number(
-                                                    e.target.value
-                                                ),
-                                            posicionId:
-                                                undefined
-                                        })
-                                    );
-                                }}
-                            >
-
-                                {
-                                    destinos.map(
-                                        (destino) => (
-
-                                        <MenuItem
-                                            key={destino.id}
-                                            value={destino.id}
-                                        >
-
-                                            {destino.nombre}
-
-                                        </MenuItem>
-                                    ))
-                                }
-
-                            </Select>
-
-                        </FormControl>
-
-                    </Grid>
-
-                    <Grid size={6}>
-
-                        <FormControl
-                            fullWidth
-                        >
-
-                            <InputLabel>
-                                Posición
-                            </InputLabel>
-
-                            <Select
-                                name="posicionId"
-                                value={
-                                    formData.posicionId || ""
-                                }
-                                label="Posición"
-                                onChange={
-                                    handleChange
-                                }
-                            >
-
-                                {
-                                    posiciones.map(
-                                        (posicion) => (
-
-                                        <MenuItem
-                                            key={posicion.id}
-                                            value={posicion.id}
-                                        >
-
-                                            {posicion.nombre}
-
-                                        </MenuItem>
-                                    ))
-                                }
-
-                            </Select>
-
-                        </FormControl>
-
-                    </Grid>
-
                     {
                         formData.tipoIngreso ===
                         "NUEVO" && (
@@ -1060,49 +603,45 @@ function ReleForm({
 
                                     <Alert severity="info">
 
-                                        Al tratarse de un relé nuevo,
-                                        deberá adjuntarse Remito y
-                                        Orden de Provisión.
+                                        La documentación inicial es opcional. Puede asociarse
+                                        un remito, una orden de provisión, ambos o ningubo.
 
                                     </Alert>
 
                                 </Grid>
                                 <Grid size={6}>
 
-                                    <Button
-                                        component="label"
-                                        variant="outlined"
+                                    <TextField
+                                        select
+                                        label="Remito (Opcional)"
+                                        value={formData.remitoId ?? ""}
+                                        onChange={(e) =>
+                                            setFormData((prev) => ({
+                                                ...prev,
+                                                remitoId:
+                                                    Number(
+                                                        e.target.value
+                                                    )
+                                            }))
+                                        }
                                         fullWidth
                                     >
 
-                                        PDF Remito
+                                        <MenuItem value="">
+                                            Ninguno
+                                        </MenuItem>
 
-                                        <input
-                                            type="file"
-                                            accept=".pdf"
-                                            hidden
-                                        />
-
-                                    </Button>
+                                    </TextField>
 
                                 </Grid>
 
                                 <Grid size={6}>
 
                                     <Button
-                                        component="label"
                                         variant="outlined"
                                         fullWidth
                                     >
-
-                                        PDF Orden de Provisión
-
-                                        <input
-                                            type="file"
-                                            accept=".pdf"
-                                            hidden
-                                        />
-
+                                        + Nuevo Remito
                                     </Button>
 
                                 </Grid>

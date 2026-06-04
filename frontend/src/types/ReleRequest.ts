@@ -8,11 +8,4 @@ export interface ReleRequest {
 
     remitoId: number | null;
 
-    provinciaId?: number;
-
-    localidadId?: number;
-
-    destinoId?: number;
-
-    posicionId?: number;
 }
