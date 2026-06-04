@@ -8,4 +8,6 @@ export interface ReleRequest {
 
     remitoId: number | null;
 
+    posicionInicialId: number | undefined;
+
 }

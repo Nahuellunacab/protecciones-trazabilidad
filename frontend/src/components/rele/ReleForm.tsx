@@ -31,7 +31,6 @@ from "../../types/Rele";
 import type { ReleRequest }
 from "../../types/ReleRequest";
 
-
 import {
     crearMarca,
     obtenerMarcas
@@ -47,6 +46,15 @@ import { obtenerTipos } from "../../services/tipoService";
 
 import MarcaForm from "../admin/marca/MarcaForm";
 import ModeloForm from "../admin/modelo/ModeloForm";
+import type { Posicion } from "../../types/Posicion";
+import {
+    obtenerDestinos
+} from "../../services/destinoService";
+
+import {
+    obtenerPosicionesPorDestino
+} from "../../services/posicionService";
+
 interface Props {
 
     onCreate: (
@@ -113,7 +121,13 @@ function ReleForm({
             modeloId: "",
             tipoIngreso: "NUEVO",
             remitoId: null,
+            posicionInicialId: undefined
         });
+    
+    const [posicionesIniciales,
+        setPosicionesIniciales] =
+            useState<Posicion[]>([]);
+            
 
     useEffect(() => {
 
@@ -256,13 +270,36 @@ function ReleForm({
                 tiposData
             );
 
-        } catch {
+            const destinos =
+                await obtenerDestinos();
 
-            setError(
-                "Error al cargar datos"
-            );
-        }
-    };
+            const depositoCentral =
+                destinos.find(
+                    (d) =>
+                        d.nombre ===
+                        "Depósito Central"
+                );
+
+            if (depositoCentral) {
+
+                const posiciones =
+                    await obtenerPosicionesPorDestino(
+                        depositoCentral.id
+                    );
+
+
+                setPosicionesIniciales(
+                    posiciones
+                );
+            }
+
+            } catch {
+
+                setError(
+                    "Error al cargar datos"
+                );
+            }
+        };
 
 
     const obtenerTension = () => {
@@ -294,7 +331,9 @@ function ReleForm({
 
             tipoIngreso: "NUEVO",
 
-            remitoId: null
+            remitoId: null,
+
+            posicionInicialId: undefined
         });
 
         setMarcaId("");
@@ -591,6 +630,57 @@ function ReleForm({
                             fullWidth
                             required
                         />
+
+                    </Grid>
+
+                    <Grid size={12}>
+
+                        <FormControl fullWidth>
+
+                            <InputLabel>
+                                Posición Inicial
+                            </InputLabel>
+
+                            <Select
+                                value={
+                                    formData.posicionInicialId
+                                    ?? ""
+                                }
+                                label="Posición Inicial"
+                                onChange={(e) =>
+                                    setFormData((prev) => ({
+                                        ...prev,
+                                        posicionInicialId:
+                                            Number(
+                                                e.target.value
+                                            )
+                                    }))
+                                }
+                            >
+
+                                {
+                                    posicionesIniciales.map(
+                                        (posicion) => (
+
+                                            <MenuItem
+                                                key={
+                                                    posicion.id
+                                                }
+                                                value={
+                                                    posicion.id
+                                                }
+                                            >
+                                                {
+                                                    posicion.nombre
+                                                }
+                                            </MenuItem>
+                                        )
+                                    )
+                                }
+
+                            </Select>
+
+                        </FormControl>
 
                     </Grid>
 

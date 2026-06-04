@@ -202,12 +202,14 @@ public class ReleService {
                         );
 
         Posicion posicionInicial =
-                posicionRepository.findById(1L)
-                        .orElseThrow(() ->
-                                new RuntimeException(
-                                        "Posición inicial no encontrada"
-                                )
-                        );
+                posicionRepository.findById(
+                        dto.getPosicionInicialId()
+                )
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Posición inicial no encontrada"
+                        )
+                );
 
         Usuario usuarioSistema =
                 usuarioRepository.findById(1L)

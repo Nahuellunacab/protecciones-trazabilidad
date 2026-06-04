@@ -34,6 +34,8 @@ public class ReleRequestDTO {
     )
     private String tipoIngreso;
 
+    private Long posicionInicialId;
+
     public ReleRequestDTO() {
     }
 
@@ -64,6 +66,11 @@ public class ReleRequestDTO {
     public String getTipoIngreso() {
         return tipoIngreso;
     }
+
+    public Long getPosicionInicialId() {
+        return posicionInicialId;
+    }
+    
 
     public void setNumeroSerie(
             String numeroSerie
@@ -113,5 +120,12 @@ public class ReleRequestDTO {
 
         this.tipoIngreso =
                 tipoIngreso;
+    }
+
+    public void setPosicionInicialId(
+            Long posicionInicialId
+    ) {
+        this.posicionInicialId =
+                posicionInicialId;
     }
 }
