@@ -92,6 +92,8 @@ function ReleTable({
 
             return true;
         });
+    
+        
 
     const handleVerHistorial =
     async (
@@ -255,11 +257,13 @@ function ReleTable({
                                     }}
                                 >
 
-                                    <TableCell>
-                                        {
-                                            rele.numeroSerie
-                                        }
-                                    </TableCell>
+                                    <Typography
+                                        sx={{
+                                            fontWeight: "bold"
+                                        }}
+                                    >
+                                        {rele.numeroSerie}
+                                    </Typography>
 
                                     <TableCell>
                                         {rele.marca}
@@ -287,9 +291,16 @@ function ReleTable({
                                                 "Sin estado"
                                             }
                                             color={
-                                                rele.activo
-                                                    ? "success"
-                                                    : "default"
+                                                rele.estadoActual ===
+                                                "INGRESADO"
+                                                    ? "info"
+                                                    : rele.estadoActual ===
+                                                    "ENSAYO"
+                                                        ? "warning"
+                                                        : rele.estadoActual ===
+                                                        "REPARACION"
+                                                            ? "error"
+                                                            : "success"
                                             }
                                             size="small"
                                         />
@@ -300,8 +311,16 @@ function ReleTable({
 
                                         {
                                             rele.localidadActual
-                                            ||
-                                            "-"
+                                                ? (
+                                                    <Chip
+                                                        label={
+                                                            rele.localidadActual
+                                                        }
+                                                        size="small"
+                                                        variant="outlined"
+                                                    />
+                                                )
+                                                : "-"
                                         }
 
                                     </TableCell>
@@ -310,8 +329,16 @@ function ReleTable({
 
                                         {
                                             rele.posicionActual
-                                            ||
-                                            "-"
+                                                ? (
+                                                    <Chip
+                                                        label={
+                                                            rele.posicionActual
+                                                        }
+                                                        size="small"
+                                                        color="primary"
+                                                    />
+                                                )
+                                                : "-"
                                         }
 
                                     </TableCell>

@@ -1,12 +1,17 @@
 // -----------------------------------Importación de librerías-----------------------------------
 import { useEffect, useState } from "react";
 
+import {
+    TextField,
+    Typography
+} from "@mui/material";
+
 // -----------------------------------Importación de servicios-----------------------------------
 import {
     obtenerReles,
     crearRele,
     actualizar,
-    
+
 } from "../services/releService";
 
 // -----------------------------------Importación de tipos-----------------------------------------
@@ -32,6 +37,9 @@ function RelePage() {
 
     const [reles, setReles] =
         useState<Rele[]>([]);
+
+    const [textoBusqueda, setTextoBusqueda] =
+        useState("");
 
     const [releEditando, setReleEditando] =
         useState<Rele | null>(null);
@@ -77,6 +85,31 @@ function RelePage() {
         await cargarReles();
     };
 
+    const relesFiltrados =
+        reles.filter((rele) => {
+
+            const texto =
+                textoBusqueda.toLowerCase();
+
+            return (
+
+                rele.numeroSerie
+                    .toLowerCase()
+                    .includes(texto)
+
+                ||
+
+                rele.marca
+                    .toLowerCase()
+                    .includes(texto)
+
+                ||
+
+                rele.modelo
+                    .toLowerCase()
+                    .includes(texto)
+            );
+        });
 
     return (
 
@@ -99,10 +132,32 @@ function RelePage() {
                 }
             />
 
+            <TextField
+                label="Buscar por serie, marca o modelo"
+                value={textoBusqueda}
+                onChange={(e) =>
+                    setTextoBusqueda(
+                        e.target.value
+                    )
+                }
+                fullWidth
+                sx={{
+                    mb: 1,
+                    mt: 2
+                }}
+            />
+
+            <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ mb: 2 }}
+            >
+                {relesFiltrados.length} relés encontrados
+            </Typography>
+
             <ReleTable
-                reles={reles}
+                reles={relesFiltrados}
                 onEditar={setReleEditando}
-                
             />
 
         </div>
