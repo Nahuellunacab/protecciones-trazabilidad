@@ -3,7 +3,8 @@ import { useEffect, useState } from "react";
 
 import {
     TextField,
-    Typography
+    Typography,
+    Button
 } from "@mui/material";
 
 // -----------------------------------Importación de servicios-----------------------------------
@@ -44,6 +45,10 @@ function RelePage() {
     const [releEditando, setReleEditando] =
         useState<Rele | null>(null);
 
+    const [mostrarFormulario,
+        setMostrarFormulario] =
+        useState(false);
+
     const cargarReles = async () => {
 
         const data =
@@ -52,24 +57,25 @@ function RelePage() {
         setReles(data);
     };
 
-    // Cuándo la página aparezca por primera vez, cargar los relés
     useEffect(() => {
 
         cargarReles();
 
     }, []);
 
-    // Función para manejar la creación de un nuevo relé
     const handleCreate = async (
         data: ReleRequest
     ) => {
 
         await crearRele(data);
 
+        setMostrarFormulario(
+            false
+        );
+
         await cargarReles();
     };
 
-    // Función para manejar la actualización de un relé existente
     const handleUpdate = async (
         id: number,
         data: ReleRequest
@@ -80,9 +86,44 @@ function RelePage() {
             data
         );
 
-        setReleEditando(null);
+        setReleEditando(
+            null
+        );
+
+        setMostrarFormulario(
+            false
+        );
 
         await cargarReles();
+    };
+
+    const handleEditar = (
+        rele: Rele
+    ) => {
+
+        setReleEditando(
+            rele
+        );
+
+        setMostrarFormulario(
+            true
+        );
+
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+    };
+
+    const handleCancelar = () => {
+
+        setReleEditando(
+            null
+        );
+
+        setMostrarFormulario(
+            false
+        );
     };
 
     const relesFiltrados =
@@ -123,14 +164,40 @@ function RelePage() {
                 "
             />
 
-            <ReleForm
-                onCreate={handleCreate}
-                onUpdate={handleUpdate}
-                releEditando={releEditando}
-                onCancelEdit={() =>
-                    setReleEditando(null)
+            <Button
+                variant="contained"
+                onClick={() =>
+                    setMostrarFormulario(
+                        !mostrarFormulario
+                    )
                 }
-            />
+                sx={{
+                    mb: 3
+                }}
+            >
+
+                {
+                    mostrarFormulario
+                        ? "▲ OCULTAR FORMULARIO"
+                        : "＋ NUEVO RELÉ"
+                }
+
+            </Button>
+
+            {
+                mostrarFormulario && (
+
+                    <ReleForm
+                        onCreate={handleCreate}
+                        onUpdate={handleUpdate}
+                        releEditando={releEditando}
+                        onCancelEdit={
+                            handleCancelar
+                        }
+                    />
+
+                )
+            }
 
             <TextField
                 label="Buscar por serie, marca o modelo"
@@ -157,7 +224,7 @@ function RelePage() {
 
             <ReleTable
                 reles={relesFiltrados}
-                onEditar={setReleEditando}
+                onEditar={handleEditar}
             />
 
         </div>
