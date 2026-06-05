@@ -187,6 +187,14 @@ function MainLayout() {
                         Remitos
                     </Button>
 
+                    <Button
+                        color="inherit"
+                        component={Link}
+                        to="/admin/ordenes-provision"
+                    >
+                        Órdenes
+                    </Button>
+
                 </Toolbar>
 
             </AppBar>

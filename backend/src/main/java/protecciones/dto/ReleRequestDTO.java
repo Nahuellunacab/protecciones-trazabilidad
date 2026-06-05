@@ -36,6 +36,8 @@ public class ReleRequestDTO {
 
     private Long posicionInicialId;
 
+    private Long ordenProvisionId;
+
     public ReleRequestDTO() {
     }
 
@@ -69,6 +71,10 @@ public class ReleRequestDTO {
 
     public Long getPosicionInicialId() {
         return posicionInicialId;
+    }
+
+    public Long getOrdenProvisionId() {
+        return ordenProvisionId;
     }
     
 
@@ -127,5 +133,12 @@ public class ReleRequestDTO {
     ) {
         this.posicionInicialId =
                 posicionInicialId;
+    }
+
+    public void setOrdenProvisionId(
+         Long ordenProvisionId
+    ) {
+        this.ordenProvisionId =
+                ordenProvisionId;
     }
 }

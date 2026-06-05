@@ -1,7 +1,6 @@
 package protecciones.service;
 
 import org.springframework.stereotype.Service;
-
 import protecciones.dto.MovimientoResponseDTO;
 import protecciones.dto.ReleOptionDTO;
 import protecciones.dto.ReleRequestDTO;
@@ -20,18 +19,17 @@ import protecciones.repository.RemitoRepository;
 import protecciones.repository.EstadoRepository;
 import protecciones.repository.PosicionRepository;
 import protecciones.repository.UsuarioRepository;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-
 import java.util.List;
 import java.util.Optional;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import protecciones.entity.OrdenProvision;
+import protecciones.repository.OrdenProvisionRepository;
 
 @Service
 public class ReleService {
@@ -41,6 +39,9 @@ public class ReleService {
     private final ModeloRepository modeloRepository;
 
     private final RemitoRepository remitoRepository;
+
+    private final OrdenProvisionRepository
+        ordenProvisionRepository;
 
     private final MovimientoRepository movimientoRepository;
 
@@ -57,7 +58,8 @@ public class ReleService {
             MovimientoRepository movimientoRepository,
             EstadoRepository estadoRepository,
             PosicionRepository posicionRepository,
-            UsuarioRepository usuarioRepository
+            UsuarioRepository usuarioRepository,
+            OrdenProvisionRepository ordenProvisionRepository
     ) {
 
         this.releRepository =
@@ -80,6 +82,9 @@ public class ReleService {
 
         this.usuarioRepository =
                 usuarioRepository;
+
+        this.ordenProvisionRepository =
+                ordenProvisionRepository;
     }
 
     public List<ReleResponseDTO>
@@ -106,6 +111,8 @@ public class ReleService {
 
         Remito remito = null;
 
+        OrdenProvision ordenProvision = null;
+
         if (dto.getRemitoId() != null) {
 
             remito =
@@ -119,6 +126,23 @@ public class ReleService {
         }
 
         if (
+                dto.getOrdenProvisionId()
+                != null
+        ) {
+
+        ordenProvision =
+                ordenProvisionRepository
+                        .findById(
+                                dto.getOrdenProvisionId()
+                        )
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Orden de provisión no encontrada"
+                                )
+                        );
+        }
+
+        if (
                 releRepository.existsByNumeroSerie(
                         dto.getNumeroSerie()
                 )
@@ -128,6 +152,7 @@ public class ReleService {
                     "Ya existe un relé con ese número de serie"
             );
         }
+
 
         Rele rele =
                 new Rele();
@@ -142,6 +167,10 @@ public class ReleService {
 
         rele.setRemito(
                 remito
+        );
+
+        rele.setOrdenProvision(
+                ordenProvision
         );
 
         rele.setTipoIngreso(
@@ -372,6 +401,11 @@ public class ReleService {
                         ? rele.getRemito().getId()
                         : null;
 
+        Long ordenProvisionId =
+                rele.getOrdenProvision() != null
+                        ? rele.getOrdenProvision().getId()
+                        : null;
+
         String estadoActual = "-";
         String posicionActual = "-";
         String localidadActual = "-";
@@ -454,15 +488,13 @@ public class ReleService {
                 modelo != null
                         &&
                         modelo.getMarca() != null
-                        ? modelo.getMarca()
-                        .getNombre()
+                        ? modelo.getMarca().getNombre()
                         : null,
 
                 tension,
 
                 modelo != null
-                        ? modelo.getTipo()
-                        .getNombre()
+                        ? modelo.getTipo().getNombre()
                         : null,
 
                 estadoActual,
@@ -475,6 +507,8 @@ public class ReleService {
 
                 remitoId,
 
+                ordenProvisionId,
+
                 estadoGarantia,
 
                 mesesRestantesGarantia,
@@ -484,7 +518,7 @@ public class ReleService {
                 rele.getMotivoBaja(),
 
                 rele.getFechaBaja()
-        );
+                );
     }
 
     public MovimientoResponseDTO
@@ -654,6 +688,25 @@ public class ReleService {
 
         Remito remito = null;
 
+        OrdenProvision ordenProvision = null;
+
+        if (
+                dto.getOrdenProvisionId()
+                != null
+        ) {
+
+        ordenProvision =
+                ordenProvisionRepository
+                        .findById(
+                                dto.getOrdenProvisionId()
+                        )
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Orden de provisión no encontrada"
+                                )
+                        );
+        }
+
         if (dto.getRemitoId() != null) {
 
             remito =
@@ -673,6 +726,10 @@ public class ReleService {
         rele.setModelo(modelo);
 
         rele.setRemito(remito);
+
+        rele.setOrdenProvision(
+                ordenProvision
+        );
 
         rele.setTipoIngreso(
                 dto.getTipoIngreso()

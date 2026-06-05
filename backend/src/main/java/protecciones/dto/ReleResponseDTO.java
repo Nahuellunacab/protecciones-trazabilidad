@@ -33,6 +33,8 @@ public class ReleResponseDTO {
 
     private Long remitoId;
 
+    private Long ordenProvisionId;
+
     private String tipoIngreso;
 
     private String estadoGarantia;
@@ -44,9 +46,6 @@ public class ReleResponseDTO {
     private String motivoBaja;
 
     private LocalDateTime fechaBaja;
-
-    public ReleResponseDTO() {
-    }
 
     public ReleResponseDTO(
             Long id,
@@ -63,6 +62,7 @@ public class ReleResponseDTO {
             String localidadActual,
             Long modeloId,
             Long remitoId,
+            Long ordenProvisionId,
             String estadoGarantia,
             Long mesesRestantesGarantia,
             Boolean activo,
@@ -89,6 +89,7 @@ public class ReleResponseDTO {
         this.activo = activo;
         this.motivoBaja = motivoBaja;
         this.fechaBaja = fechaBaja;
+        this.ordenProvisionId = ordenProvisionId;
     }
 
     public Long getId() {
@@ -145,6 +146,10 @@ public class ReleResponseDTO {
 
     public Long getRemitoId() {
         return remitoId;
+    }
+
+    public Long getOrdenProvisionId() {
+        return ordenProvisionId;
     }
 
     public String getEstadoGarantia() {
@@ -225,6 +230,13 @@ public class ReleResponseDTO {
 
     public void setRemitoId(Long remitoId) {
         this.remitoId = remitoId;
+    }
+
+    public void setOrdenProvisionId(
+            Long ordenProvisionId
+    ) {
+        this.ordenProvisionId =
+                ordenProvisionId;
     }
 
     public void setEstadoGarantia(String estadoGarantia) {

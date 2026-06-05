@@ -31,6 +31,10 @@ from "../../types/Rele";
 import type { ReleRequest }
 from "../../types/ReleRequest";
 
+import type {
+    OrdenProvision
+} from "../../types/OrdenProvision";
+
 import {
     crearMarca,
     obtenerMarcas
@@ -54,6 +58,18 @@ import {
 import {
     obtenerPosicionesPorDestino
 } from "../../services/posicionService";
+
+import {
+    obtenerRemitos
+} from "../../services/remitoService";
+
+import type {
+    Remito
+} from "../../types/Remito";
+
+import {
+    obtenerOrdenesProvision
+} from "../../services/ordenProvisionService";
 
 interface Props {
 
@@ -121,19 +137,74 @@ function ReleForm({
             modeloId: "",
             tipoIngreso: "NUEVO",
             remitoId: null,
+            ordenProvisionId: null,
             posicionInicialId: undefined
         });
     
     const [posicionesIniciales,
         setPosicionesIniciales] =
             useState<Posicion[]>([]);
-            
+
+    const [remitos, setRemitos] =
+        useState<Remito[]>([]);
+    
+    const [ordenesProvision, setOrdenesProvision] =
+        useState<OrdenProvision[]>([]);     
+        
+    
 
     useEffect(() => {
 
         cargarDatos();
 
     }, []);
+
+    useEffect(() => {
+
+        if (!releEditando) {
+            return;
+        }
+
+        setFormData({
+
+            numeroSerie:
+                releEditando.numeroSerie,
+
+            modeloId:
+                releEditando.modeloId ?? "",
+
+            tipoIngreso:
+                releEditando.tipoIngreso,
+
+            remitoId:
+                releEditando.remitoId ?? null,
+
+            ordenProvisionId:
+                releEditando.ordenProvisionId ?? null,
+
+
+            posicionInicialId:
+                undefined
+        });
+
+        const modelo =
+            modelos.find(
+                (m) =>
+                    m.id ===
+                    releEditando.modeloId
+            );
+
+        if (modelo) {
+
+            setMarcaId(
+                modelo.marcaId
+            );
+        }
+
+    }, [
+        releEditando,
+        modelos
+    ]);
 
     const handleCrearMarcaInline =
         async (
@@ -248,14 +319,15 @@ function ReleForm({
             const [
                 marcasData,
                 modelosData,
-                tiposData
+                tiposData,
+                remitosData,
+                ordenesProvisionData
             ] = await Promise.all([
-
                 obtenerMarcas(),
-
                 obtenerModelos(),
-
-                obtenerTipos()
+                obtenerTipos(),
+                obtenerRemitos(),
+                obtenerOrdenesProvision()
             ]);
 
             setMarcas(
@@ -268,6 +340,14 @@ function ReleForm({
 
             setTipos(
                 tiposData
+            );
+
+            setRemitos(
+                remitosData
+            );
+
+            setOrdenesProvision(
+                ordenesProvisionData
             );
 
             const destinos =
@@ -332,6 +412,8 @@ function ReleForm({
             tipoIngreso: "NUEVO",
 
             remitoId: null,
+
+            ordenProvisionId: null,
 
             posicionInicialId: undefined
         });
@@ -709,9 +791,11 @@ function ReleForm({
                                             setFormData((prev) => ({
                                                 ...prev,
                                                 remitoId:
-                                                    Number(
-                                                        e.target.value
-                                                    )
+                                                    e.target.value === ""
+                                                        ? null
+                                                        : Number(
+                                                            e.target.value
+                                                        )
                                             }))
                                         }
                                         fullWidth
@@ -720,6 +804,63 @@ function ReleForm({
                                         <MenuItem value="">
                                             Ninguno
                                         </MenuItem>
+
+                                        {remitos.map((remito) => (
+
+                                            <MenuItem
+                                                key={remito.id}
+                                                value={remito.id}
+                                            >
+                                                {remito.numeroRemito}
+                                            </MenuItem>
+
+                                        ))}
+
+                                    </TextField>
+
+                                </Grid>
+
+                                <Grid size={6}>
+
+                                    <TextField
+                                        select
+                                        label="Orden de Provisión (Opcional)"
+                                        value={
+                                            formData.ordenProvisionId
+                                            ?? ""
+                                        }
+                                        onChange={(e) =>
+                                            setFormData((prev) => ({
+                                                ...prev,
+                                                ordenProvisionId:
+                                                    e.target.value === ""
+                                                        ? null
+                                                        : Number(
+                                                            e.target.value
+                                                        )
+                                            }))
+                                        }
+                                        fullWidth
+                                    >
+
+                                        <MenuItem value="">
+                                            Ninguna
+                                        </MenuItem>
+
+                                        {
+                                            ordenesProvision.map(
+                                                (orden) => (
+
+                                                    <MenuItem
+                                                        key={orden.id}
+                                                        value={orden.id}
+                                                    >
+                                                        {orden.numero}
+                                                    </MenuItem>
+
+                                                )
+                                            )
+                                        }
 
                                     </TextField>
 

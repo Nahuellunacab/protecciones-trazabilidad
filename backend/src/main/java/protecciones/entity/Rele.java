@@ -1,10 +1,7 @@
 package protecciones.entity;
-
 import jakarta.persistence.*;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-
 @Entity
 @Table(name = "rele")
 public class Rele {
@@ -41,6 +38,10 @@ public class Rele {
     @ManyToOne
     @JoinColumn(name = "remito_id")
     private Remito remito;
+
+    @ManyToOne
+    @JoinColumn(name = "orden_provision_id")
+    private OrdenProvision ordenProvision;
 
     @Column(name = "tipo_ingreso")
     private String tipoIngreso;
@@ -109,7 +110,11 @@ public class Rele {
 
     public String getTipoIngreso() {
         return tipoIngreso;
-}
+    }
+
+    public OrdenProvision getOrdenProvision() {
+        return ordenProvision;
+    }
 
     public void setId(Long id) {
         this.id = id;
@@ -157,5 +162,11 @@ public class Rele {
 
         this.tipoIngreso =
                 tipoIngreso;
-}
+    }
+
+    public void setOrdenProvision(
+            OrdenProvision ordenProvision
+    ) {
+        this.ordenProvision = ordenProvision;
+    }
 }
