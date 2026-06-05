@@ -60,7 +60,8 @@ import {
 } from "../../services/posicionService";
 
 import {
-    obtenerRemitos
+    obtenerRemitos,
+    crearRemito
 } from "../../services/remitoService";
 
 import type {
@@ -68,8 +69,17 @@ import type {
 } from "../../types/Remito";
 
 import {
-    obtenerOrdenesProvision
+    obtenerOrdenesProvision,
+    crearOrdenProvision
 } from "../../services/ordenProvisionService";
+
+import type {
+    Proveedor
+} from "../../types/Proveedor";
+
+import {
+    obtenerProveedores
+} from "../../services/proveedorService";
 
 interface Props {
 
@@ -149,8 +159,38 @@ function ReleForm({
         useState<Remito[]>([]);
     
     const [ordenesProvision, setOrdenesProvision] =
-        useState<OrdenProvision[]>([]);     
+        useState<OrdenProvision[]>([]);  
         
+    const [mostrarRemitoInline,
+        setMostrarRemitoInline] =
+        useState(false);
+
+    const [mostrarOPInline,
+        setMostrarOPInline] =
+        useState(false);
+
+    const [nuevoRemito,
+        setNuevoRemito] =
+        useState({
+
+            numeroRemito: "",
+
+            proveedorId: ""
+        });
+
+    const [nuevaOP,
+        setNuevaOP] =
+        useState({
+
+            numero: "",
+
+            observaciones: ""
+        });
+
+    const [proveedores,
+        setProveedores] =
+        useState<Proveedor[]>([]);
+            
     
 
     useEffect(() => {
@@ -244,51 +284,152 @@ function ReleForm({
                 );
             }
         };
+    
+    
+    
+    const handleCrearRemitoInline =
+        async () => {
 
-    const handleCrearModeloInline =
-    async (
-        data: any
-    ) => {
+            try {
 
-        try {
+                const remitoCreado =
+                    await crearRemito({
 
-            const nuevoModelo =
-                await crearModelo(
-                    data
+                        numeroRemito:
+                            nuevoRemito.numeroRemito,
+
+                        proveedorId:
+                            Number(
+                                nuevoRemito.proveedorId
+                            ),
+
+                        fecha:
+                            new Date()
+                                .toISOString()
+                                .split("T")[0]
+                    });
+
+                const remitosActualizados =
+                    await obtenerRemitos();
+
+                setRemitos(
+                    remitosActualizados
                 );
 
-            const nuevosModelos =
-                await obtenerModelos();
+                setFormData((prev) => ({
 
-            setModelos(
-                nuevosModelos
-            );
+                    ...prev,
 
-            setFormData(
-                (prev) => ({
+                    remitoId:
+                        remitoCreado.id
+                }));
+
+                setNuevoRemito({
+
+                    numeroRemito: "",
+
+                    proveedorId: ""
+                });
+
+                setMostrarRemitoInline(
+                    false
+                );
+
+            } catch {
+
+                setError(
+                    "Error al crear remito"
+                );
+            }
+        };
+    
+    const handleCrearModeloInline =
+        async (data: any) => {
+
+            try {
+
+                const nuevoModelo =
+                    await crearModelo(data);
+
+                const nuevosModelos =
+                    await obtenerModelos();
+
+                setModelos(
+                    nuevosModelos
+                );
+
+                setFormData((prev) => ({
 
                     ...prev,
 
                     modeloId:
                         nuevoModelo.id
-                })
-            );
+                }));
 
-            setMostrarModeloInline(
-                false
-            );
+                setMostrarModeloInline(
+                    false
+                );
 
-            setOpenMarcaDialog(
-                false
-            );
+                setOpenMarcaDialog(
+                    false
+                );
 
-        } catch {
+            } catch {
 
-            setError(
-                "Error al crear modelo"
-            );
-        }
-    };
+                setError(
+                    "Error al crear modelo"
+                );
+            }
+        };
+
+    const handleCrearOPInline =
+        async () => {
+
+            try {
+
+                const opCreada =
+                    await crearOrdenProvision({
+
+                        numero:
+                            nuevaOP.numero,
+
+                        observaciones:
+                            nuevaOP.observaciones
+                    });
+
+                const opActualizadas =
+                    await obtenerOrdenesProvision();
+
+                setOrdenesProvision(
+                    opActualizadas
+                );
+
+                setFormData((prev) => ({
+
+                    ...prev,
+
+                    ordenProvisionId:
+                        opCreada.id
+                }));
+
+                setNuevaOP({
+
+                    numero: "",
+
+                    observaciones: ""
+                });
+
+                setMostrarOPInline(
+                    false
+                );
+
+            } catch {
+
+                setError(
+                    "Error al crear la orden de provisión"
+                );
+            }
+        };
 
     useEffect(() => {
 
@@ -321,13 +462,15 @@ function ReleForm({
                 modelosData,
                 tiposData,
                 remitosData,
-                ordenesProvisionData
+                ordenesProvisionData,
+                proveedoresData
             ] = await Promise.all([
                 obtenerMarcas(),
                 obtenerModelos(),
                 obtenerTipos(),
                 obtenerRemitos(),
-                obtenerOrdenesProvision()
+                obtenerOrdenesProvision(),
+                obtenerProveedores()
             ]);
 
             setMarcas(
@@ -348,6 +491,10 @@ function ReleForm({
 
             setOrdenesProvision(
                 ordenesProvisionData
+            );
+            
+            setProveedores(
+                proveedoresData
             );
 
             const destinos =
@@ -829,6 +976,8 @@ function ReleForm({
                                             formData.ordenProvisionId
                                             ?? ""
                                         }
+
+                                        
                                         onChange={(e) =>
                                             setFormData((prev) => ({
                                                 ...prev,
@@ -842,6 +991,7 @@ function ReleForm({
                                         }
                                         fullWidth
                                     >
+
 
                                         <MenuItem value="">
                                             Ninguna
@@ -864,6 +1014,106 @@ function ReleForm({
 
                                     </TextField>
 
+                                    <Button
+                                        variant="outlined"
+                                        fullWidth
+                                        onClick={() =>
+                                            setMostrarOPInline(
+                                                !mostrarOPInline
+                                            )
+                                        }
+                                    >
+                                        + NUEVA ORDEN DE PROVISIÓN
+                                    </Button>
+
+                                    {
+                                        mostrarOPInline && (
+
+                                            <Grid size={12}>
+
+                                                <Paper
+                                                    sx={{
+                                                        p: 2,
+                                                        mt: 1
+                                                    }}
+                                                >
+
+                                                    <Typography
+                                                        variant="subtitle1"
+                                                        mb={2}
+                                                    >
+                                                        Crear Orden de Provisión
+                                                    </Typography>
+
+                                                    <Grid
+                                                        container
+                                                        spacing={2}
+                                                    >
+
+                                                        <Grid size={4}>
+
+                                                            <TextField
+                                                                label="Número OP"
+                                                                value={
+                                                                    nuevaOP.numero
+                                                                }
+                                                                onChange={(e) =>
+                                                                    setNuevaOP(
+                                                                        (prev) => ({
+                                                                            ...prev,
+                                                                            numero:
+                                                                                e.target.value
+                                                                        })
+                                                                    )
+                                                                }
+                                                                fullWidth
+                                                            />
+
+                                                        </Grid>
+
+                                                        <Grid size={5}>
+
+                                                            <TextField
+                                                                label="Observaciones"
+                                                                value={
+                                                                    nuevaOP.observaciones
+                                                                }
+                                                                onChange={(e) =>
+                                                                    setNuevaOP(
+                                                                        (prev) => ({
+                                                                            ...prev,
+                                                                            observaciones:
+                                                                                e.target.value
+                                                                        })
+                                                                    )
+                                                                }
+                                                                fullWidth
+                                                            />
+
+                                                        </Grid>
+
+                                                        <Grid size={3}>
+
+                                                            <Button
+                                                                variant="contained"
+                                                                fullWidth
+                                                                onClick={
+                                                                    handleCrearOPInline
+                                                                }
+                                                            >
+                                                                GUARDAR OP
+                                                            </Button>
+
+                                                        </Grid>
+
+                                                    </Grid>
+
+                                                </Paper>
+
+                                            </Grid>
+                                        )
+                                    }
+
                                 </Grid>
 
                                 <Grid size={6}>
@@ -871,9 +1121,138 @@ function ReleForm({
                                     <Button
                                         variant="outlined"
                                         fullWidth
+                                        onClick={() =>
+                                            setMostrarRemitoInline(
+                                                !mostrarRemitoInline
+                                            )
+                                        }
                                     >
-                                        + Nuevo Remito
+                                        + NUEVO REMITO
                                     </Button>
+                                    {
+                                        mostrarRemitoInline && (
+
+                                            <Grid size={12}>
+
+                                                <Paper
+                                                    sx={{
+                                                        p: 2,
+                                                        mt: 1
+                                                    }}
+                                                >
+
+                                                    <Typography
+                                                        variant="subtitle1"
+                                                        mb={2}
+                                                    >
+                                                        Crear Remito
+                                                    </Typography>
+
+                                                    <Grid
+                                                        container
+                                                        spacing={2}
+                                                    >
+
+                                                        <Grid size={4}>
+
+                                                            <TextField
+                                                                label="Número Remito"
+                                                                value={
+                                                                    nuevoRemito.numeroRemito
+                                                                }
+                                                                onChange={(e) =>
+                                                                    setNuevoRemito(
+                                                                        (prev) => ({
+                                                                            ...prev,
+                                                                            numeroRemito:
+                                                                                e.target.value
+                                                                        })
+                                                                    )
+                                                                }
+                                                                fullWidth
+                                                            />
+
+                                                        </Grid>
+
+                                                        <Grid size={4}>
+
+                                                            <TextField
+                                                                select
+                                                                label="Proveedor"
+                                                                value={
+                                                                    nuevoRemito.proveedorId
+                                                                }
+                                                                onChange={(e) =>
+                                                                    setNuevoRemito(
+                                                                        (prev) => ({
+                                                                            ...prev,
+                                                                            proveedorId:
+                                                                                e.target.value
+                                                                        })
+                                                                    )
+                                                                }
+                                                                fullWidth
+                                                            >
+
+                                                                {
+                                                                    proveedores.map(
+                                                                        (
+                                                                            proveedor
+                                                                        ) => (
+
+                                                                            <MenuItem
+                                                                                key={
+                                                                                    proveedor.id
+                                                                                }
+                                                                                value={
+                                                                                    proveedor.id
+                                                                                }
+                                                                            >
+                                                                                {
+                                                                                    proveedor.nombre
+                                                                                }
+                                                                            </MenuItem>
+                                                                        )
+                                                                    )
+                                                                }
+
+                                                            </TextField>
+
+                                                        </Grid>
+
+                                                        <Grid size={4}>
+
+                                                            <Button
+                                                                variant="contained"
+                                                                fullWidth
+                                                                onClick={
+                                                                    handleCrearRemitoInline
+                                                                }
+                                                            >
+                                                                GUARDAR REMITO
+                                                            </Button>
+
+                                                        </Grid>
+
+                                                    </Grid>
+
+                                                </Paper>
+
+                                            </Grid>
+                                        )
+                                    }
+
+                                    {
+                                        mostrarRemitoInline && (
+
+                                            <Paper sx={{ p: 2 }}>
+
+                                                campos remito
+
+                                            </Paper>
+
+                                        )
+                                    }
 
                                 </Grid>
 
