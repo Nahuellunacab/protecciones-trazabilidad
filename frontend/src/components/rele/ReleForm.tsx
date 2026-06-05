@@ -246,6 +246,20 @@ function ReleForm({
         modelos
     ]);
 
+    const remitoSeleccionado =
+        remitos.find(
+            (r) =>
+                r.id ===
+                formData.remitoId
+        );
+
+    const opSeleccionada =
+        ordenesProvision.find(
+            (op) =>
+                op.id ===
+                formData.ordenProvisionId
+        );
+
     const handleCrearMarcaInline =
         async (
             nombre: string
@@ -930,89 +944,19 @@ function ReleForm({
                                 </Grid>
                                 <Grid size={6}>
 
-                                    <TextField
-                                        select
-                                        label="Remito (Opcional)"
-                                        value={formData.remitoId ?? ""}
-                                        onChange={(e) =>
-                                            setFormData((prev) => ({
-                                                ...prev,
-                                                remitoId:
-                                                    e.target.value === ""
-                                                        ? null
-                                                        : Number(
-                                                            e.target.value
-                                                        )
-                                            }))
-                                        }
-                                        fullWidth
-                                    >
+                                    {
+                                        opSeleccionada && (
 
-                                        <MenuItem value="">
-                                            Ninguno
-                                        </MenuItem>
-
-                                        {remitos.map((remito) => (
-
-                                            <MenuItem
-                                                key={remito.id}
-                                                value={remito.id}
+                                            <Alert
+                                                severity="success"
+                                                sx={{ mb: 2 }}
                                             >
-                                                {remito.numeroRemito}
-                                            </MenuItem>
-
-                                        ))}
-
-                                    </TextField>
-
-                                </Grid>
-
-                                <Grid size={6}>
-
-                                    <TextField
-                                        select
-                                        label="Orden de Provisión (Opcional)"
-                                        value={
-                                            formData.ordenProvisionId
-                                            ?? ""
-                                        }
-
-                                        
-                                        onChange={(e) =>
-                                            setFormData((prev) => ({
-                                                ...prev,
-                                                ordenProvisionId:
-                                                    e.target.value === ""
-                                                        ? null
-                                                        : Number(
-                                                            e.target.value
-                                                        )
-                                            }))
-                                        }
-                                        fullWidth
-                                    >
-
-
-                                        <MenuItem value="">
-                                            Ninguna
-                                        </MenuItem>
-
-                                        {
-                                            ordenesProvision.map(
-                                                (orden) => (
-
-                                                    <MenuItem
-                                                        key={orden.id}
-                                                        value={orden.id}
-                                                    >
-                                                        {orden.numero}
-                                                    </MenuItem>
-
-                                                )
-                                            )
-                                        }
-
-                                    </TextField>
+                                                Orden de provisión asociada:
+                                                {" "}
+                                                {opSeleccionada.numero}
+                                            </Alert>
+                                        )
+                                    }
 
                                     <Button
                                         variant="outlined"
@@ -1118,6 +1062,20 @@ function ReleForm({
 
                                 <Grid size={6}>
 
+                                    {
+                                        remitoSeleccionado && (
+
+                                            <Alert
+                                                severity="success"
+                                                sx={{ mb: 2 }}
+                                            >
+                                                Remito asociado:
+                                                {" "}
+                                                {remitoSeleccionado.numeroRemito}
+                                            </Alert>
+                                        )
+                                    }
+
                                     <Button
                                         variant="outlined"
                                         fullWidth
@@ -1129,6 +1087,7 @@ function ReleForm({
                                     >
                                         + NUEVO REMITO
                                     </Button>
+
                                     {
                                         mostrarRemitoInline && (
 
@@ -1239,18 +1198,6 @@ function ReleForm({
                                                 </Paper>
 
                                             </Grid>
-                                        )
-                                    }
-
-                                    {
-                                        mostrarRemitoInline && (
-
-                                            <Paper sx={{ p: 2 }}>
-
-                                                campos remito
-
-                                            </Paper>
-
                                         )
                                     }
 
