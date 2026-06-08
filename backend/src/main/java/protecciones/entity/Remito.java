@@ -17,6 +17,12 @@ public class Remito {
 
     private LocalDate fecha;
 
+    @Column(name = "nombre_archivo")
+    private String nombreArchivo;
+
+    @Column(name = "ruta_archivo")
+    private String rutaArchivo;
+
     @ManyToOne
     @JoinColumn(name = "proveedor_id", nullable = false)
     private Proveedor proveedor;
@@ -27,6 +33,8 @@ public class Remito {
     public Remito(Long id,
                   String numeroRemito,
                   LocalDate fecha,
+                  String nombreArchivo,
+                  String rutaArchivo,
                   Proveedor proveedor) {
 
         this.id = id;
@@ -51,6 +59,14 @@ public class Remito {
         return proveedor;
     }
 
+    public String getNombreArchivo() {
+        return nombreArchivo;
+    }
+
+    public String getRutaArchivo() {
+        return rutaArchivo;
+    }
+
     public void setId(Long id) {
         this.id = id;
     }
@@ -65,5 +81,13 @@ public class Remito {
 
     public void setProveedor(Proveedor proveedor) {
         this.proveedor = proveedor;
+    }
+
+    public void setNombreArchivo(String nombreArchivo) {
+        this.nombreArchivo = nombreArchivo;
+    }
+
+    public void setRutaArchivo(String rutaArchivo) {
+        this.rutaArchivo = rutaArchivo;
     }
 }

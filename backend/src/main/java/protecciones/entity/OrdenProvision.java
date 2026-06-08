@@ -14,11 +14,18 @@ public class OrdenProvision {
             nullable = false,
             unique = true
     )
+
     private String numero;
 
     private String observaciones;
 
     private Boolean activo = true;
+
+    @Column(name = "nombre_archivo")
+    private String nombreArchivo;
+
+    @Column(name = "ruta_archivo")
+    private String rutaArchivo;
 
     public OrdenProvision() {
     }
@@ -39,6 +46,14 @@ public class OrdenProvision {
         return activo;
     }
 
+    public String getNombreArchivo() {
+        return nombreArchivo;
+    }
+
+    public String getRutaArchivo() {
+        return rutaArchivo;
+    }
+
     public void setId(Long id) {
         this.id = id;
     }
@@ -57,5 +72,13 @@ public class OrdenProvision {
             Boolean activo
     ) {
         this.activo = activo;
+    }
+
+    public void setNombreArchivo(String nombreArchivo) {
+        this.nombreArchivo = nombreArchivo;
+    }
+
+    public void setRutaArchivo(String rutaArchivo) {
+        this.rutaArchivo = rutaArchivo;
     }
 }

@@ -61,8 +61,10 @@ import {
 
 import {
     obtenerRemitos,
-    crearRemito
-} from "../../services/remitoService";
+    crearRemito,
+    subirArchivoRemito
+}
+from "../../services/remitoService";
 
 import type {
     Remito
@@ -80,6 +82,7 @@ import type {
 import {
     obtenerProveedores
 } from "../../services/proveedorService";
+
 
 interface Props {
 
@@ -190,6 +193,10 @@ function ReleForm({
     const [proveedores,
         setProveedores] =
         useState<Proveedor[]>([]);
+
+    const [archivoRemito,
+        setArchivoRemito] =
+        useState<File | null>(null);
             
     
 
@@ -302,60 +309,75 @@ function ReleForm({
     
     
     const handleCrearRemitoInline =
-        async () => {
+    async () => {
 
-            try {
+        try {
 
-                const remitoCreado =
-                    await crearRemito({
+            const remitoCreado =
+                await crearRemito({
 
-                        numeroRemito:
-                            nuevoRemito.numeroRemito,
+                    numeroRemito:
+                        nuevoRemito.numeroRemito,
 
-                        proveedorId:
-                            Number(
-                                nuevoRemito.proveedorId
-                            ),
+                    proveedorId:
+                        Number(
+                            nuevoRemito.proveedorId
+                        ),
 
-                        fecha:
-                            new Date()
-                                .toISOString()
-                                .split("T")[0]
-                    });
-
-                const remitosActualizados =
-                    await obtenerRemitos();
-
-                setRemitos(
-                    remitosActualizados
-                );
-
-                setFormData((prev) => ({
-
-                    ...prev,
-
-                    remitoId:
-                        remitoCreado.id
-                }));
-
-                setNuevoRemito({
-
-                    numeroRemito: "",
-
-                    proveedorId: ""
+                    fecha:
+                        new Date()
+                            .toISOString()
+                            .split("T")[0]
                 });
 
-                setMostrarRemitoInline(
-                    false
-                );
+            if (
+                archivoRemito &&
+                remitoCreado.id
+            ) {
 
-            } catch {
-
-                setError(
-                    "Error al crear remito"
+                await subirArchivoRemito(
+                    remitoCreado.id,
+                    archivoRemito
                 );
             }
-        };
+
+            const remitosActualizados =
+                await obtenerRemitos();
+
+            setRemitos(
+                remitosActualizados
+            );
+
+            setFormData((prev) => ({
+
+                ...prev,
+
+                remitoId:
+                    remitoCreado.id
+            }));
+
+            setNuevoRemito({
+
+                numeroRemito: "",
+
+                proveedorId: ""
+            });
+
+            setArchivoRemito(
+                null
+            );
+
+            setMostrarRemitoInline(
+                false
+            );
+
+        } catch {
+
+            setError(
+                "Error al crear remito"
+            );
+        }
+    };
     
     const handleCrearModeloInline =
         async (data: any) => {
@@ -1112,7 +1134,7 @@ function ReleForm({
                                                         spacing={2}
                                                     >
 
-                                                        <Grid size={4}>
+                                                        <Grid size={3}>
 
                                                             <TextField
                                                                 label="Número Remito"
@@ -1133,7 +1155,7 @@ function ReleForm({
 
                                                         </Grid>
 
-                                                        <Grid size={4}>
+                                                        <Grid size={3}>
 
                                                             <TextField
                                                                 select
@@ -1179,7 +1201,33 @@ function ReleForm({
 
                                                         </Grid>
 
-                                                        <Grid size={4}>
+                                                        <Grid size={3}>
+
+                                                            <Button
+                                                                variant="outlined"
+                                                                component="label"
+                                                                fullWidth
+                                                            >
+
+                                                                Seleccionar PDF
+
+                                                                <input
+                                                                    hidden
+                                                                    type="file"
+                                                                    accept=".pdf"
+                                                                    onChange={(e) =>
+                                                                        setArchivoRemito(
+                                                                            e.target.files?.[0]
+                                                                            ?? null
+                                                                        )
+                                                                    }
+                                                                />
+
+                                                            </Button>
+
+                                                        </Grid>
+
+                                                        <Grid size={3}>
 
                                                             <Button
                                                                 variant="contained"
@@ -1194,6 +1242,21 @@ function ReleForm({
                                                         </Grid>
 
                                                     </Grid>
+
+                                                    {
+                                                        archivoRemito && (
+
+                                                            <Typography
+                                                                variant="body2"
+                                                                sx={{ mt: 1 }}
+                                                            >
+                                                                Archivo seleccionado:
+                                                                {" "}
+                                                                {archivoRemito.name}
+                                                            </Typography>
+
+                                                        )
+                                                    }
 
                                                 </Paper>
 

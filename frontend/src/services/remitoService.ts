@@ -55,3 +55,28 @@ export async function eliminarRemito(
         `/remitos/${id}`
     );
 }
+
+export async function subirArchivoRemito(
+    remitoId: number,
+    archivo: File
+) {
+
+    const formData =
+        new FormData();
+
+    formData.append(
+        "archivo",
+        archivo
+    );
+
+    await api.post(
+        `/remitos/${remitoId}/archivo`,
+        formData,
+        {
+            headers: {
+                "Content-Type":
+                    "multipart/form-data"
+            }
+        }
+    );
+}

@@ -3,9 +3,11 @@ package protecciones.controller;
 import jakarta.validation.Valid;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import protecciones.dto.RemitoRequestDTO;
 import protecciones.dto.RemitoResponseDTO;
@@ -73,6 +75,33 @@ public class RemitoController {
                         id,
                         dto
                 );
+    }
+
+    @PostMapping(
+            value = "/{id}/archivo",
+            consumes =
+                    MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+    public ResponseEntity<Void>
+    subirArchivo(
+
+            @PathVariable Long id,
+
+            @RequestPart(
+                    "archivo"
+            )
+            MultipartFile archivo
+    ) {
+
+        remitoService
+                .subirArchivo(
+                        id,
+                        archivo
+                );
+
+        return ResponseEntity
+                .ok()
+                .build();
     }
 
     @DeleteMapping("/{id}")

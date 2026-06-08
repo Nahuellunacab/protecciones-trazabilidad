@@ -15,6 +15,15 @@ import protecciones.exception.BusinessException;
 import protecciones.repository.ProveedorRepository;
 import protecciones.repository.RemitoRepository;
 
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+
 import java.util.List;
 
 @Service
@@ -163,6 +172,76 @@ public class RemitoService {
             );
         }
     }
+
+    public void subirArchivo(
+
+                Long remitoId,
+
+                MultipartFile archivo
+        ) {
+
+        try {
+
+                Remito remito =
+                        remitoRepository
+                                .findById(
+                                        remitoId
+                                )
+                                .orElseThrow();
+
+                Path carpeta =
+                        Paths.get(
+                                "uploads/remitos"
+                        );
+
+                Files.createDirectories(
+                        carpeta
+                );
+
+                String nombreArchivo =
+
+                        System.currentTimeMillis()
+
+                        + "_"
+
+                        + archivo.getOriginalFilename();
+
+                Path destino =
+                        carpeta.resolve(
+                                nombreArchivo
+                        );
+
+                Files.copy(
+
+                        archivo.getInputStream(),
+
+                        destino,
+
+                        StandardCopyOption
+                                .REPLACE_EXISTING
+                );
+
+                remito.setNombreArchivo(
+                        archivo.getOriginalFilename()
+                );
+
+                remito.setRutaArchivo(
+                        destino.toString()
+                );
+
+                remitoRepository.save(
+                        remito
+                );
+
+        } catch (
+                IOException ex
+        ) {
+
+                throw new RuntimeException(
+                        "Error al guardar archivo"
+                );
+        }
+        }
 
     private void validarDuplicado(
             String numeroRemito

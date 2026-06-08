@@ -71,6 +71,7 @@ function RemitoPage() {
 
     const [errorMessage, setErrorMessage] =
         useState("");
+        
 
     async function cargarDatos() {
 
