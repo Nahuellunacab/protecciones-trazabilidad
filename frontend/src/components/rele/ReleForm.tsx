@@ -72,7 +72,8 @@ import type {
 
 import {
     obtenerOrdenesProvision,
-    crearOrdenProvision
+    crearOrdenProvision,
+    subirArchivoOP
 } from "../../services/ordenProvisionService";
 
 import type {
@@ -196,6 +197,10 @@ function ReleForm({
 
     const [archivoRemito,
         setArchivoRemito] =
+        useState<File | null>(null);
+
+    const [archivoOP,
+        setArchivoOP] =
         useState<File | null>(null);
             
     
@@ -433,6 +438,17 @@ function ReleForm({
                             nuevaOP.observaciones
                     });
 
+                if (
+                    archivoOP &&
+                    opCreada.id
+                ) {
+
+                    await subirArchivoOP(
+                        opCreada.id,
+                        archivoOP
+                    );
+                }
+
                 const opActualizadas =
                     await obtenerOrdenesProvision();
 
@@ -454,6 +470,10 @@ function ReleForm({
 
                     observaciones: ""
                 });
+
+                setArchivoOP(
+                    null
+                );
 
                 setMostrarOPInline(
                     false
@@ -1006,7 +1026,7 @@ function ReleForm({
 
                                                     <Typography
                                                         variant="subtitle1"
-                                                        mb={2}
+                                                        sx={{ mb: 2 }}
                                                     >
                                                         Crear Orden de Provisión
                                                     </Typography>
@@ -1016,7 +1036,7 @@ function ReleForm({
                                                         spacing={2}
                                                     >
 
-                                                        <Grid size={4}>
+                                                        <Grid size={3}>
 
                                                             <TextField
                                                                 label="Número OP"
@@ -1037,7 +1057,7 @@ function ReleForm({
 
                                                         </Grid>
 
-                                                        <Grid size={5}>
+                                                        <Grid size={3}>
 
                                                             <TextField
                                                                 label="Observaciones"
@@ -1061,6 +1081,32 @@ function ReleForm({
                                                         <Grid size={3}>
 
                                                             <Button
+                                                                variant="outlined"
+                                                                component="label"
+                                                                fullWidth
+                                                            >
+
+                                                                Seleccionar PDF
+
+                                                                <input
+                                                                    hidden
+                                                                    type="file"
+                                                                    accept=".pdf"
+                                                                    onChange={(e) =>
+                                                                        setArchivoOP(
+                                                                            e.target.files?.[0]
+                                                                            ?? null
+                                                                        )
+                                                                    }
+                                                                />
+
+                                                            </Button>
+
+                                                        </Grid>
+
+                                                        <Grid size={3}>
+
+                                                            <Button
                                                                 variant="contained"
                                                                 fullWidth
                                                                 onClick={
@@ -1073,6 +1119,21 @@ function ReleForm({
                                                         </Grid>
 
                                                     </Grid>
+
+                                                    {
+                                                        archivoOP && (
+
+                                                            <Typography
+                                                                variant="body2"
+                                                                sx={{ mt: 1 }}
+                                                            >
+                                                                Archivo seleccionado:
+                                                                {" "}
+                                                                {archivoOP.name}
+                                                            </Typography>
+
+                                                        )
+                                                    }
 
                                                 </Paper>
 
@@ -1124,7 +1185,7 @@ function ReleForm({
 
                                                     <Typography
                                                         variant="subtitle1"
-                                                        mb={2}
+                                                        sx={{ mb: 2 }}
                                                     >
                                                         Crear Remito
                                                     </Typography>

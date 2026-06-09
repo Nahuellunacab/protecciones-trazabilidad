@@ -66,3 +66,28 @@ eliminarOrdenProvision(
         `/ordenes-provision/${id}`
     );
 }
+
+export async function subirArchivoOP(
+    opId: number,
+    archivo: File
+) {
+
+    const formData =
+        new FormData();
+
+    formData.append(
+        "archivo",
+        archivo
+    );
+
+    await api.post(
+        `/ordenes-provision/${opId}/archivo`,
+        formData,
+        {
+            headers: {
+                "Content-Type":
+                    "multipart/form-data"
+            }
+        }
+    );
+}

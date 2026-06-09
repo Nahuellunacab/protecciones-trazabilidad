@@ -1,18 +1,18 @@
 package protecciones.service;
-
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
-
 import protecciones.dto.OrdenProvisionRequestDTO;
 import protecciones.dto.OrdenProvisionResponseDTO;
-
 import protecciones.entity.OrdenProvision;
-
 import protecciones.exception.BusinessException;
-
 import protecciones.repository.OrdenProvisionRepository;
-
 import java.util.List;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 
 @Service
 public class OrdenProvisionService {
@@ -41,6 +41,8 @@ public class OrdenProvisionService {
     public OrdenProvisionResponseDTO guardar(
             OrdenProvisionRequestDTO dto
     ) {
+
+        
 
         validarDuplicado(
                 dto.getNumero()
@@ -115,6 +117,76 @@ public class OrdenProvisionService {
             );
         }
     }
+
+    public void subirArchivo(
+
+                Long ordenProvisionId,
+
+                MultipartFile archivo
+        ) {
+
+        try {
+
+                OrdenProvision orden =
+                        ordenProvisionRepository
+                                .findById(
+                                        ordenProvisionId
+                                )
+                                .orElseThrow();
+
+                Path carpeta =
+                        Paths.get(
+                                "uploads/ordenes-provision"
+                        );
+
+                Files.createDirectories(
+                        carpeta
+                );
+
+                String nombreArchivo =
+
+                        System.currentTimeMillis()
+
+                        + "_"
+
+                        + archivo.getOriginalFilename();
+
+                Path destino =
+                        carpeta.resolve(
+                                nombreArchivo
+                        );
+
+                Files.copy(
+
+                        archivo.getInputStream(),
+
+                        destino,
+
+                        StandardCopyOption
+                                .REPLACE_EXISTING
+                );
+
+                orden.setNombreArchivo(
+                        archivo.getOriginalFilename()
+                );
+
+                orden.setRutaArchivo(
+                        destino.toString()
+                );
+
+                ordenProvisionRepository.save(
+                        orden
+                );
+
+        } catch (
+                IOException ex
+        ) {
+
+                throw new RuntimeException(
+                        "Error al guardar archivo"
+                );
+        }
+        }
 
     private void validarDuplicado(
             String numero
