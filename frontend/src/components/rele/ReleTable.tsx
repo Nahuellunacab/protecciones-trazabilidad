@@ -32,7 +32,12 @@ import {
     ToggleButtonGroup,
     CircularProgress,
     Box,
+    IconButton,
+    Tooltip,
 } from "@mui/material";
+
+import PictureAsPdfIcon
+from "@mui/icons-material/PictureAsPdf";
 
 interface Props {
 
@@ -229,6 +234,10 @@ function ReleTable({
                                 Garantía
                             </TableCell>
 
+                            <TableCell align="center">
+                                Documentación
+                            </TableCell>
+
                             <TableCell
                                 align="center"
                             >
@@ -245,161 +254,233 @@ function ReleTable({
                             relesFiltrados.map(
                                 (rele) => (
 
-                                <TableRow
-                                    key={rele.id}
-                                    hover
-                                    sx={{
-
-                                        opacity:
-                                            rele.activo
-                                                ? 1
-                                                : 0.55
-                                    }}
-                                >
-
-                                    <Typography
+                                    <TableRow
+                                        key={rele.id}
+                                        hover
                                         sx={{
-                                            fontWeight: "bold"
+
+                                            opacity:
+                                                rele.activo
+                                                    ? 1
+                                                    : 0.55
                                         }}
                                     >
-                                        {rele.numeroSerie}
-                                    </Typography>
 
-                                    <TableCell>
-                                        {rele.marca}
-                                    </TableCell>
+                                        <TableCell>
 
-                                    <TableCell>
-                                        {rele.modelo}
-                                    </TableCell>
+                                            <Typography
+                                                sx={{
+                                                    fontWeight: "bold"
+                                                }}
+                                            >
+                                                {rele.numeroSerie}
+                                            </Typography>
 
-                                    <TableCell>
+                                        </TableCell>
 
-                                        {
-                                            rele.tension
-                                            || "-"
-                                        }
+                                        <TableCell>
+                                            {rele.marca}
+                                        </TableCell>
 
-                                    </TableCell>
+                                        <TableCell>
+                                            {rele.modelo}
+                                        </TableCell>
 
-                                    <TableCell>
+                                        <TableCell>
 
-                                        <Chip
-                                            label={
-                                                rele.estadoActual
-                                                ||
-                                                "Sin estado"
+                                            {
+                                                rele.tension
+                                                || "-"
                                             }
-                                            color={
-                                                rele.estadoActual ===
-                                                "INGRESADO"
-                                                    ? "info"
-                                                    : rele.estadoActual ===
-                                                    "ENSAYO"
-                                                        ? "warning"
+
+                                        </TableCell>
+
+                                        <TableCell>
+
+                                            <Chip
+                                                label={
+                                                    rele.estadoActual
+                                                    ||
+                                                    "Sin estado"
+                                                }
+                                                color={
+                                                    rele.estadoActual ===
+                                                    "INGRESADO"
+                                                        ? "info"
                                                         : rele.estadoActual ===
-                                                        "REPARACION"
-                                                            ? "error"
-                                                            : "success"
+                                                        "ENSAYO"
+                                                            ? "warning"
+                                                            : rele.estadoActual ===
+                                                            "REPARACION"
+                                                                ? "error"
+                                                                : "success"
+                                                }
+                                                size="small"
+                                            />
+
+                                        </TableCell>
+
+                                        <TableCell>
+
+                                            {
+                                                rele.localidadActual
+                                                    ? (
+                                                        <Chip
+                                                            label={
+                                                                rele.localidadActual
+                                                            }
+                                                            size="small"
+                                                            variant="outlined"
+                                                        />
+                                                    )
+                                                    : "-"
                                             }
-                                            size="small"
-                                        />
 
-                                    </TableCell>
+                                        </TableCell>
 
-                                    <TableCell>
+                                        <TableCell>
 
-                                        {
-                                            rele.localidadActual
-                                                ? (
-                                                    <Chip
-                                                        label={
-                                                            rele.localidadActual
-                                                        }
-                                                        size="small"
-                                                        variant="outlined"
-                                                    />
-                                                )
-                                                : "-"
-                                        }
-
-                                    </TableCell>
-
-                                    <TableCell>
-
-                                        {
-                                            rele.posicionActual
-                                                ? (
-                                                    <Chip
-                                                        label={
-                                                            rele.posicionActual
-                                                        }
-                                                        size="small"
-                                                        color="primary"
-                                                    />
-                                                )
-                                                : "-"
-                                        }
-
-                                    </TableCell>
-
-                                    <TableCell>
-
-                                        {
-                                            rele.finGarantia
-                                                ? formatearFecha(
-                                                    rele.finGarantia
-                                                )
-                                                : "-"
-                                        }
-
-                                    </TableCell>
-
-                                    <TableCell>
-
-                                        <Box
-                                            sx={{
-                                                display: "flex",
-                                                flexDirection: "row",
-                                                gap: 1,
-                                                justifyContent: "center"
-                                            }}
-                                        >
-
-                                            <Button
-                                                size="small"
-                                                variant="outlined"
-                                                onClick={() =>
-                                                    onEditar(
-                                                        rele
+                                            {
+                                                rele.posicionActual
+                                                    ? (
+                                                        <Chip
+                                                            label={
+                                                                rele.posicionActual
+                                                            }
+                                                            size="small"
+                                                            color="primary"
+                                                        />
                                                     )
-                                                }
+                                                    : "-"
+                                            }
+
+                                        </TableCell>
+
+                                        <TableCell>
+
+                                            {
+                                                rele.finGarantia
+                                                    ? formatearFecha(
+                                                        rele.finGarantia
+                                                    )
+                                                    : "-"
+                                            }
+
+                                        </TableCell>
+
+                                        <TableCell align="center">
+
+                                            <Box
+                                                sx={{
+                                                    display: "flex",
+                                                    gap: 1,
+                                                    justifyContent: "center"
+                                                }}
                                             >
 
-                                                EDITAR
+                                                {
+                                                    rele.remitoId && (
 
-                                            </Button>
+                                                        <Tooltip title="Ver Remito">
 
-                                            <Button
-                                                size="small"
-                                                variant="contained"
-                                                onClick={() =>
-                                                    handleVerHistorial(
-                                                        rele
+                                                            <Button
+                                                                size="small"
+                                                                variant="text"
+                                                                startIcon={<PictureAsPdfIcon />}
+                                                                onClick={() =>
+                                                                    window.open(
+                                                                        `http://localhost:8080/api/remitos/${rele.remitoId}/archivo`,
+                                                                        "_blank"
+                                                                    )
+                                                                }
+                                                            >
+                                                                REM
+                                                            </Button>
+
+                                                        </Tooltip>
+
                                                     )
                                                 }
+
+                                                {
+                                                    rele.ordenProvisionId && (
+
+                                                        <Tooltip title="Ver Orden de Provisión">
+
+                                                            <Button
+                                                                size="small"
+                                                                variant="text"
+                                                                startIcon={<PictureAsPdfIcon />}
+                                                                onClick={() =>
+                                                                    window.open(
+                                                                        `http://localhost:8080/api/ordenes-provision/${rele.ordenProvisionId}/archivo`,
+                                                                        "_blank"
+                                                                    )
+                                                                }
+                                                            >
+                                                                OP
+                                                            </Button>
+
+                                                        </Tooltip>
+                                                    )
+                                                }
+
+                                                {
+                                                    !rele.remitoId &&
+                                                    !rele.ordenProvisionId &&
+                                                    "-"
+                                                }
+
+                                            </Box>
+
+                                        </TableCell>
+
+                                        <TableCell>
+
+                                            <Box
+                                                sx={{
+                                                    display: "flex",
+                                                    flexDirection: "row",
+                                                    gap: 1,
+                                                    justifyContent: "center"
+                                                }}
                                             >
 
-                                                HISTORIAL
+                                                <Button
+                                                    size="small"
+                                                    variant="outlined"
+                                                    onClick={() =>
+                                                        onEditar(
+                                                            rele
+                                                        )
+                                                    }
+                                                >
 
-                                            </Button>
+                                                    EDITAR
 
-                                        </Box>
+                                                </Button>
 
-                                    </TableCell>
+                                                <Button
+                                                    size="small"
+                                                    variant="contained"
+                                                    onClick={() =>
+                                                        handleVerHistorial(
+                                                            rele
+                                                        )
+                                                    }
+                                                >
 
-                                </TableRow>
-                            ))
+                                                    HISTORIAL
+
+                                                </Button>
+
+                                            </Box>
+
+                                        </TableCell>
+
+                                    </TableRow>
+                                )
+                            )
                         }
 
                     </TableBody>

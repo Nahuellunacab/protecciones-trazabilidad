@@ -1,20 +1,16 @@
 package protecciones.controller;
-
 import jakarta.validation.Valid;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 import protecciones.dto.RemitoRequestDTO;
 import protecciones.dto.RemitoResponseDTO;
-
 import protecciones.service.RemitoService;
-
 import java.util.List;
+import org.springframework.core.io.Resource;
+import org.springframework.http.MediaType;
 
 @RestController
 @RequestMapping("/api/remitos")
@@ -117,4 +113,27 @@ public class RemitoController {
                 .noContent()
                 .build();
     }
+
+    @GetMapping("/{id}/archivo")
+                public ResponseEntity<Resource>
+                obtenerArchivo(
+
+                        @PathVariable Long id
+                ) {
+
+                Resource archivo =
+                        remitoService
+                                .obtenerArchivo(
+                                        id
+                                );
+
+                return ResponseEntity
+                        .ok()
+                        .contentType(
+                                MediaType.APPLICATION_PDF
+                        )
+                        .body(
+                                archivo
+                        );
+                }
 }

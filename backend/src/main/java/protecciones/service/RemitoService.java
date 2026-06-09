@@ -1,30 +1,23 @@
 package protecciones.service;
-
 import org.springframework.dao.DataIntegrityViolationException;
-
 import org.springframework.stereotype.Service;
-
 import protecciones.dto.RemitoRequestDTO;
 import protecciones.dto.RemitoResponseDTO;
-
 import protecciones.entity.Proveedor;
 import protecciones.entity.Remito;
-
 import protecciones.exception.BusinessException;
-
 import protecciones.repository.ProveedorRepository;
 import protecciones.repository.RemitoRepository;
-
 import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
-
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-
 import java.util.List;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import java.net.MalformedURLException;
 
 @Service
 public class RemitoService {
@@ -239,6 +232,38 @@ public class RemitoService {
 
                 throw new RuntimeException(
                         "Error al guardar archivo"
+                );
+        }
+        }
+
+        public Resource obtenerArchivo(
+                Long remitoId
+        ) {
+
+        try {
+
+                Remito remito =
+                        remitoRepository
+                                .findById(
+                                        remitoId
+                                )
+                                .orElseThrow();
+
+                Path archivo =
+                        Paths.get(
+                                remito.getRutaArchivo()
+                        );
+
+                return new UrlResource(
+                        archivo.toUri()
+                );
+
+        } catch (
+                MalformedURLException ex
+        ) {
+
+                throw new RuntimeException(
+                        "Archivo no encontrado"
                 );
         }
         }

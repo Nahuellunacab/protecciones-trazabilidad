@@ -13,6 +13,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import java.net.MalformedURLException;
 
 @Service
 public class OrdenProvisionService {
@@ -184,6 +187,38 @@ public class OrdenProvisionService {
 
                 throw new RuntimeException(
                         "Error al guardar archivo"
+                );
+        }
+        }
+
+        public Resource obtenerArchivo(
+                Long ordenProvisionId
+        ) {
+
+        try {
+
+                OrdenProvision orden =
+                        ordenProvisionRepository
+                                .findById(
+                                        ordenProvisionId
+                                )
+                                .orElseThrow();
+
+                Path archivo =
+                        Paths.get(
+                                orden.getRutaArchivo()
+                        );
+
+                return new UrlResource(
+                        archivo.toUri()
+                );
+
+        } catch (
+                MalformedURLException ex
+        ) {
+
+                throw new RuntimeException(
+                        "Archivo no encontrado"
                 );
         }
         }

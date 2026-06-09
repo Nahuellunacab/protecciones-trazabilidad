@@ -9,6 +9,8 @@ import protecciones.service.OrdenProvisionService;
 import java.util.List;
 import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.core.io.Resource;
+import org.springframework.http.MediaType;
 
 @RestController
 @RequestMapping("/api/ordenes-provision")
@@ -111,4 +113,27 @@ public class OrdenProvisionController {
                 .noContent()
                 .build();
     }
+
+    @GetMapping("/{id}/archivo")
+        public ResponseEntity<Resource>
+        obtenerArchivo(
+
+                @PathVariable Long id
+        ) {
+
+        Resource archivo =
+                ordenProvisionService
+                        .obtenerArchivo(
+                                id
+                        );
+
+        return ResponseEntity
+                .ok()
+                .contentType(
+                        MediaType.APPLICATION_PDF
+                )
+                .body(
+                        archivo
+                );
+        }
 }
