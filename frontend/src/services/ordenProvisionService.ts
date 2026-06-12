@@ -21,6 +21,18 @@ obtenerOrdenesProvision() {
 }
 
 export async function
+obtenerOrdenesProvisionDisponibles() {
+
+    const response =
+        await api.get<OrdenProvision[]>(
+
+            "/ordenes-provision/disponibles"
+        );
+
+    return response.data;
+}
+
+export async function
 crearOrdenProvision(
     data: OrdenProvisionRequest
 ) {

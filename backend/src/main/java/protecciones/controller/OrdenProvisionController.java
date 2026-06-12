@@ -135,4 +135,12 @@ public class OrdenProvisionController {
                         archivo
                 );
         }
+
+        @GetMapping("/disponibles")
+        public List<OrdenProvisionResponseDTO>
+        obtenerDisponibles() {
+
+        return ordenProvisionService
+                .obtenerDisponibles();
+        }
 }

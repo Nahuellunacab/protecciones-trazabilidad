@@ -268,6 +268,16 @@ public class RemitoService {
         }
         }
 
+        public List<RemitoResponseDTO>
+        obtenerDisponibles() {
+
+        return remitoRepository
+                .findByAsociadoFalse()
+                .stream()
+                .map(this::mapToDTO)
+                .toList();
+        }
+
     private void validarDuplicado(
             String numeroRemito
     ) {

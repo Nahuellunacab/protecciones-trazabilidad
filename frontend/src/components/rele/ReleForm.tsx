@@ -62,18 +62,22 @@ import {
 import {
     obtenerRemitos,
     crearRemito,
-    subirArchivoRemito
+    subirArchivoRemito,
+    obtenerRemitosDisponibles
 }
 from "../../services/remitoService";
 
 import type {
-    Remito
+    Remito,
 } from "../../types/Remito";
+
+
 
 import {
     obtenerOrdenesProvision,
     crearOrdenProvision,
-    subirArchivoOP
+    subirArchivoOP,
+    obtenerOrdenesProvisionDisponibles
 } from "../../services/ordenProvisionService";
 
 import type {
@@ -202,6 +206,30 @@ function ReleForm({
     const [archivoOP,
         setArchivoOP] =
         useState<File | null>(null);
+
+    const [remitosDisponibles,
+        setRemitosDisponibles] =
+
+        useState<Remito[]>([]);
+
+    const [opDisponibles,
+        setOpDisponibles] =
+
+        useState<OrdenProvision[]>([]);
+
+    const [modoRemito,
+        setModoRemito] =
+
+        useState<
+            "nuevo" | "existente"
+        >("nuevo");
+
+    const [modoOP,
+        setModoOP] =
+
+        useState<
+            "nuevo" | "existente"
+        >("nuevo");
             
     
 
@@ -210,6 +238,7 @@ function ReleForm({
         cargarDatos();
 
     }, []);
+        
 
     useEffect(() => {
 
@@ -514,19 +543,40 @@ function ReleForm({
         try {
 
             const [
+
                 marcasData,
+
                 modelosData,
+
                 tiposData,
+
                 remitosData,
+
                 ordenesProvisionData,
-                proveedoresData
+
+                proveedoresData,
+
+                remitosDisponiblesData,
+
+                opsDisponiblesData
+
             ] = await Promise.all([
+
                 obtenerMarcas(),
+
                 obtenerModelos(),
+
                 obtenerTipos(),
+
                 obtenerRemitos(),
+
                 obtenerOrdenesProvision(),
-                obtenerProveedores()
+
+                obtenerProveedores(),
+
+                obtenerRemitosDisponibles(),
+
+                obtenerOrdenesProvisionDisponibles()
             ]);
 
             setMarcas(
@@ -551,6 +601,14 @@ function ReleForm({
             
             setProveedores(
                 proveedoresData
+            );
+
+            setRemitosDisponibles(
+                remitosDisponiblesData
+            );
+
+            setOpDisponibles(
+                opsDisponiblesData
             );
 
             const destinos =
@@ -1000,20 +1058,35 @@ function ReleForm({
                                         )
                                     }
 
-                                    <Button
-                                        variant="outlined"
+                                    <ToggleButtonGroup
+                                        value={modoOP}
+                                        exclusive
                                         fullWidth
-                                        onClick={() =>
-                                            setMostrarOPInline(
-                                                !mostrarOPInline
-                                            )
-                                        }
+                                        onChange={(_, value) => {
+
+                                            if (!value) return;
+
+                                            setModoOP(value);
+                                        }}
+                                        sx={{ mb: 2 }}
                                     >
-                                        + NUEVA ORDEN DE PROVISIÓN
-                                    </Button>
+
+                                        <ToggleButton value="nuevo">
+
+                                            Crear nueva
+
+                                        </ToggleButton>
+
+                                        <ToggleButton value="existente">
+
+                                            Seleccionar existente
+
+                                        </ToggleButton>
+
+                                    </ToggleButtonGroup>
 
                                     {
-                                        mostrarOPInline && (
+                                        modoOP === "nuevo" && (
 
                                             <Grid size={12}>
 
@@ -1141,6 +1214,59 @@ function ReleForm({
                                         )
                                     }
 
+                                    {
+                                        modoOP === "existente" && (
+
+                                            <Grid size={12}>
+
+                                                <TextField
+                                                    select
+                                                    label="Seleccionar Orden de Provisión"
+
+                                                    value={
+                                                        formData.ordenProvisionId ?? ""
+                                                    }
+
+                                                    onChange={(e) =>
+
+                                                        setFormData({
+
+                                                            ...formData,
+
+                                                            ordenProvisionId:
+                                                                Number(
+                                                                    e.target.value
+                                                                )
+                                                        })
+                                                    }
+
+                                                    fullWidth
+                                                >
+
+                                                    {
+                                                        opDisponibles.map(
+                                                            (op) => (
+
+                                                                <MenuItem
+                                                                    key={op.id}
+                                                                    value={op.id}
+                                                                >
+
+                                                                    {
+                                                                        op.numero
+                                                                    }
+
+                                                                </MenuItem>
+                                                            )
+                                                        )
+                                                    }
+
+                                                </TextField>
+
+                                            </Grid>
+                                        )
+                                    }
+
                                 </Grid>
 
                                 <Grid size={6}>
@@ -1159,20 +1285,35 @@ function ReleForm({
                                         )
                                     }
 
-                                    <Button
-                                        variant="outlined"
+                                    <ToggleButtonGroup
+                                        value={modoRemito}
+                                        exclusive
                                         fullWidth
-                                        onClick={() =>
-                                            setMostrarRemitoInline(
-                                                !mostrarRemitoInline
-                                            )
-                                        }
+                                        onChange={(_, value) => {
+
+                                            if (!value) return;
+
+                                            setModoRemito(value);
+                                        }}
+                                        sx={{ mb: 2 }}
                                     >
-                                        + NUEVO REMITO
-                                    </Button>
+
+                                        <ToggleButton value="nuevo">
+
+                                            Crear nuevo
+
+                                        </ToggleButton>
+
+                                        <ToggleButton value="existente">
+
+                                            Seleccionar existente
+
+                                        </ToggleButton>
+
+                                    </ToggleButtonGroup>
 
                                     {
-                                        mostrarRemitoInline && (
+                                        modoRemito === "nuevo" && (
 
                                             <Grid size={12}>
 
@@ -1320,6 +1461,59 @@ function ReleForm({
                                                     }
 
                                                 </Paper>
+
+                                            </Grid>
+                                        )
+                                    }
+
+                                    {
+                                        modoRemito === "existente" && (
+
+                                            <Grid size={12}>
+
+                                                <TextField
+                                                    select
+                                                    label="Seleccionar Remito"
+
+                                                    value={
+                                                        formData.remitoId ?? ""
+                                                    }
+
+                                                    onChange={(e) =>
+
+                                                        setFormData({
+
+                                                            ...formData,
+
+                                                            remitoId:
+                                                                Number(
+                                                                    e.target.value
+                                                                )
+                                                        })
+                                                    }
+
+                                                    fullWidth
+                                                >
+
+                                                    {
+                                                        remitosDisponibles.map(
+                                                            (remito) => (
+
+                                                                <MenuItem
+                                                                    key={remito.id}
+                                                                    value={remito.id}
+                                                                >
+
+                                                                    {
+                                                                        remito.numeroRemito
+                                                                    }
+
+                                                                </MenuItem>
+                                                            )
+                                                        )
+                                                    }
+
+                                                </TextField>
 
                                             </Grid>
                                         )

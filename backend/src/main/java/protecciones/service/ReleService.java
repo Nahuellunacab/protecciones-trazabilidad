@@ -1,5 +1,4 @@
 package protecciones.service;
-
 import org.springframework.stereotype.Service;
 import protecciones.dto.MovimientoResponseDTO;
 import protecciones.dto.ReleOptionDTO;
@@ -223,8 +222,12 @@ public class ReleService {
                 );
 
         Estado estadoIngresado =
-                estadoRepository.findById(6L)
+                estadoRepository
+                        .findByNombreIgnoreCase(
+                                "INGRESADO"
+                        )
                         .orElseThrow(() ->
+
                                 new RuntimeException(
                                         "Estado INGRESADO no encontrado"
                                 )
@@ -705,6 +708,11 @@ public class ReleService {
                                         "Orden de provisión no encontrada"
                                 )
                         );
+                        ordenProvision.setAsociado(true);
+
+                                ordenProvisionRepository.save(
+                                ordenProvision
+                                );
         }
 
         if (dto.getRemitoId() != null) {
@@ -717,6 +725,8 @@ public class ReleService {
                                     "Remito no encontrado"
                             )
                     );
+                        remito.setAsociado(true);
+                        remitoRepository.save(remito);
         }
 
         rele.setNumeroSerie(

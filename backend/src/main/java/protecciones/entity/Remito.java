@@ -1,7 +1,6 @@
 package protecciones.entity;
 
 import jakarta.persistence.*;
-
 import java.time.LocalDate;
 
 @Entity
@@ -23,6 +22,9 @@ public class Remito {
     @Column(name = "ruta_archivo")
     private String rutaArchivo;
 
+    @Column(nullable = false)
+    private Boolean asociado = false;   
+
     @ManyToOne
     @JoinColumn(name = "proveedor_id", nullable = false)
     private Proveedor proveedor;
@@ -40,6 +42,8 @@ public class Remito {
         this.id = id;
         this.numeroRemito = numeroRemito;
         this.fecha = fecha;
+        this.nombreArchivo = nombreArchivo;
+        this.rutaArchivo = rutaArchivo;
         this.proveedor = proveedor;
     }
 
@@ -67,6 +71,10 @@ public class Remito {
         return rutaArchivo;
     }
 
+    public Boolean getAsociado() {
+        return asociado;
+    }
+
     public void setId(Long id) {
         this.id = id;
     }
@@ -89,5 +97,9 @@ public class Remito {
 
     public void setRutaArchivo(String rutaArchivo) {
         this.rutaArchivo = rutaArchivo;
+    }
+
+    public void setAsociado(Boolean asociado) {
+        this.asociado = asociado;
     }
 }

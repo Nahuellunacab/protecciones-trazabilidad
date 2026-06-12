@@ -135,4 +135,13 @@ public class RemitoController {
                                 archivo
                         );
                 }
+
+        @GetMapping("/disponibles")
+        public List<RemitoResponseDTO>
+        obtenerDisponibles() {
+
+        return remitoService
+                .obtenerDisponibles();
+        }
+        
 }

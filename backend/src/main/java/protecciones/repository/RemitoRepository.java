@@ -17,4 +17,7 @@ public interface RemitoRepository
     findByNumeroRemitoIgnoreCase(
             String numeroRemito
     );
+
+    List<Remito> findByAsociadoFalse();
+
 }

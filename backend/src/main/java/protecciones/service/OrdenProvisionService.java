@@ -223,6 +223,20 @@ public class OrdenProvisionService {
         }
         }
 
+        public List<OrdenProvisionResponseDTO>
+        obtenerDisponibles() {
+
+        return ordenProvisionRepository
+
+                .findByAsociadoFalse()
+
+                .stream()
+
+                .map(this::mapToDTO)
+
+                .toList();
+        }
+
     private void validarDuplicado(
             String numero
     ) {

@@ -19,6 +19,17 @@ Promise<Remito[]> {
     return response.data;
 }
 
+export async function obtenerRemitosDisponibles():
+Promise<Remito[]> {
+
+    const response =
+        await api.get(
+            "/remitos/disponibles"
+        );
+
+    return response.data;
+}
+
 export async function crearRemito(
     data: RemitoRequest
 ) {
