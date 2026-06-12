@@ -10,7 +10,6 @@ import protecciones.dto.RemitoResponseDTO;
 import protecciones.service.RemitoService;
 import java.util.List;
 import org.springframework.core.io.Resource;
-import org.springframework.http.MediaType;
 
 @RestController
 @RequestMapping("/api/remitos")

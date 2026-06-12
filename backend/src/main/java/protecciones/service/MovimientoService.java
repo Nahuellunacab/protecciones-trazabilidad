@@ -1,23 +1,18 @@
 package protecciones.service;
-
 import org.springframework.stereotype.Service;
-
 import protecciones.dto.MovimientoRequestDTO;
 import protecciones.dto.MovimientoResponseDTO;
-
 import protecciones.entity.Estado;
 import protecciones.entity.Movimiento;
 import protecciones.entity.Posicion;
 import protecciones.entity.Rele;
 import protecciones.entity.Usuario;
-
 import protecciones.repository.EstadoRepository;
 import protecciones.repository.MovimientoRepository;
 import protecciones.repository.PosicionRepository;
 import protecciones.repository.ReleRepository;
 import protecciones.repository.TransicionEstadoRepository;
 import protecciones.repository.UsuarioRepository;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;

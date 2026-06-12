@@ -115,15 +115,10 @@ function MovimientoForm({
         const relesData =
             await obtenerOpciones();
 
-        const estadosData =
-            await obtenerEstados();
-
         const posicionesData =
             await obtenerPosiciones();
 
         setReles(relesData);
-
-        setEstados(estadosData);
 
         setPosiciones(posicionesData);
     };
@@ -168,10 +163,7 @@ function MovimientoForm({
 
             setReleSeleccionado(null);
 
-            const estadosData =
-                await obtenerEstados();
-
-            setEstados(estadosData);
+            setEstados([]);
 
             return;
         }
@@ -225,10 +217,7 @@ function MovimientoForm({
 
             setReleSeleccionado(null);
 
-            const estadosData =
-                await obtenerEstados();
-
-            setEstados(estadosData);
+            setEstados([]);
 
         } catch (error) {
 
@@ -486,11 +475,10 @@ function MovimientoForm({
 
                             <Select
                                 name="estadoId"
-                                value={
-                                    formData.estadoId
-                                }
+                                value={formData.estadoId}
                                 label="Estado"
                                 onChange={handleChange}
+                                disabled={!formData.releId}
                             >
 
                                 {estados.map(
