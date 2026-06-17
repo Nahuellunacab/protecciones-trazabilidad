@@ -6,7 +6,10 @@ import type { ReleOption } from "../types/ReleOption";
 
 export const obtenerReles = async (): Promise<Rele[]> => {
 
-    const response = await api.get("/reles");
+    const response =
+        await api.get(
+            "/reles?page=0&size=5000"
+        );
 
     return response.data.content;
 };

@@ -29,6 +29,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import protecciones.entity.OrdenProvision;
 import protecciones.repository.OrdenProvisionRepository;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ReleService {
@@ -95,6 +96,7 @@ public class ReleService {
                 .toList();
     }
 
+    @Transactional
     public ReleResponseDTO guardar(
             ReleRequestDTO dto
     ) {
@@ -614,18 +616,18 @@ public class ReleService {
     }
 
     public List<ReleResponseDTO>
-    buscarPorSerialParcial(
-            String serial
-    ) {
+        buscarPorSerialParcial(
+                String texto
+        ) {
 
         return releRepository
-                .findByNumeroSerieContainingIgnoreCaseAndActivoTrue(
-                        serial
+                .buscarGeneral(
+                        texto
                 )
                 .stream()
                 .map(this::mapToResponseDTO)
                 .toList();
-    }
+        }
 
     public List<ReleOptionDTO>
     obtenerOpciones() {
