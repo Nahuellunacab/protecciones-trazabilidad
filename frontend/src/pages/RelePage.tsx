@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import {
     TextField,
     Typography,
-    Button
+    Button,
+    TablePagination
 } from "@mui/material";
 
 // -----------------------------------Importación de servicios-----------------------------------
@@ -41,6 +42,11 @@ function RelePage() {
 
     const [textoBusqueda, setTextoBusqueda] =
         useState("");
+    
+    const [page, setPage] =
+        useState(0);
+
+    const rowsPerPage = 10;
 
     const [releEditando, setReleEditando] =
         useState<Rele | null>(null);
@@ -151,6 +157,12 @@ function RelePage() {
                     .includes(texto)
             );
         });
+    
+    const relesPaginados =
+        relesFiltrados.slice(
+            page * rowsPerPage,
+            page * rowsPerPage + rowsPerPage
+        );
 
     return (
 
@@ -202,11 +214,14 @@ function RelePage() {
             <TextField
                 label="Buscar por serie, marca o modelo"
                 value={textoBusqueda}
-                onChange={(e) =>
+                onChange={(e) => {
+
                     setTextoBusqueda(
                         e.target.value
-                    )
-                }
+                    );
+
+                    setPage(0);
+                }}
                 fullWidth
                 sx={{
                     mb: 1,
@@ -223,11 +238,30 @@ function RelePage() {
             </Typography>
 
             <ReleTable
-                reles={relesFiltrados}
+                reles={relesPaginados}
                 onEditar={handleEditar}
             />
 
+            <TablePagination
+
+                component="div"
+
+                count={relesFiltrados.length}
+
+                page={page}
+
+                onPageChange={(_, newPage) =>
+                    setPage(newPage)
+                }
+
+                rowsPerPage={rowsPerPage}
+
+                rowsPerPageOptions={[]}
+
+            />
+
         </div>
+        
     );
 }
 
