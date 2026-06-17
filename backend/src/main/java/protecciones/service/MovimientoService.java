@@ -142,15 +142,21 @@ public class MovimientoService {
         Movimiento movimiento =
                 new Movimiento();
 
-        movimiento.setRele(rele);
+        movimiento.setRele(
+                rele
+        );
 
         movimiento.setEstado(
                 estadoDestino
         );
 
-        movimiento.setPosicion(posicion);
+        movimiento.setPosicion(
+                posicion
+        );
 
-        movimiento.setUsuario(usuario);
+        movimiento.setUsuario(
+                usuario
+        );
 
         movimiento.setFechaMovimiento(
                 LocalDateTime.now()
@@ -165,7 +171,37 @@ public class MovimientoService {
                         movimiento
                 );
 
-        return mapToDTO(guardado);
+        /*
+         * Si el relé pasa a BAJA
+         * se desactiva del inventario
+         */
+        if (
+                estadoDestino.getNombre()
+                        .equalsIgnoreCase(
+                                "BAJA"
+                        )
+        ) {
+
+            rele.setActivo(
+                    false
+            );
+
+            rele.setFechaBaja(
+                    LocalDateTime.now()
+            );
+
+            rele.setMotivoBaja(
+                    dto.getNotas()
+            );
+
+            releRepository.save(
+                    rele
+            );
+        }
+
+        return mapToDTO(
+                guardado
+        );
     }
 
     public MovimientoResponseDTO mapToDTO(
