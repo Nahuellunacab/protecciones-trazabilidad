@@ -98,7 +98,38 @@ function ReleTable({
         });
     
         
+    const getEstadoColor = (estado: string) => {
 
+        switch (estado?.toUpperCase()) {
+
+            case "EN STOCK":
+                return "success";
+
+            case "ENSAYO":
+                return "info";
+
+            case "APROBADO":
+                return "primary";
+
+            case "REPARACION":
+                return "warning";
+
+            case "INSTALADO":
+                return "secondary";
+
+            case "BAJA":
+                return "error";
+
+            case "SIN HISTORIAL":
+                return "default";
+
+            default:
+                return "default";
+        }
+    };
+        
+    
+    
     const handleVerHistorial =
     async (
         rele: Rele
@@ -298,23 +329,15 @@ function ReleTable({
 
                                             <Chip
                                                 label={
-                                                    rele.estadoActual
-                                                    ||
-                                                    "Sin estado"
+                                                    rele.estadoActual ||
+                                                    "SIN HISTORIAL"
                                                 }
                                                 color={
-                                                    rele.estadoActual ===
-                                                    "INGRESADO"
-                                                        ? "info"
-                                                        : rele.estadoActual ===
-                                                        "ENSAYO"
-                                                            ? "warning"
-                                                            : rele.estadoActual ===
-                                                            "REPARACION"
-                                                                ? "error"
-                                                                : "success"
+                                                    getEstadoColor(
+                                                        rele.estadoActual
+                                                    )
                                                 }
-                                                size="small"
+                                                size="small"                                                variant="outlined"
                                             />
 
                                         </TableCell>
@@ -339,19 +362,25 @@ function ReleTable({
 
                                         <TableCell>
 
-                                            {
-                                                rele.posicionActual
-                                                    ? (
-                                                        <Chip
-                                                            label={
-                                                                rele.posicionActual
-                                                            }
-                                                            size="small"
-                                                            color="primary"
-                                                        />
-                                                    )
-                                                    : "-"
-                                            }
+                                            <Chip
+                                                label={
+                                                    rele.posicionActual ||
+                                                    "NO ASIGNADA"
+                                                }
+                                                size="small"
+                                                color={
+                                                    rele.posicionActual ===
+                                                    "NO ASIGNADA"
+                                                        ? "default"
+                                                        : "primary"
+                                                }
+                                                variant={
+                                                    rele.posicionActual ===
+                                                    "NO ASIGNADA"
+                                                        ? "outlined"
+                                                        : "filled"
+                                                }
+                                            />
 
                                         </TableCell>
 

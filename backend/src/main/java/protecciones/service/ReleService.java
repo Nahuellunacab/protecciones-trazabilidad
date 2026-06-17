@@ -411,9 +411,9 @@ public class ReleService {
                         ? rele.getOrdenProvision().getId()
                         : null;
 
-        String estadoActual = "-";
-        String posicionActual = "-";
-        String localidadActual = "-";
+        String estadoActual = "SIN HISTORIAL";
+        String posicionActual = "NO ASIGNADA";
+        String localidadActual = "NO DEFINIDA";
 
         Optional<Movimiento> ultimoMovimiento =
                 movimientoRepository
@@ -441,7 +441,7 @@ public class ReleService {
         }
 
         String estadoGarantia =
-                "Sin garantía";
+                "NO REGISTRA";
 
         Long mesesRestantesGarantia =
                 null;
