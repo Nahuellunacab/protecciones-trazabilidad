@@ -221,15 +221,15 @@ public class ReleService {
                         rele
                 );
 
-        Estado estadoIngresado =
+        Estado estadoInicial =
                 estadoRepository
                         .findByNombreIgnoreCase(
-                                "INGRESADO"
+                                "EN STOCK"
                         )
                         .orElseThrow(() ->
 
                                 new RuntimeException(
-                                        "Estado INGRESADO no encontrado"
+                                        "Estado EN STOCK no encontrado"
                                 )
                         );
 
@@ -259,7 +259,7 @@ public class ReleService {
         );
 
         movimientoInicial.setEstado(
-                estadoIngresado
+                estadoInicial
         );
 
         movimientoInicial.setPosicion(
