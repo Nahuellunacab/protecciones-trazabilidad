@@ -1,26 +1,58 @@
 import {
-
     AppBar,
     Toolbar,
     Typography,
     Button,
     Container,
     Box,
-    Divider
-
+    Divider,
+    Menu,
+    MenuItem,
 } from "@mui/material";
 
-import {
-
-    Link,
-    Outlet
-
-} from "react-router-dom";
+import ArrowDropDownIcon
+from "@mui/icons-material/ArrowDropDown";
 
 import epecLogo
     from "../assets/epec-logo.png";
 
+import { useState } from "react";
+
+import {
+    Link,
+    Outlet,
+    useLocation
+} from "react-router-dom";
+
 function MainLayout() {
+
+    const location = useLocation();
+
+    const isActive = (
+        path: string
+    ) =>
+        location.pathname === path;
+
+    const [anchorEl, setAnchorEl] =
+        useState<null | HTMLElement>(
+            null
+        );
+
+    const abrirAdminMenu = (
+        event: React.MouseEvent<HTMLElement>
+    ) => {
+
+        setAnchorEl(
+            event.currentTarget
+        );
+    };
+
+    const cerrarMenu = () => {
+
+        setAnchorEl(
+            null
+        );
+    };
 
     return (
 
@@ -94,6 +126,17 @@ function MainLayout() {
                         color="inherit"
                         component={Link}
                         to="/"
+                        sx={{
+                            fontWeight:
+                                isActive("/")
+                                    ? 700
+                                    : 400,
+
+                            borderBottom:
+                                isActive("/")
+                                    ? "2px solid white"
+                                    : "none"
+                        }}
                     >
                         Dashboard
                     </Button>
@@ -102,6 +145,17 @@ function MainLayout() {
                         color="inherit"
                         component={Link}
                         to="/reles"
+                        sx={{
+                            fontWeight:
+                                isActive("/reles")
+                                    ? 700
+                                    : 400,
+
+                            borderBottom:
+                                isActive("/reles")
+                                    ? "2px solid white"
+                                    : "none"
+                        }}
                     >
                         Relés
                     </Button>
@@ -110,6 +164,17 @@ function MainLayout() {
                         color="inherit"
                         component={Link}
                         to="/movimientos"
+                        sx={{
+                            fontWeight:
+                                isActive("/movimientos")
+                                    ? 700
+                                    : 400,
+
+                            borderBottom:
+                                isActive("/movimientos")
+                                    ? "2px solid white"
+                                    : "none"
+                        }}
                     >
                         Movimientos
                     </Button>
@@ -125,75 +190,133 @@ function MainLayout() {
 
                     <Button
                         color="inherit"
-                        component={Link}
-                        to="/admin/marcas"
+                        onClick={abrirAdminMenu}
+                        endIcon={
+                            <ArrowDropDownIcon />
+                        }
                     >
-                        Marcas
+                        Administración
                     </Button>
 
-                    <Button
-                        color="inherit"
-                        component={Link}
-                        to="/admin/modelos"
+                    <Menu
+                        anchorEl={anchorEl}
+                        open={Boolean(anchorEl)}
+                        onClose={cerrarMenu}
                     >
-                        Modelos
-                    </Button>
 
-                    <Button
-                        color="inherit"
-                        component={Link}
-                        to="/admin/destinos"
-                    >
-                        Destinos
-                    </Button>
+                        <Typography
+                            sx={{
+                                px: 2,
+                                pt: 1,
+                                fontSize: "0.75rem",
+                                fontWeight: 700,
+                                color: "text.secondary"
+                            }}
+                        >
+                            GESTIÓN
+                        </Typography>
 
-                    <Button
-                        color="inherit"
-                        component={Link}
-                        to="/admin/posiciones"
-                    >
-                        Posiciones
-                    </Button>
+                        <MenuItem
+                            component={Link}
+                            to="/admin/marcas"
+                            onClick={cerrarMenu}
+                        >
+                            Marcas
+                        </MenuItem>
 
-                    <Button
-                        color="inherit"
-                        component={Link}
-                        to="/admin/provincias"
-                    >
-                        Provincias
-                    </Button>
+                        <MenuItem
+                            component={Link}
+                            to="/admin/modelos"
+                            onClick={cerrarMenu}
+                        >
+                            Modelos
+                        </MenuItem>
 
-                    <Button
-                        color="inherit"
-                        component={Link}
-                        to="/admin/localidades"
-                    >
-                        Localidades
-                    </Button>
+                        <MenuItem
+                            component={Link}
+                            to="/admin/proveedores"
+                            onClick={cerrarMenu}
+                        >
+                            Proveedores
+                        </MenuItem>
 
-                    <Button
-                        color="inherit"
-                        component={Link}
-                        to="/admin/proveedores"
-                    >
-                        Proveedores
-                    </Button>
+                        <Divider />
 
-                    <Button
-                        color="inherit"
-                        component={Link}
-                        to="/admin/remitos"
-                    >
-                        Remitos
-                    </Button>
+                        <Typography
+                            sx={{
+                                px: 2,
+                                pt: 1,
+                                fontSize: "0.75rem",
+                                fontWeight: 700,
+                                color: "text.secondary"
+                            }}
+                        >
+                            UBICACIONES
+                        </Typography>
 
-                    <Button
-                        color="inherit"
-                        component={Link}
-                        to="/admin/ordenes-provision"
-                    >
-                        Órdenes
-                    </Button>
+                        <MenuItem
+                            component={Link}
+                            to="/admin/destinos"
+                            onClick={cerrarMenu}
+                        >
+                            Destinos
+                        </MenuItem>
+
+                        <MenuItem
+                            component={Link}
+                            to="/admin/posiciones"
+                            onClick={cerrarMenu}
+                        >
+                            Posiciones
+                        </MenuItem>
+
+                        <MenuItem
+                            component={Link}
+                            to="/admin/provincias"
+                            onClick={cerrarMenu}
+                        >
+                            Provincias
+                        </MenuItem>
+
+                        <MenuItem
+                            component={Link}
+                            to="/admin/localidades"
+                            onClick={cerrarMenu}
+                        >
+                            Localidades
+                        </MenuItem>
+
+                        <Divider />
+
+                        <Typography
+                            sx={{
+                                px: 2,
+                                pt: 1,
+                                fontSize: "0.75rem",
+                                fontWeight: 700,
+                                color: "text.secondary"
+                            }}
+                        >
+                            DOCUMENTACIÓN
+                        </Typography>
+
+                        <MenuItem
+                            component={Link}
+                            to="/admin/remitos"
+                            onClick={cerrarMenu}
+                        >
+                            Remitos
+                        </MenuItem>
+
+                        <MenuItem
+                            component={Link}
+                            to="/admin/ordenes-provision"
+                            onClick={cerrarMenu}
+                        >
+                            Órdenes
+                        </MenuItem>
+
+                    </Menu>
 
                 </Toolbar>
 
