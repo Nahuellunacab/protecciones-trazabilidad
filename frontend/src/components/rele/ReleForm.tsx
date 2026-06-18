@@ -977,56 +977,62 @@ function ReleForm({
 
                     </Grid>
 
-                    <Grid size={12}>
+                        {
+                        !releEditando && (
 
-                        <FormControl fullWidth>
+                            <Grid size={12}>
 
-                            <InputLabel>
-                                Posición Inicial
-                            </InputLabel>
+                                <FormControl fullWidth>
 
-                            <Select
-                                value={
-                                    formData.posicionInicialId
-                                    ?? ""
-                                }
-                                label="Posición Inicial"
-                                onChange={(e) =>
-                                    setFormData((prev) => ({
-                                        ...prev,
-                                        posicionInicialId:
-                                            Number(
-                                                e.target.value
+                                    <InputLabel>
+                                        Posición Inicial
+                                    </InputLabel>
+
+                                    <Select
+                                        value={
+                                            formData.posicionInicialId
+                                            ?? ""
+                                        }
+                                        label="Posición Inicial"
+                                        onChange={(e) =>
+                                            setFormData((prev) => ({
+                                                ...prev,
+                                                posicionInicialId:
+                                                    Number(
+                                                        e.target.value
+                                                    )
+                                            }))
+                                        }
+                                    >
+
+                                        {
+                                            posicionesIniciales.map(
+                                                (posicion) => (
+
+                                                    <MenuItem
+                                                        key={
+                                                            posicion.id
+                                                        }
+                                                        value={
+                                                            posicion.id
+                                                        }
+                                                    >
+                                                        {
+                                                            posicion.nombre
+                                                        }
+                                                    </MenuItem>
+                                                )
                                             )
-                                    }))
-                                }
-                            >
+                                        }
 
-                                {
-                                    posicionesIniciales.map(
-                                        (posicion) => (
+                                    </Select>
 
-                                            <MenuItem
-                                                key={
-                                                    posicion.id
-                                                }
-                                                value={
-                                                    posicion.id
-                                                }
-                                            >
-                                                {
-                                                    posicion.nombre
-                                                }
-                                            </MenuItem>
-                                        )
-                                    )
-                                }
+                                </FormControl>
 
-                            </Select>
+                            </Grid>
 
-                        </FormControl>
-
-                    </Grid>
+                        )
+                    }
 
                     {
                         formData.tipoIngreso ===
