@@ -22,7 +22,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -30,6 +29,8 @@ import org.springframework.data.domain.Sort;
 import protecciones.entity.OrdenProvision;
 import protecciones.repository.OrdenProvisionRepository;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class ReleService {
@@ -88,13 +89,36 @@ public class ReleService {
     }
 
     public List<ReleResponseDTO>
-    obtenerTodos() {
+        obtenerTodos() {
 
-        return releRepository.findAll()
-                .stream()
-                .map(this::mapToResponseDTO)
+        List<Rele> reles =
+                releRepository.findAll();
+
+        Map<Long, Movimiento> ultimosMovimientos =
+                movimientoRepository
+                        .findUltimosMovimientos()
+                        .stream()
+                        .collect(
+                                Collectors.toMap(
+                                        movimiento ->
+                                                movimiento.getRele().getId(),
+
+                                        movimiento ->
+                                                movimiento
+                                )
+                        );
+
+        return reles.stream()
+                .map(rele ->
+                        mapToResponseDTO(
+                                rele,
+                                ultimosMovimientos.get(
+                                        rele.getId()
+                                )
+                        )
+                )
                 .toList();
-    }
+        }
 
     @Transactional
     public ReleResponseDTO guardar(
@@ -280,12 +304,14 @@ public class ReleService {
                 "Ingreso inicial del relé"
         );
 
-        movimientoRepository.save(
-                movimientoInicial
-        );
+        Movimiento movimientoGuardado =
+                movimientoRepository.save(
+                        movimientoInicial
+                );
 
         return mapToResponseDTO(
-                releGuardado
+                releGuardado,
+                movimientoGuardado
         );
     }
 
@@ -303,7 +329,7 @@ public class ReleService {
                         )
                 );
 
-        return mapToResponseDTO(
+        return mapToResponseDTOCompleto(
                 rele
         );
     }
@@ -321,7 +347,7 @@ public class ReleService {
                                 )
                         );
 
-        return mapToResponseDTO(rele);
+        return mapToResponseDTOCompleto(rele);
     }
 
     public List<MovimientoResponseDTO>
@@ -339,9 +365,10 @@ public class ReleService {
     }
 
     private ReleResponseDTO
-    mapToResponseDTO(
-            Rele rele
-    ) {
+        mapToResponseDTO(
+                Rele rele,
+                Movimiento ultimoMovimiento
+        ) {
 
         Modelo modelo =
                 rele.getModelo();
@@ -394,8 +421,13 @@ public class ReleService {
                                 ? tipo
                                 : "";
             }
-        }
+        
+        
 
+        }
+        
+        
+        
         Long modeloId =
                 modelo != null
                         ? modelo.getId()
@@ -415,30 +447,24 @@ public class ReleService {
         String posicionActual = "NO ASIGNADA";
         String localidadActual = "NO DEFINIDA";
 
-        Optional<Movimiento> ultimoMovimiento =
-                movimientoRepository
-                        .findTopByReleIdOrderByFechaMovimientoDesc(
-                                rele.getId()
-                        );
+        if (ultimoMovimiento != null) {
 
-        if (ultimoMovimiento.isPresent()) {
+                estadoActual =
+                        ultimoMovimiento
+                                .getEstado()
+                                .getNombre();
 
-            Movimiento movimiento =
-                    ultimoMovimiento.get();
+                posicionActual =
+                        ultimoMovimiento
+                                .getPosicion()
+                                .getNombre();
 
-            estadoActual =
-                    movimiento.getEstado()
-                            .getNombre();
-
-            posicionActual =
-                    movimiento.getPosicion()
-                            .getNombre();
-
-            localidadActual =
-                    movimiento.getPosicion()
-                            .getDestino()
-                            .getNombre();
-        }
+                localidadActual =
+                        ultimoMovimiento
+                                .getPosicion()
+                                .getDestino()
+                                .getNombre();
+                } 
 
         String estadoGarantia =
                 "NO REGISTRA";
@@ -526,6 +552,24 @@ public class ReleService {
                 );
     }
 
+    private ReleResponseDTO
+        mapToResponseDTOCompleto(
+                Rele rele
+        ) {
+
+        Movimiento ultimoMovimiento =
+                movimientoRepository
+                        .findTopByReleIdOrderByFechaMovimientoDesc(
+                                rele.getId()
+                        )
+                        .orElse(null);
+
+        return mapToResponseDTO(
+                rele,
+                ultimoMovimiento
+        );
+        }
+
     public MovimientoResponseDTO
     obtenerEstadoActual(
             Long releId
@@ -570,7 +614,7 @@ public class ReleService {
                                 )
                                 .orElse(false)
                 )
-                .map(this::mapToResponseDTO)
+                .map(this::mapToResponseDTOCompleto)
                 .toList();
     }
 
@@ -612,7 +656,7 @@ public class ReleService {
 
         return releRepository
                 .findAll(pageable)
-                .map(this::mapToResponseDTO);
+                .map(this::mapToResponseDTOCompleto);
     }
 
     public List<ReleResponseDTO>
@@ -625,7 +669,7 @@ public class ReleService {
                         texto
                 )
                 .stream()
-                .map(this::mapToResponseDTO)
+                .map(this::mapToResponseDTOCompleto)
                 .toList();
         }
 
@@ -650,7 +694,7 @@ public class ReleService {
                                         .getMarca()
                                         .getNombre(),
 
-                                mapToResponseDTO(rele)
+                                mapToResponseDTOCompleto(rele)
                                         .getTension()
                         )
                 )
@@ -787,7 +831,7 @@ public class ReleService {
         Rele actualizado =
                 releRepository.save(rele);
 
-        return mapToResponseDTO(
+        return mapToResponseDTOCompleto(
                 actualizado
         );
     }

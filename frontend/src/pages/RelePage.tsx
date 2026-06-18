@@ -45,6 +45,15 @@ function RelePage() {
     
     const [page, setPage] =
         useState(0);
+    
+    const [filtroEstado, setFiltroEstado] =
+        useState<
+            "ACTIVOS"
+            |
+            "INACTIVOS"
+            |
+            "TODOS"
+        >("ACTIVOS");
 
     const rowsPerPage = 10;
 
@@ -138,7 +147,7 @@ function RelePage() {
             const texto =
                 textoBusqueda.toLowerCase();
 
-            return (
+            const coincideBusqueda =
 
                 rele.numeroSerie
                     .toLowerCase()
@@ -154,7 +163,24 @@ function RelePage() {
 
                 rele.modelo
                     .toLowerCase()
-                    .includes(texto)
+                    .includes(texto);
+
+            const coincideEstado =
+
+                filtroEstado === "TODOS"
+
+                    ? true
+
+                    : filtroEstado === "ACTIVOS"
+
+                        ? rele.activo
+
+                        : !rele.activo;
+
+            return (
+                coincideBusqueda
+                &&
+                coincideEstado
             );
         });
     
@@ -240,6 +266,8 @@ function RelePage() {
             <ReleTable
                 reles={relesPaginados}
                 onEditar={handleEditar}
+                filtroEstado={filtroEstado}
+                setFiltroEstado={setFiltroEstado}
             />
 
             <TablePagination

@@ -42,6 +42,24 @@ interface Props {
 
     reles: Rele[];
 
+    filtroEstado:
+        "ACTIVOS"
+        |
+        "INACTIVOS"
+        |
+        "TODOS";
+
+    setFiltroEstado:
+        React.Dispatch<
+            React.SetStateAction<
+                "ACTIVOS"
+                |
+                "INACTIVOS"
+                |
+                "TODOS"
+            >
+        >;
+
     onEditar: (
         rele: Rele
     ) => void;
@@ -49,19 +67,10 @@ interface Props {
 
 function ReleTable({
     reles,
-    onEditar
+    onEditar,
+    filtroEstado,
+    setFiltroEstado
 }: Props) {
-
-    const [
-        filtro,
-        setFiltro
-    ] = useState<
-        "ACTIVOS"
-        |
-        "INACTIVOS"
-        |
-        "TODOS"
-    >("ACTIVOS");
 
     const [
         historialOpen,
@@ -82,21 +91,6 @@ function ReleTable({
         releHistorial,
         setReleHistorial
     ] = useState<Rele | null>(null);
-
-    const relesFiltrados =
-        reles.filter((rele) => {
-
-            if (filtro === "ACTIVOS") {
-                return rele.activo;
-            }
-
-            if (filtro === "INACTIVOS") {
-                return !rele.activo;
-            }
-
-            return true;
-        });
-    
         
     const getEstadoColor = (estado: string) => {
 
@@ -194,11 +188,11 @@ function ReleTable({
 
                 <ToggleButtonGroup
                     exclusive
-                    value={filtro}
+                    value={filtroEstado}
                     onChange={(_, value) => {
 
                         if (value) {
-                            setFiltro(value);
+                            setFiltroEstado(value);
                         }
                     }}
                 >
@@ -281,7 +275,7 @@ function ReleTable({
                     <TableBody>
 
                         {
-                            relesFiltrados.map(
+                            reles.map(
                                 (rele) => (
 
                                     <TableRow
