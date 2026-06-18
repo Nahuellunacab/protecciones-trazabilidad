@@ -47,6 +47,7 @@ public class ReleResponseDTO {
 
     private LocalDateTime fechaBaja;
 
+
     public ReleResponseDTO(
             Long id,
             String numeroSerie,
@@ -63,11 +64,13 @@ public class ReleResponseDTO {
             Long modeloId,
             Long remitoId,
             Long ordenProvisionId,
+            String tipoIngreso,
             String estadoGarantia,
             Long mesesRestantesGarantia,
             Boolean activo,
             String motivoBaja,
             LocalDateTime fechaBaja
+            
     ) {
 
         this.id = id;
@@ -90,6 +93,7 @@ public class ReleResponseDTO {
         this.motivoBaja = motivoBaja;
         this.fechaBaja = fechaBaja;
         this.ordenProvisionId = ordenProvisionId;
+        this.tipoIngreso = tipoIngreso;
     }
 
     public Long getId() {

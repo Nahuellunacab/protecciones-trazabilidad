@@ -540,6 +540,8 @@ public class ReleService {
 
                 ordenProvisionId,
 
+                rele.getTipoIngreso(),
+
                 estadoGarantia,
 
                 mesesRestantesGarantia,
