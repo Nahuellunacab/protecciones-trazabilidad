@@ -40,17 +40,30 @@ export const crearMovimiento =
     };
 
 export const exportarMovimientosExcel =
-    async () => {
+    async (
+        nombreArchivo: string,
+        desde?: string,
+        hasta?: string
+    ) => {
+
+        let url =
+            "/movimientos/exportar";
+
+        if (desde && hasta) {
+
+            url +=
+                `?desde=${desde}&hasta=${hasta}`;
+        }
 
         const response =
             await api.get(
-                "/movimientos/exportar",
+                url,
                 {
                     responseType: "blob"
                 }
             );
 
-        const url =
+        const fileUrl =
             window.URL.createObjectURL(
                 new Blob([response.data])
             );
@@ -58,11 +71,11 @@ export const exportarMovimientosExcel =
         const link =
             document.createElement("a");
 
-        link.href = url;
+        link.href = fileUrl;
 
         link.setAttribute(
             "download",
-            "movimientos.xlsx"
+            nombreArchivo
         );
 
         document.body.appendChild(
@@ -72,4 +85,4 @@ export const exportarMovimientosExcel =
         link.click();
 
         link.remove();
-    };
+};

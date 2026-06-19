@@ -2,7 +2,9 @@ import { useEffect, useState } from "react";
 
 import {
     Box,
-    Button
+    Button,
+    ToggleButton,
+    ToggleButtonGroup
 } from "@mui/material";
 
 import {
@@ -37,6 +39,17 @@ function MovimientoPage() {
     const [movimientos, setMovimientos] =
         useState<Movimiento[]>([]);
 
+    const [filtroFecha, setFiltroFecha] =
+        useState<
+            "HOY"
+            |
+            "SEMANA"
+            |
+            "MES"
+            |
+            "TODOS"
+        >("TODOS");
+
     const cargarMovimientos =
         async () => {
 
@@ -64,8 +77,161 @@ function MovimientoPage() {
     const handleExportarExcel =
         async () => {
 
-            await exportarMovimientosExcel();
-        };
+            const hoy =
+                new Date();
+
+            let nombreArchivo =
+                "movimientos_completo.xlsx";
+
+            let desde:
+                string | undefined;
+
+            let hasta:
+                string | undefined;
+
+            if (
+                filtroFecha === "HOY"
+            ) {
+
+                const fecha =
+                    hoy.toISOString()
+                        .split("T")[0];
+
+                desde = fecha;
+                hasta = fecha;
+
+                nombreArchivo =
+                    "movimientos_hoy.xlsx";
+            }
+
+            if (
+                filtroFecha === "SEMANA"
+            ) {
+
+                const hace7Dias =
+                    new Date();
+
+                hace7Dias.setDate(
+                    hoy.getDate() - 7
+                );
+
+                desde =
+                    hace7Dias
+                        .toISOString()
+                        .split("T")[0];
+
+                hasta =
+                    hoy
+                        .toISOString()
+                        .split("T")[0];
+
+                nombreArchivo =
+                    "movimientos_semana.xlsx";
+            }
+
+            if (
+                filtroFecha === "MES"
+            ) {
+
+                const primerDia =
+                    new Date(
+                        hoy.getFullYear(),
+                        hoy.getMonth(),
+                        1
+                    );
+
+                desde =
+                    primerDia
+                        .toISOString()
+                        .split("T")[0];
+
+                hasta =
+                    hoy
+                        .toISOString()
+                        .split("T")[0];
+
+                nombreArchivo =
+                    "movimientos_mes.xlsx";
+            }
+
+            await exportarMovimientosExcel(
+                nombreArchivo,
+                desde,
+                hasta
+            );
+    };
+    const movimientosFiltrados =
+        movimientos.filter(
+            (movimiento) => {
+
+                if (
+                    filtroFecha === "TODOS"
+                ) {
+
+                    return true;
+                }
+
+                const fecha =
+                    new Date(
+                        movimiento.fechaMovimiento
+                    );
+
+                const hoy =
+                    new Date();
+
+                if (
+                    filtroFecha === "HOY"
+                ) {
+
+                    return (
+
+                        fecha.toDateString()
+
+                        ===
+
+                        hoy.toDateString()
+                    );
+                }
+
+                if (
+                    filtroFecha === "SEMANA"
+                ) {
+
+                    const hace7Dias =
+                        new Date();
+
+                    hace7Dias.setDate(
+                        hoy.getDate() - 7
+                    );
+
+                    return fecha >= hace7Dias;
+                }
+
+                if (
+                    filtroFecha === "MES"
+                ) {
+
+                    return (
+
+                        fecha.getMonth()
+
+                        ===
+
+                        hoy.getMonth()
+
+                        &&
+
+                        fecha.getFullYear()
+
+                        ===
+
+                        hoy.getFullYear()
+                    );
+                }
+
+                return true;
+            }
+        );
 
     return (
 
@@ -92,6 +258,45 @@ function MovimientoPage() {
                 }}
             >
 
+                <ToggleButtonGroup
+
+                    value={filtroFecha}
+
+                    exclusive
+
+                    onChange={(_, value) => {
+
+                        if (value) {
+
+                            setFiltroFecha(
+                                value
+                            );
+                        }
+                    }}
+
+                    sx={{
+                        mb: 2
+                    }}
+                >
+
+                    <ToggleButton value="HOY">
+                        Hoy
+                    </ToggleButton>
+
+                    <ToggleButton value="SEMANA">
+                        Semana
+                    </ToggleButton>
+
+                    <ToggleButton value="MES">
+                        Mes
+                    </ToggleButton>
+
+                    <ToggleButton value="TODOS">
+                        Todos
+                    </ToggleButton>
+
+                </ToggleButtonGroup>
+
                 <Button
                     variant="contained"
                     startIcon={<FileDownloadIcon />}
@@ -105,7 +310,9 @@ function MovimientoPage() {
             </Box>
 
             <MovimientoTable
-                movimientos={movimientos}
+                movimientos={
+                    movimientosFiltrados
+                }
             />
 
         </div>

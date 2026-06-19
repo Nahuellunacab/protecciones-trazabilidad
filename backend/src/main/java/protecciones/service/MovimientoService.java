@@ -1,6 +1,4 @@
 package protecciones.service;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 import protecciones.dto.MovimientoRequestDTO;
@@ -16,6 +14,8 @@ import protecciones.repository.PosicionRepository;
 import protecciones.repository.ReleRepository;
 import protecciones.repository.TransicionEstadoRepository;
 import protecciones.repository.UsuarioRepository;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -255,11 +255,39 @@ public class MovimientoService {
         );
     }
 
-    public byte[] exportarExcel() {
+    public byte[] exportarExcel(
 
-        List<Movimiento> movimientos =
+        LocalDate desde,
+
+        LocalDate hasta
+        ) {
+
+        List<Movimiento> movimientos;
+        if (
+                desde != null
+                &&
+                hasta != null
+        ) {
+
+        movimientos =
                 movimientoRepository
-                        .findAll();
+                        .findByFechaMovimientoBetweenOrderByFechaMovimientoDesc(
+
+                                desde.atStartOfDay(),
+
+                                hasta.atTime(
+                                        23,
+                                        59,
+                                        59
+                                )
+                        );
+
+        } else {
+
+        movimientos =
+                movimientoRepository
+                        .findAllByOrderByFechaMovimientoDesc();
+        }
 
         try (
 

@@ -2,6 +2,7 @@ package protecciones.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import protecciones.entity.Movimiento;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,4 +35,15 @@ public interface MovimientoRepository
 
     """)
     List<Movimiento> findUltimosMovimientos();
+
+    List<Movimiento>
+    findByFechaMovimientoBetweenOrderByFechaMovimientoDesc(
+
+            LocalDateTime desde,
+
+            LocalDateTime hasta
+    );
+
+    List<Movimiento>
+    findAllByOrderByFechaMovimientoDesc();
 }

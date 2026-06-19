@@ -4,10 +4,13 @@ import org.springframework.web.bind.annotation.*;
 import protecciones.dto.MovimientoRequestDTO;
 import protecciones.dto.MovimientoResponseDTO;
 import protecciones.service.MovimientoService;
+import java.time.LocalDate;
 import java.util.List;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import java.time.LocalDate;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/api/movimientos")
@@ -45,20 +48,26 @@ public class MovimientoController {
 
 
 @GetMapping("/exportar")
-public ResponseEntity<byte[]> exportarExcel() {
+public ResponseEntity<byte[]> exportarExcel(
+
+        @RequestParam(required = false)
+        LocalDate desde,
+
+        @RequestParam(required = false)
+        LocalDate hasta
+) {
 
     byte[] excel =
-            movimientoService.exportarExcel();
+            movimientoService.exportarExcel(
+                    desde,
+                    hasta
+            );
 
     return ResponseEntity.ok()
 
             .header(
                     HttpHeaders.CONTENT_DISPOSITION,
                     "attachment; filename=movimientos.xlsx"
-            )
-
-            .contentType(
-                    MediaType.APPLICATION_OCTET_STREAM
             )
 
             .body(excel);
