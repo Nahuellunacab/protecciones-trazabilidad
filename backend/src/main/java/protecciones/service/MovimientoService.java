@@ -1,4 +1,7 @@
 package protecciones.service;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 import protecciones.dto.MovimientoRequestDTO;
 import protecciones.dto.MovimientoResponseDTO;
@@ -16,6 +19,9 @@ import protecciones.repository.UsuarioRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import java.io.ByteArrayOutputStream;
 
 @Service
 public class MovimientoService {
@@ -248,4 +254,152 @@ public class MovimientoService {
                 movimiento.getNotas()
         );
     }
+
+    public byte[] exportarExcel() {
+
+        List<Movimiento> movimientos =
+                movimientoRepository
+                        .findAll();
+
+        try (
+
+                Workbook workbook =
+                        new XSSFWorkbook();
+
+                ByteArrayOutputStream out =
+                        new ByteArrayOutputStream()
+
+        ) {
+
+                Sheet sheet =
+                        workbook.createSheet(
+                                "Movimientos"
+                        );
+
+                Row header =
+                        sheet.createRow(0);
+
+                header.createCell(0)
+                        .setCellValue("Relé");
+
+                header.createCell(1)
+                        .setCellValue("Marca");
+
+                header.createCell(2)
+                        .setCellValue("Modelo");
+
+                header.createCell(3)
+                        .setCellValue("Estado");
+
+                header.createCell(4)
+                        .setCellValue("Destino");
+
+                header.createCell(5)
+                        .setCellValue("Posición");
+
+                header.createCell(6)
+                        .setCellValue("Responsable");
+
+                header.createCell(7)
+                        .setCellValue("Fecha");
+
+                header.createCell(8)
+                        .setCellValue("Notas");
+
+                int rowIndex = 1;
+
+                for (Movimiento movimiento : movimientos) {
+
+                Row row =
+                        sheet.createRow(
+                                rowIndex++
+                        );
+
+                row.createCell(0)
+                        .setCellValue(
+                                movimiento
+                                        .getRele()
+                                        .getNumeroSerie()
+                        );
+
+                row.createCell(1)
+                        .setCellValue(
+                                movimiento
+                                        .getRele()
+                                        .getModelo()
+                                        .getMarca()
+                                        .getNombre()
+                        );
+
+                row.createCell(2)
+                        .setCellValue(
+                                movimiento
+                                        .getRele()
+                                        .getModelo()
+                                        .getNombre()
+                        );
+
+                row.createCell(3)
+                        .setCellValue(
+                                movimiento
+                                        .getEstado()
+                                        .getNombre()
+                        );
+
+                row.createCell(4)
+                        .setCellValue(
+                                movimiento
+                                        .getPosicion()
+                                        .getDestino()
+                                        .getNombre()
+                        );
+
+                row.createCell(5)
+                        .setCellValue(
+                                movimiento
+                                        .getPosicion()
+                                        .getNombre()
+                        );
+
+                row.createCell(6)
+                        .setCellValue(
+                                movimiento
+                                        .getUsuario()
+                                        .getNombre()
+                        );
+
+                row.createCell(7)
+                        .setCellValue(
+                                movimiento
+                                        .getFechaMovimiento()
+                                        .toString()
+                        );
+
+                row.createCell(8)
+                        .setCellValue(
+                                movimiento
+                                        .getNotas() != null
+                                        ?
+                                        movimiento.getNotas()
+                                        :
+                                        "-"
+                        );
+                }
+
+                for (int i = 0; i < 9; i++) {
+
+                sheet.autoSizeColumn(i);
+                }
+
+                workbook.write(out);
+
+                return out.toByteArray();
+
+        } catch (Exception e) {
+
+                throw new RuntimeException(
+                        "Error al generar Excel"
+                );
+        }
+        }
 }

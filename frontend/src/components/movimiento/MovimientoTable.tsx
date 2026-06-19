@@ -102,10 +102,12 @@ function MovimientoTable({
         <TableContainer
             component={Paper}
         >
+            
 
             <Table>
 
                 <TableHead>
+                    
 
                     <TableRow>
 

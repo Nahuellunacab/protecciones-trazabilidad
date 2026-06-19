@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
 
 import {
+    Box,
+    Button
+} from "@mui/material";
+
+import {
     obtenerMovimientos,
     crearMovimiento
 } from "../services/movimientoService";
@@ -18,6 +23,14 @@ import MovimientoForm from "../components/movimiento/MovimientoForm";
 import MovimientoTable from "../components/movimiento/MovimientoTable";
 
 import PageHeader from "../components/common/PageHeader";
+
+import {
+    exportarMovimientosExcel
+}
+from "../services/movimientoService";
+
+import FileDownloadIcon
+from "@mui/icons-material/FileDownload";
 
 function MovimientoPage() {
 
@@ -48,6 +61,12 @@ function MovimientoPage() {
         await cargarMovimientos();
     };
 
+    const handleExportarExcel =
+        async () => {
+
+            await exportarMovimientosExcel();
+        };
+
     return (
 
         <div>
@@ -63,6 +82,27 @@ function MovimientoPage() {
             <MovimientoForm
                 onCreate={handleCreate}
             />
+
+            <Box
+                sx={{
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    mb: 2,
+                    mt: 3
+                }}
+            >
+
+                <Button
+                    variant="contained"
+                    startIcon={<FileDownloadIcon />}
+                    onClick={handleExportarExcel}
+                >
+
+                    Exportar Informe
+
+                </Button>
+
+            </Box>
 
             <MovimientoTable
                 movimientos={movimientos}
