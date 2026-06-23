@@ -17,6 +17,8 @@ import {
     Typography,
     ToggleButtonGroup,
     ToggleButton,
+    Checkbox,
+    FormControlLabel,
 } from "@mui/material";
 
 import type { Modelo }
@@ -88,6 +90,30 @@ import {
     obtenerProveedores
 } from "../../services/proveedorService";
 
+type ReleFormData = {
+
+    numeroSerie: string;
+
+    codigoConfiguracion: string;
+
+    modeloId: number | "";
+
+    tipoIngreso: "NUEVO" | "USADO";
+
+    remitoId: number | null;
+
+    ordenProvisionId: number | null;
+
+    posicionInicialId: number | undefined;
+
+    cargarGarantia: boolean;
+
+    garantiaMeses: number | null;
+
+    usarFechaActual: boolean;
+
+    inicioGarantia: string | null;
+};
 
 interface Props {
 
@@ -150,15 +176,29 @@ function ReleForm({
     ] = useState<number | null>(null);
 
     const [formData, setFormData] =
-        useState<ReleRequest>({
+        useState<ReleFormData>({
             numeroSerie: "",
-            codigoConfiguracion: "",
-            modeloId: "",
-            tipoIngreso: "NUEVO",
-            remitoId: null,
-            ordenProvisionId: null,
-            posicionInicialId: undefined
-        });
+
+        codigoConfiguracion: "",
+
+        modeloId: "",
+
+        tipoIngreso: "NUEVO",
+
+        remitoId: null,
+
+        ordenProvisionId: null,
+
+        posicionInicialId: undefined,
+
+        cargarGarantia: false,
+
+        garantiaMeses: null,
+
+        usarFechaActual: true,
+
+        inicioGarantia: null
+    });
     
     const [posicionesIniciales,
         setPosicionesIniciales] =
@@ -170,11 +210,11 @@ function ReleForm({
     const [ordenesProvision, setOrdenesProvision] =
         useState<OrdenProvision[]>([]);  
         
-    const [mostrarRemitoInline,
+    const [,
         setMostrarRemitoInline] =
         useState(false);
 
-    const [mostrarOPInline,
+    const [,
         setMostrarOPInline] =
         useState(false);
 
@@ -243,34 +283,47 @@ function ReleForm({
 
     useEffect(() => {
 
-        if (!releEditando) {
-            return;
-        }
+    if (!releEditando) {
+        return;
+    }
 
-        setFormData({
+    setFormData({
 
-            numeroSerie:
-                releEditando.numeroSerie,
+        numeroSerie:
+            releEditando.numeroSerie,
 
-            codigoConfiguracion:
-                releEditando.codigoConfiguracion ?? "",
+        codigoConfiguracion:
+            releEditando.codigoConfiguracion ?? "",
 
-            modeloId:
-                releEditando.modeloId ?? "",
+        modeloId:
+            releEditando.modeloId ?? "",
 
-            tipoIngreso:
-                releEditando.tipoIngreso,
+        tipoIngreso:
+            releEditando.tipoIngreso,
 
-            remitoId:
-                releEditando.remitoId ?? null,
+        remitoId:
+            releEditando.remitoId ?? null,
 
-            ordenProvisionId:
-                releEditando.ordenProvisionId ?? null,
+        ordenProvisionId:
+            releEditando.ordenProvisionId ?? null,
 
+        posicionInicialId:
+            undefined,
 
-            posicionInicialId:
-                undefined
-        });
+        cargarGarantia:
+            releEditando.garantiaMeses
+                ? true
+                : false,
+
+        garantiaMeses:
+            releEditando.garantiaMeses ?? null,
+
+        usarFechaActual:
+            false,
+
+        inicioGarantia:
+            releEditando.inicioGarantia ?? null
+    });
 
         const modelo =
             modelos.find(
@@ -682,7 +735,15 @@ function ReleForm({
 
             ordenProvisionId: null,
 
-            posicionInicialId: undefined
+            posicionInicialId: undefined,
+
+            cargarGarantia: false,
+
+            garantiaMeses: null,
+
+            usarFechaActual: true,
+
+            inicioGarantia: null
         });
 
         setMarcaId("");
@@ -728,17 +789,72 @@ function ReleForm({
 
         try {
 
+            if (
+                formData.cargarGarantia &&
+                !formData.garantiaMeses
+            ) {
+
+                setError(
+                    "Debe ingresar duración de garantía"
+                );
+
+                setLoading(false);
+
+                return;
+            }
+
+            const releData = {
+
+                numeroSerie:
+                    formData.numeroSerie,
+
+                codigoConfiguracion:
+                    formData.codigoConfiguracion,
+
+                modeloId:
+                    formData.modeloId,
+
+                tipoIngreso:
+                    formData.tipoIngreso,
+
+                remitoId:
+                    formData.remitoId,
+
+                ordenProvisionId:
+                    formData.ordenProvisionId,
+
+                posicionInicialId:
+                    formData.posicionInicialId,
+
+                cargarGarantia:
+                    formData.cargarGarantia,
+
+                garantiaMeses:
+                    formData.cargarGarantia
+                        ? formData.garantiaMeses
+                        : null,
+
+                inicioGarantia:
+                    formData.cargarGarantia
+                        ? (
+                            formData.usarFechaActual
+                                ? null
+                                : formData.inicioGarantia
+                        )
+                        : null
+            };
+
             if (releEditando) {
 
                 await onUpdate(
                     releEditando.id,
-                    formData
+                    releData
                 );
 
             } else {
 
                 await onCreate(
-                    formData
+                    releData
                 );
             }
 
@@ -747,8 +863,11 @@ function ReleForm({
         } catch (err: any) {
 
             setError(
+
                 err?.response?.data?.message
+
                 ||
+
                 "Error al guardar relé"
             );
 
@@ -757,6 +876,7 @@ function ReleForm({
             setLoading(false);
         }
     };
+            
 
     return (
 
@@ -1001,6 +1121,122 @@ function ReleForm({
                         />
 
                     </Grid>
+
+                    <Grid size={12}>
+
+                        <FormControlLabel
+                            control={
+
+                                <Checkbox
+                                    checked={formData.cargarGarantia}
+                                    onChange={(e) =>
+                                        setFormData((prev) => ({
+                                            ...prev,
+                                            cargarGarantia:
+                                                e.target.checked
+                                        }))
+                                    }
+                                />
+                            }
+                            label="Cargar garantía"
+                        />
+
+                    </Grid>
+
+                    {
+                        formData.cargarGarantia && (
+
+                            <>
+
+                                <Grid size={6}>
+
+                                    <TextField
+                                        type="number"
+                                        label="Meses Garantía"
+                                        value={
+                                            formData.garantiaMeses || ""
+                                        }
+                                        onChange={(e) =>
+                                            setFormData((prev) => ({
+                                                ...prev,
+                                                garantiaMeses:
+                                                    Number(
+                                                        e.target.value
+                                                    )
+                                            }))
+                                        }
+                                        fullWidth
+                                    />
+
+                                </Grid>
+
+                                <Grid size={6}>
+
+                                    <ToggleButtonGroup
+                                        exclusive
+                                        value={
+                                            formData.usarFechaActual
+                                                ? "AUTO"
+                                                : "MANUAL"
+                                        }
+                                        onChange={(_, value) => {
+
+                                            if (!value) return;
+
+                                            setFormData((prev) => ({
+                                                ...prev,
+                                                usarFechaActual:
+                                                    value === "AUTO"
+                                            }));
+                                        }}
+                                        fullWidth
+                                    >
+
+                                        <ToggleButton value="AUTO">
+                                            Fecha actual
+                                        </ToggleButton>
+
+                                        <ToggleButton value="MANUAL">
+                                            Fecha manual
+                                        </ToggleButton>
+
+                                    </ToggleButtonGroup>
+
+                                </Grid>
+
+                                {
+                                    !formData.usarFechaActual && (
+
+                                        <Grid size={12}>
+
+                                            <TextField
+                                                type="date"
+                                                fullWidth
+                                                label="Inicio Garantía"
+                                                value={
+                                                    formData.inicioGarantia || ""
+                                                }
+                                                slotProps={{
+                                                    inputLabel: {
+                                                        shrink: true
+                                                    }
+                                                }}
+                                                onChange={(e) =>
+                                                    setFormData((prev) => ({
+                                                        ...prev,
+                                                        inicioGarantia:
+                                                            e.target.value
+                                                    }))
+                                                }
+                                            />
+
+                                        </Grid>
+                                    )
+                                }
+
+                            </>
+                        )
+                    }
 
                         {
                         !releEditando && (

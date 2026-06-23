@@ -34,6 +34,8 @@ export interface Rele {
 
     tipoIngreso: "NUEVO" | "USADO";
 
+    estadoGarantia: string;
+
     mesesRestantesGarantia: number | null;
 
     activo: boolean;

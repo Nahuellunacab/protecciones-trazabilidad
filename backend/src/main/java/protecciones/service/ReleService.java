@@ -217,36 +217,49 @@ public class ReleService {
                 )
         ) {
 
-            rele.setGarantiaMeses(
-                    dto.getGarantiaMeses()
-            );
+        rele.setGarantiaMeses(
+                dto.getGarantiaMeses()
+        );
 
-            rele.setInicioGarantia(
-                    dto.getInicioGarantia()
-            );
+        LocalDate fechaInicio =
+                dto.getInicioGarantia();
 
-            if (
-                    dto.getInicioGarantia() != null
-                            &&
-                    dto.getGarantiaMeses() != null
-            ) {
+        if (fechaInicio == null) {
+
+                fechaInicio =
+                        LocalDate.now();
+        }
+
+        rele.setInicioGarantia(
+                fechaInicio
+        );
+
+        if (
+                dto.getGarantiaMeses() != null
+        ) {
 
                 rele.setFinGarantia(
 
-                        dto.getInicioGarantia()
+                        fechaInicio
                                 .plusMonths(
                                         dto.getGarantiaMeses()
                                 )
                 );
-            }
+        }
 
         } else {
 
-            rele.setGarantiaMeses(null);
+        rele.setGarantiaMeses(
+                null
+        );
 
-            rele.setInicioGarantia(null);
+        rele.setInicioGarantia(
+                null
+        );
 
-            rele.setFinGarantia(null);
+        rele.setFinGarantia(
+                null
+        );
         }
 
         Rele releGuardado =
@@ -474,37 +487,45 @@ public class ReleService {
                 } 
 
         String estadoGarantia =
-                "NO REGISTRA";
+                "SIN GARANTIA";
 
         Long mesesRestantesGarantia =
                 null;
 
         if (rele.getFinGarantia() != null) {
 
-            long mesesRestantes =
-                    ChronoUnit.MONTHS.between(
-                            LocalDate.now(),
-                            rele.getFinGarantia()
-                    );
+        long mesesRestantes =
+                ChronoUnit.MONTHS.between(
+                        LocalDate.now(),
+                        rele.getFinGarantia()
+                );
 
-            mesesRestantesGarantia =
-                    mesesRestantes;
-
-            if (mesesRestantes < 0) {
+        if (mesesRestantes < 0) {
 
                 estadoGarantia =
                         "VENCIDA";
 
-            } else if (mesesRestantes <= 6) {
+                mesesRestantesGarantia =
+                        0L;
+
+        }
+
+        else {
+
+                mesesRestantesGarantia =
+                        mesesRestantes;
+
+                if (mesesRestantes <= 3) {
 
                 estadoGarantia =
                         "POR VENCER";
 
-            } else {
+                } else {
 
                 estadoGarantia =
                         "VIGENTE";
-            }
+                }
+        }
         }
 
         return new ReleResponseDTO(
@@ -811,35 +832,49 @@ public class ReleService {
                 )
         ) {
 
-            rele.setGarantiaMeses(
-                    dto.getGarantiaMeses()
-            );
+        rele.setGarantiaMeses(
+                dto.getGarantiaMeses()
+        );
 
-            rele.setInicioGarantia(
-                    dto.getInicioGarantia()
-            );
+        LocalDate fechaInicio =
+                dto.getInicioGarantia();
 
-            if (
-                    dto.getInicioGarantia() != null
-                            &&
-                    dto.getGarantiaMeses() != null
-            ) {
+        if (fechaInicio == null) {
+
+                fechaInicio =
+                        LocalDate.now();
+        }
+
+        rele.setInicioGarantia(
+                fechaInicio
+        );
+
+        if (
+                dto.getGarantiaMeses() != null
+        ) {
 
                 rele.setFinGarantia(
-                        dto.getInicioGarantia()
+
+                        fechaInicio
                                 .plusMonths(
                                         dto.getGarantiaMeses()
                                 )
                 );
-            }
+        }
 
         } else {
 
-            rele.setGarantiaMeses(null);
+        rele.setGarantiaMeses(
+                null
+        );
 
-            rele.setInicioGarantia(null);
+        rele.setInicioGarantia(
+                null
+        );
 
-            rele.setFinGarantia(null);
+        rele.setFinGarantia(
+                null
+        );
         }
 
         Rele actualizado =

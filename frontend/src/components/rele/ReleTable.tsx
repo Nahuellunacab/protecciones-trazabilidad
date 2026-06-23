@@ -393,15 +393,43 @@ function ReleTable({
 
                                         <TableCell>
 
-                                            {
-                                                rele.finGarantia
-                                                    ? formatearFecha(
-                                                        rele.finGarantia
-                                                    )
-                                                    : "-"
-                                            }
+                                        {
+                                            rele.estadoGarantia === "SIN GARANTIA" ? (
 
-                                        </TableCell>
+                                                <Chip
+                                                    label="SIN GARANTÍA"
+                                                    size="small"
+                                                    color="default"
+                                                />
+
+                                            ) : rele.estadoGarantia === "VENCIDA" ? (
+
+                                                <Chip
+                                                    label="VENCIDA"
+                                                    size="small"
+                                                    color="error"
+                                                />
+
+                                            ) : rele.estadoGarantia === "POR VENCER" ? (
+
+                                                <Chip
+                                                    label={`${rele.mesesRestantesGarantia} meses`}
+                                                    size="small"
+                                                    color="warning"
+                                                />
+
+                                            ) : (
+
+                                                <Chip
+                                                    label={`${rele.mesesRestantesGarantia} meses`}
+                                                    size="small"
+                                                    color="success"
+                                                />
+
+                                            )
+                                        }
+
+                                    </TableCell>
 
                                         <TableCell align="center">
 

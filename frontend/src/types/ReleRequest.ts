@@ -14,4 +14,9 @@ export interface ReleRequest {
 
     posicionInicialId: number | undefined;
 
+    cargarGarantia: boolean;
+
+    garantiaMeses: number | null;
+
+    inicioGarantia: string | null;
 }
