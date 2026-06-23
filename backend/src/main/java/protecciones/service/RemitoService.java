@@ -279,7 +279,7 @@ private final ReleRepository releRepository;
         obtenerDisponibles() {
 
         return remitoRepository
-                .findByAsociadoFalse()
+                .findAllByOrderByFechaDesc()
                 .stream()
                 .map(this::mapToDTO)
                 .toList();

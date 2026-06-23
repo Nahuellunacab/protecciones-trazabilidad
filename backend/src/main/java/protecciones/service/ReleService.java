@@ -785,25 +785,18 @@ public class ReleService {
                                         "Orden de provisión no encontrada"
                                 )
                         );
-                        ordenProvision.setAsociado(true);
-
-                                ordenProvisionRepository.save(
-                                ordenProvision
-                                );
         }
 
         if (dto.getRemitoId() != null) {
 
-            remito =
-                    remitoRepository.findById(
-                            dto.getRemitoId()
-                    ).orElseThrow(() ->
-                            new RuntimeException(
-                                    "Remito no encontrado"
-                            )
-                    );
-                        remito.setAsociado(true);
-                        remitoRepository.save(remito);
+        remito =
+                remitoRepository.findById(
+                        dto.getRemitoId()
+                ).orElseThrow(() ->
+                        new RuntimeException(
+                                "Remito no encontrado"
+                        )
+                );
         }
 
         rele.setNumeroSerie(

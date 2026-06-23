@@ -224,11 +224,11 @@ public class OrdenProvisionService {
     obtenerDisponibles() {
 
         return ordenProvisionRepository
-                .findByAsociadoFalse()
-                .stream()
-                .map(this::mapToDTO)
-                .toList();
-    }
+            .findAll()
+            .stream()
+            .map(this::mapToDTO)
+            .toList();
+        }
 
     private void validarDuplicado(
             String numero

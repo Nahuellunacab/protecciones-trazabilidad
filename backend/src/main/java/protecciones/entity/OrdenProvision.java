@@ -21,9 +21,6 @@ public class OrdenProvision {
 
     private Boolean activo = true;
 
-    @Column(nullable = false)
-    private Boolean asociado = false;
-
     @Column(name = "nombre_archivo")
     private String nombreArchivo;
 
@@ -47,10 +44,6 @@ public class OrdenProvision {
 
     public Boolean getActivo() {
         return activo;
-    }
-
-    public Boolean getAsociado() {
-        return asociado;
     }
 
     public String getNombreArchivo() {
@@ -79,12 +72,6 @@ public class OrdenProvision {
             Boolean activo
     ) {
         this.activo = activo;
-    }
-
-    public void setAsociado(
-            Boolean asociado
-    ) {
-        this.asociado = asociado;
     }
 
     public void setNombreArchivo(String nombreArchivo) {

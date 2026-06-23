@@ -18,6 +18,4 @@ public interface RemitoRepository
             String numeroRemito
     );
 
-    List<Remito> findByAsociadoFalse();
-
 }
