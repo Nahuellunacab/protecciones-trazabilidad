@@ -12,18 +12,22 @@ public class RemitoResponseDTO {
 
     private String proveedor;
 
+    private Long cantidadReles;
+
     public RemitoResponseDTO(
 
             Long id,
             String numeroRemito,
             LocalDate fecha,
-            String proveedor
+            String proveedor,
+            Long cantidadReles
     ) {
 
         this.id = id;
         this.numeroRemito = numeroRemito;
         this.fecha = fecha;
         this.proveedor = proveedor;
+        this.cantidadReles = cantidadReles;
     }
 
     public Long getId() {
@@ -40,5 +44,9 @@ public class RemitoResponseDTO {
 
     public String getProveedor() {
         return proveedor;
+    }
+
+    public Long getCantidadReles() {
+        return cantidadReles;
     }
 }

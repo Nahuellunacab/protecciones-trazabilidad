@@ -8,15 +8,19 @@ public class OrdenProvisionResponseDTO {
 
     private String observaciones;
 
+    private Long cantidadReles;
+
     public OrdenProvisionResponseDTO(
             Long id,
             String numero,
-            String observaciones
+            String observaciones,
+            Long cantidadReles
     ) {
 
         this.id = id;
         this.numero = numero;
         this.observaciones = observaciones;
+        this.cantidadReles = cantidadReles;
     }
 
     public Long getId() {
@@ -29,5 +33,9 @@ public class OrdenProvisionResponseDTO {
 
     public String getObservaciones() {
         return observaciones;
+    }
+
+    public Long getCantidadReles() {
+        return cantidadReles;
     }
 }

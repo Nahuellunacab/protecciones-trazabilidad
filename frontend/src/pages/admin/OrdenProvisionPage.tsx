@@ -19,7 +19,8 @@ import {
     TableHead,
     TableRow,
     TextField,
-    Typography
+    Typography,
+    Chip
 
 } from "@mui/material";
 
@@ -265,15 +266,19 @@ function OrdenProvisionPage() {
                         <TableRow>
 
                             <TableCell>
-                                ID
-                            </TableCell>
-
-                            <TableCell>
                                 Número
                             </TableCell>
 
                             <TableCell>
                                 Observaciones
+                            </TableCell>
+
+                            <TableCell>
+                                Relés Asociados
+                            </TableCell>
+
+                            <TableCell>
+                                Estado
                             </TableCell>
 
                             <TableCell align="right">
@@ -291,18 +296,54 @@ function OrdenProvisionPage() {
 
                                 <TableRow
                                     key={orden.id}
+                                    hover
                                 >
-
-                                    <TableCell>
-                                        {orden.id}
-                                    </TableCell>
 
                                     <TableCell>
                                         {orden.numero}
                                     </TableCell>
 
                                     <TableCell>
-                                        {orden.observaciones}
+                                        {
+                                            orden.observaciones
+                                            || "-"
+                                        }
+                                    </TableCell>
+
+                                    <TableCell>
+
+                                        <Chip
+                                            label={
+                                                `${orden.cantidadReles} relés`
+                                            }
+                                            size="small"
+                                            color="primary"
+                                            variant="outlined"
+                                        />
+
+                                    </TableCell>
+
+                                    <TableCell>
+
+                                        {
+                                            orden.cantidadReles > 0 ? (
+
+                                                <Chip
+                                                    label="ASOCIADA"
+                                                    color="success"
+                                                    size="small"
+                                                />
+
+                                            ) : (
+
+                                                <Chip
+                                                    label="LIBRE"
+                                                    size="small"
+                                                    variant="outlined"
+                                                />
+                                            )
+                                        }
+
                                     </TableCell>
 
                                     <TableCell

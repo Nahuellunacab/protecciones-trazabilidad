@@ -59,11 +59,19 @@ public interface ReleRepository
 
     long countByActivoTrue();
 
-    long countByActivoFalse();
+        long countByActivoFalse();
 
-    long countByFinGarantiaBefore(
-            LocalDate fecha
-    );
+        long countByFinGarantiaBefore(
+                LocalDate fecha
+        );
+
+        long countByRemitoId(
+                Long remitoId
+        );
+
+        long countByOrdenProvisionId(
+                Long ordenProvisionId
+        );
 
     @Query("""
         SELECT r

@@ -1,4 +1,5 @@
 package protecciones.service;
+
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import protecciones.dto.OrdenProvisionRequestDTO;
@@ -6,6 +7,8 @@ import protecciones.dto.OrdenProvisionResponseDTO;
 import protecciones.entity.OrdenProvision;
 import protecciones.exception.BusinessException;
 import protecciones.repository.OrdenProvisionRepository;
+import protecciones.repository.ReleRepository;
+
 import java.util.List;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
@@ -23,12 +26,19 @@ public class OrdenProvisionService {
     private final OrdenProvisionRepository
             ordenProvisionRepository;
 
+    private final ReleRepository
+            releRepository;
+
     public OrdenProvisionService(
-            OrdenProvisionRepository ordenProvisionRepository
+            OrdenProvisionRepository ordenProvisionRepository,
+            ReleRepository releRepository
     ) {
 
         this.ordenProvisionRepository =
                 ordenProvisionRepository;
+
+        this.releRepository =
+                releRepository;
     }
 
     public List<OrdenProvisionResponseDTO>
@@ -44,8 +54,6 @@ public class OrdenProvisionService {
     public OrdenProvisionResponseDTO guardar(
             OrdenProvisionRequestDTO dto
     ) {
-
-        
 
         validarDuplicado(
                 dto.getNumero()
@@ -73,9 +81,7 @@ public class OrdenProvisionService {
     }
 
     public OrdenProvisionResponseDTO actualizar(
-
             Long id,
-
             OrdenProvisionRequestDTO dto
     ) {
 
@@ -122,120 +128,107 @@ public class OrdenProvisionService {
     }
 
     public void subirArchivo(
-
-                Long ordenProvisionId,
-
-                MultipartFile archivo
-        ) {
+            Long ordenProvisionId,
+            MultipartFile archivo
+    ) {
 
         try {
 
-                OrdenProvision orden =
-                        ordenProvisionRepository
-                                .findById(
-                                        ordenProvisionId
-                                )
-                                .orElseThrow();
+            OrdenProvision orden =
+                    ordenProvisionRepository
+                            .findById(
+                                    ordenProvisionId
+                            )
+                            .orElseThrow();
 
-                Path carpeta =
-                        Paths.get(
-                                "uploads/ordenes-provision"
-                        );
+            Path carpeta =
+                    Paths.get(
+                            "uploads/ordenes-provision"
+                    );
 
-                Files.createDirectories(
-                        carpeta
-                );
+            Files.createDirectories(
+                    carpeta
+            );
 
-                String nombreArchivo =
+            String nombreArchivo =
+                    System.currentTimeMillis()
+                    + "_"
+                    + archivo.getOriginalFilename();
 
-                        System.currentTimeMillis()
+            Path destino =
+                    carpeta.resolve(
+                            nombreArchivo
+                    );
 
-                        + "_"
+            Files.copy(
+                    archivo.getInputStream(),
+                    destino,
+                    StandardCopyOption.REPLACE_EXISTING
+            );
 
-                        + archivo.getOriginalFilename();
+            orden.setNombreArchivo(
+                    archivo.getOriginalFilename()
+            );
 
-                Path destino =
-                        carpeta.resolve(
-                                nombreArchivo
-                        );
+            orden.setRutaArchivo(
+                    destino.toString()
+            );
 
-                Files.copy(
-
-                        archivo.getInputStream(),
-
-                        destino,
-
-                        StandardCopyOption
-                                .REPLACE_EXISTING
-                );
-
-                orden.setNombreArchivo(
-                        archivo.getOriginalFilename()
-                );
-
-                orden.setRutaArchivo(
-                        destino.toString()
-                );
-
-                ordenProvisionRepository.save(
-                        orden
-                );
+            ordenProvisionRepository.save(
+                    orden
+            );
 
         } catch (
                 IOException ex
         ) {
 
-                throw new RuntimeException(
-                        "Error al guardar archivo"
-                );
+            throw new RuntimeException(
+                    "Error al guardar archivo"
+            );
         }
-        }
+    }
 
-        public Resource obtenerArchivo(
-                Long ordenProvisionId
-        ) {
+    public Resource obtenerArchivo(
+            Long ordenProvisionId
+    ) {
 
         try {
 
-                OrdenProvision orden =
-                        ordenProvisionRepository
-                                .findById(
-                                        ordenProvisionId
-                                )
-                                .orElseThrow();
+            OrdenProvision orden =
+                    ordenProvisionRepository
+                            .findById(
+                                    ordenProvisionId
+                            )
+                            .orElseThrow();
 
-                Path archivo =
-                        Paths.get(
-                                orden.getRutaArchivo()
-                        );
+            Path archivo =
+                    Paths.get(
+                            orden.getRutaArchivo()
+                    );
 
-                return new UrlResource(
-                        archivo.toUri()
-                );
+            return new UrlResource(
+                    archivo.toUri()
+            );
 
         } catch (
                 MalformedURLException ex
         ) {
 
-                throw new RuntimeException(
-                        "Archivo no encontrado"
-                );
+            throw new RuntimeException(
+                    "Archivo no encontrado"
+            );
         }
-        }
+    }
 
-        public List<OrdenProvisionResponseDTO>
-        obtenerDisponibles() {
+    public List<OrdenProvisionResponseDTO>
+    obtenerDisponibles() {
 
         return ordenProvisionRepository
-
                 .findByAsociadoFalse()
-
                 .stream()
-
                 .map(this::mapToDTO)
-
                 .toList();
-        }
+    }
 
     private void validarDuplicado(
             String numero
@@ -267,13 +260,21 @@ public class OrdenProvisionService {
             OrdenProvision orden
     ) {
 
+        long cantidadReles =
+                releRepository
+                        .countByOrdenProvisionId(
+                                orden.getId()
+                        );
+
         return new OrdenProvisionResponseDTO(
 
                 orden.getId(),
 
                 orden.getNumero(),
 
-                orden.getObservaciones()
+                orden.getObservaciones(),
+
+                cantidadReles
         );
     }
 }

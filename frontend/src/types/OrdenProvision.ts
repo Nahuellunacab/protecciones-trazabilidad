@@ -5,4 +5,6 @@ export interface OrdenProvision {
     numero: string;
 
     observaciones: string;
+
+    cantidadReles: number;
 }

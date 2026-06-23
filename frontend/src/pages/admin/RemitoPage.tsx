@@ -20,7 +20,8 @@ import {
     TableHead,
     TableRow,
     TextField,
-    Typography
+    Typography,
+    Chip
 
 } from "@mui/material";
 
@@ -334,10 +335,6 @@ function RemitoPage() {
                         <TableRow>
 
                             <TableCell>
-                                ID
-                            </TableCell>
-
-                            <TableCell>
                                 Número
                             </TableCell>
 
@@ -347,6 +344,14 @@ function RemitoPage() {
 
                             <TableCell>
                                 Proveedor
+                            </TableCell>
+
+                            <TableCell>
+                                Relés Asociados
+                            </TableCell>
+
+                            <TableCell>
+                                Estado
                             </TableCell>
 
                             <TableCell align="right">
@@ -363,14 +368,9 @@ function RemitoPage() {
                             (remito) => (
 
                                 <TableRow
-                                    key={
-                                        remito.id
-                                    }
+                                    key={remito.id}
+                                    hover
                                 >
-
-                                    <TableCell>
-                                        {remito.id}
-                                    </TableCell>
 
                                     <TableCell>
                                         {remito.numeroRemito}
@@ -384,9 +384,43 @@ function RemitoPage() {
                                         {remito.proveedor}
                                     </TableCell>
 
-                                    <TableCell
-                                        align="right"
-                                    >
+                                    <TableCell>
+
+                                        <Chip
+                                            label={
+                                                `${remito.cantidadReles} relés`
+                                            }
+                                            size="small"
+                                            color="primary"
+                                            variant="outlined"
+                                        />
+
+                                    </TableCell>
+
+                                    <TableCell>
+
+                                        {
+                                            remito.cantidadReles > 0 ? (
+
+                                                <Chip
+                                                    label="ASOCIADO"
+                                                    color="success"
+                                                    size="small"
+                                                />
+
+                                            ) : (
+
+                                                <Chip
+                                                    label="LIBRE"
+                                                    size="small"
+                                                    variant="outlined"
+                                                />
+                                            )
+                                        }
+
+                                    </TableCell>
+
+                                    <TableCell align="right">
 
                                         <Button
                                             size="small"

@@ -7,6 +7,7 @@ import protecciones.entity.Proveedor;
 import protecciones.entity.Remito;
 import protecciones.exception.BusinessException;
 import protecciones.repository.ProveedorRepository;
+import protecciones.repository.ReleRepository;
 import protecciones.repository.RemitoRepository;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
@@ -28,11 +29,15 @@ public class RemitoService {
     private final ProveedorRepository
             proveedorRepository;
 
+private final ReleRepository releRepository;
+
     public RemitoService(
 
             RemitoRepository remitoRepository,
 
-            ProveedorRepository proveedorRepository
+            ProveedorRepository proveedorRepository,
+            
+            ReleRepository releRepository
     ) {
 
         this.remitoRepository =
@@ -40,6 +45,8 @@ public class RemitoService {
 
         this.proveedorRepository =
                 proveedorRepository;
+        
+        this.releRepository = releRepository;
     }
 
     public List<RemitoResponseDTO>
@@ -295,9 +302,15 @@ public class RemitoService {
     }
 
     private RemitoResponseDTO
-    mapToDTO(
-            Remito remito
-    ) {
+        mapToDTO(
+                Remito remito
+        ) {
+
+        long cantidadReles =
+                releRepository
+                        .countByRemitoId(
+                                remito.getId()
+                        );
 
         return new RemitoResponseDTO(
 
@@ -308,7 +321,9 @@ public class RemitoService {
                 remito.getFecha(),
 
                 remito.getProveedor()
-                        .getNombre()
+                        .getNombre(),
+
+                cantidadReles
         );
-    }
+        }
 }
