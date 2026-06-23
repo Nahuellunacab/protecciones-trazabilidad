@@ -43,10 +43,15 @@ import {
 
 const pieColors = [
 
-    "#1976D2",
-    "#00695C",
-    "#EF6C00",
-    "#8E24AA"
+    "#00695C",   // stock
+
+    "#1976D2",   // instalados
+
+    "#EF6C00",   // reparacion
+
+    "#8E24AA",   // ensayo
+
+    "#C62828"    // baja
 ];
 
 function HomePage() {
@@ -119,8 +124,8 @@ function HomePage() {
     const cards = [
 
         {
-            title: "Relés Activos",
-            value: kpis.relesActivos,
+            title: "En Stock",
+            value: kpis.relesEnStock,
             color: "#00695C"
         },
 
@@ -150,6 +155,11 @@ function HomePage() {
     ];
 
     const estadosData = [
+
+        {
+            name: "En Stock",
+            value: kpis.relesEnStock
+        },
 
         {
             name: "Instalados",
@@ -268,7 +278,7 @@ function HomePage() {
                         elevation={2}
                         sx={{
                             p: 3,
-                            height: 320
+                            height: 450
                         }}
                     >
 
@@ -276,24 +286,21 @@ function HomePage() {
                             variant="h6"
                             gutterBottom
                         >
-
                             Estado del Stock Operativo
-
                         </Typography>
 
                         <ResponsiveContainer
                             width="100%"
-                            height="90%"
+                            height={250}
                         >
-
                             <PieChart>
 
                                 <Pie
                                     data={estadosData}
                                     dataKey="value"
                                     nameKey="name"
-                                    outerRadius={100}
-                                    label
+                                    innerRadius={55}
+                                    outerRadius={105}
                                 >
 
                                     {estadosData.map(
@@ -314,6 +321,45 @@ function HomePage() {
                             </PieChart>
 
                         </ResponsiveContainer>
+
+                        <Stack
+                            direction="row"
+                            spacing={2}
+                            flexWrap="wrap"
+                            sx={{ mt: 2 }}
+                        >
+
+                            {estadosData.map(
+                                (item, index) => (
+
+                                <Box
+                                    key={item.name}
+                                    sx={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: 1
+                                    }}
+                                >
+
+                                    <Box
+                                        sx={{
+                                            width: 14,
+                                            height: 14,
+                                            borderRadius: "50%",
+                                            backgroundColor:
+                                                pieColors[index]
+                                        }}
+                                    />
+
+                                    <Typography
+                                        variant="body2"
+                                    >
+                                        {item.name}: {item.value}
+                                    </Typography>
+
+                                </Box>
+                            ))}
+                        </Stack>
 
                     </Paper>
 

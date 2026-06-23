@@ -2,6 +2,8 @@ export interface DashboardKpi {
 
     relesActivos: number;
 
+    relesEnStock: number;
+
     relesBaja: number;
 
     relesInstalados: number;
