@@ -184,8 +184,15 @@ public class ReleService {
 
         rele.setNumeroSerie(
                 dto.getNumeroSerie()
+                        .toUpperCase()
+                        .trim()
         );
 
+        rele.setCodigoConfiguracion(
+                dto.getCodigoConfiguracion()
+                        .toUpperCase()
+                        .trim()
+        );
         rele.setModelo(
                 modelo
         );
@@ -505,6 +512,7 @@ public class ReleService {
                 rele.getId(),
 
                 rele.getNumeroSerie(),
+                rele.getCodigoConfiguracion(),
 
                 rele.getGarantiaMeses(),
 
@@ -779,6 +787,10 @@ public class ReleService {
 
         rele.setNumeroSerie(
                 dto.getNumeroSerie()
+        );
+        
+        rele.setCodigoConfiguracion(
+                dto.getCodigoConfiguracion()
         );
 
         rele.setModelo(modelo);

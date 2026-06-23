@@ -7,9 +7,7 @@ import protecciones.service.MovimientoService;
 import java.time.LocalDate;
 import java.util.List;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import java.time.LocalDate;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController

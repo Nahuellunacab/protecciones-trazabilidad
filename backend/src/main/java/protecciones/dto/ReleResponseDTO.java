@@ -9,6 +9,8 @@ public class ReleResponseDTO {
 
     private String numeroSerie;
 
+    private String codigoConfiguracion;
+
     private Integer garantiaMeses;
 
     private LocalDate inicioGarantia;
@@ -51,6 +53,7 @@ public class ReleResponseDTO {
     public ReleResponseDTO(
             Long id,
             String numeroSerie,
+            String codigoConfiguracion,
             Integer garantiaMeses,
             LocalDate inicioGarantia,
             LocalDate finGarantia,
@@ -75,6 +78,7 @@ public class ReleResponseDTO {
 
         this.id = id;
         this.numeroSerie = numeroSerie;
+        this.codigoConfiguracion = codigoConfiguracion;
         this.garantiaMeses = garantiaMeses;
         this.inicioGarantia = inicioGarantia;
         this.finGarantia = finGarantia;
@@ -102,6 +106,10 @@ public class ReleResponseDTO {
 
     public String getNumeroSerie() {
         return numeroSerie;
+    }
+
+    public String getCodigoConfiguracion() {
+        return codigoConfiguracion;
     }
 
     public Integer getGarantiaMeses() {
@@ -186,6 +194,13 @@ public class ReleResponseDTO {
 
     public void setNumeroSerie(String numeroSerie) {
         this.numeroSerie = numeroSerie;
+    }
+
+    public void setCodigoConfiguracion(
+            String codigoConfiguracion
+    ) {
+        this.codigoConfiguracion =
+                codigoConfiguracion;
     }
 
     public void setGarantiaMeses(Integer garantiaMeses) {

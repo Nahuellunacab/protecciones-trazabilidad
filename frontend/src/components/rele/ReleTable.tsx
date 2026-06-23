@@ -231,6 +231,10 @@ function ReleTable({
                             </TableCell>
 
                             <TableCell>
+                                Cod. Config
+                            </TableCell>
+
+                            <TableCell>
                                 Marca
                             </TableCell>
 
@@ -299,6 +303,15 @@ function ReleTable({
                                             >
                                                 {rele.numeroSerie}
                                             </Typography>
+
+                                        </TableCell>
+
+                                        <TableCell>
+
+                                        {
+                                            rele.codigoConfiguracion
+                                                || "-"
+                                        }
 
                                         </TableCell>
 

@@ -4,6 +4,8 @@ export interface Rele {
 
     numeroSerie: string;
 
+    codigoConfiguracion: string | null;
+
     garantiaMeses: number | null;
 
     inicioGarantia: string | null;

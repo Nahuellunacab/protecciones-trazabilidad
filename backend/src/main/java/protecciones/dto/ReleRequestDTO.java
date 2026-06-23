@@ -13,6 +13,8 @@ public class ReleRequestDTO {
     )
     private String numeroSerie;
 
+    private String codigoConfiguracion;
+
     private Boolean cargarGarantia;
 
     @Positive(
@@ -76,6 +78,10 @@ public class ReleRequestDTO {
     public Long getOrdenProvisionId() {
         return ordenProvisionId;
     }
+
+    public String getCodigoConfiguracion() {
+        return codigoConfiguracion;
+    }
     
 
     public void setNumeroSerie(
@@ -83,6 +89,13 @@ public class ReleRequestDTO {
     ) {
 
         this.numeroSerie = numeroSerie;
+    }
+
+    public void setCodigoConfiguracion(
+        String codigoConfiguracion
+    ) {
+        this.codigoConfiguracion =
+                codigoConfiguracion;
     }
 
     public void setCargarGarantia(

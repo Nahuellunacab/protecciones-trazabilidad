@@ -2,6 +2,8 @@ export interface ReleRequest {
 
     numeroSerie: string;
 
+    codigoConfiguracion: string;
+
     modeloId: number | "";
 
     tipoIngreso: "NUEVO" | "USADO";

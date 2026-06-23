@@ -152,6 +152,7 @@ function ReleForm({
     const [formData, setFormData] =
         useState<ReleRequest>({
             numeroSerie: "",
+            codigoConfiguracion: "",
             modeloId: "",
             tipoIngreso: "NUEVO",
             remitoId: null,
@@ -250,6 +251,9 @@ function ReleForm({
 
             numeroSerie:
                 releEditando.numeroSerie,
+
+            codigoConfiguracion:
+                releEditando.codigoConfiguracion ?? "",
 
             modeloId:
                 releEditando.modeloId ?? "",
@@ -668,6 +672,8 @@ function ReleForm({
 
             numeroSerie: "",
 
+            codigoConfiguracion: "",
+
             modeloId: "",
 
             tipoIngreso: "NUEVO",
@@ -704,7 +710,9 @@ function ReleForm({
             [name]:
                 type === "checkbox"
                     ? checked
-                    : value
+                    : typeof value === "string"
+                        ? value.toUpperCase()
+                        : value
         }));
     };
 
@@ -973,6 +981,23 @@ function ReleForm({
                             autoComplete="off"
                             fullWidth
                             required
+                        />
+
+                    </Grid>
+
+                    <Grid size={12}>
+
+                        <TextField
+                            label="Cod. Configuración"
+                            name="codigoConfiguracion"
+                            value={
+                                formData.codigoConfiguracion
+                            }
+                            onChange={
+                                handleChange
+                            }
+                            autoComplete="off"
+                            fullWidth
                         />
 
                     </Grid>

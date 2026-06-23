@@ -13,6 +13,9 @@ public class Rele {
     @Column(name = "numero_serie", nullable = false, unique = true)
     private String numeroSerie;
 
+    @Column(name = "codigo_configuracion")
+    private String codigoConfiguracion;
+
     @Column(name = "garantia_meses")
     private Integer garantiaMeses;
 
@@ -52,6 +55,7 @@ public class Rele {
     public Rele(
             Long id,
             String numeroSerie,
+            String codigoConfiguracion,
             Integer garantiaMeses,
             LocalDate inicioGarantia,
             LocalDate finGarantia,
@@ -61,6 +65,7 @@ public class Rele {
 
         this.id = id;
         this.numeroSerie = numeroSerie;
+        this.codigoConfiguracion = codigoConfiguracion;
         this.garantiaMeses = garantiaMeses;
         this.inicioGarantia = inicioGarantia;
         this.finGarantia = finGarantia;
@@ -116,12 +121,23 @@ public class Rele {
         return ordenProvision;
     }
 
+    public String getCodigoConfiguracion() {
+        return codigoConfiguracion;
+    }
+
     public void setId(Long id) {
         this.id = id;
     }
 
     public void setNumeroSerie(String numeroSerie) {
         this.numeroSerie = numeroSerie;
+    }
+
+    public void setCodigoConfiguracion(
+        String codigoConfiguracion
+    ) {
+        this.codigoConfiguracion =
+                codigoConfiguracion;
     }
 
     public void setGarantiaMeses(Integer garantiaMeses) {
