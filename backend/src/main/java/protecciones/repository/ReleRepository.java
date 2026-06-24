@@ -1,11 +1,15 @@
 package protecciones.repository;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import protecciones.dto.dashboard.MarcaCantidadDTO;
 import protecciones.entity.Rele;
+
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -59,19 +63,28 @@ public interface ReleRepository
 
     long countByActivoTrue();
 
-        long countByActivoFalse();
+    long countByActivoFalse();
 
-        long countByFinGarantiaBefore(
-                LocalDate fecha
-        );
+    long countByFinGarantiaBefore(
+            LocalDate fecha
+    );
 
-        long countByRemitoId(
-                Long remitoId
-        );
+    long countByRemitoId(
+            Long remitoId
+    );
 
-        long countByOrdenProvisionId(
-                Long ordenProvisionId
-        );
+    long countByOrdenProvisionId(
+            Long ordenProvisionId
+    );
+
+    @Query("""
+            SELECT COUNT(r)
+            FROM Rele r
+            WHERE r.remito IS NULL
+            AND r.ordenProvision IS NULL
+            AND r.activo = true
+            """)
+    long countSinDocumentacion();
 
     @Query("""
         SELECT r
@@ -85,7 +98,30 @@ public interface ReleRepository
                 OR LOWER(ma.nombre) LIKE LOWER(CONCAT('%', :texto, '%'))
         )
         """)
-        List<Rele> buscarGeneral(
-                @Param("texto") String texto
-        );
+    List<Rele> buscarGeneral(
+            @Param("texto") String texto
+    );
+
+    @Query("""
+            SELECT new protecciones.dto.dashboard.MarcaCantidadDTO(
+            m.marca.nombre,
+            COUNT(r)
+            )
+            FROM Rele r
+            JOIN r.modelo m
+            WHERE r.activo = true
+            GROUP BY m.marca.nombre
+            ORDER BY COUNT(r) DESC
+            """)
+    List<MarcaCantidadDTO> contarRelesPorMarca();
+
+    @Query("""
+                SELECT COUNT(r)
+                FROM Rele r
+                WHERE r.id NOT IN (
+                        SELECT DISTINCT m.rele.id
+                        FROM Movimiento m
+                )
+                """)
+        long countSinHistorial();
 }

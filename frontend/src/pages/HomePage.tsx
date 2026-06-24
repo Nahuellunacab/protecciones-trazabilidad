@@ -7,17 +7,20 @@ import {
     Box,
     Chip,
     Divider,
-    CircularProgress
+    CircularProgress,
+    LinearProgress
 
 } from "@mui/material";
 
 import {
 
     ResponsiveContainer,
-    PieChart,
-    Pie,
-    Cell,
-    Tooltip
+    Tooltip,
+    BarChart,
+    Bar,
+    YAxis,
+    XAxis,
+    CartesianGrid
 
 } from "recharts";
 
@@ -37,22 +40,12 @@ import type {
 import {
 
     obtenerDashboardKpis,
-    obtenerUltimosMovimientos
+    obtenerUltimosMovimientos,
+    obtenerRelesPorMarca
 
 } from "../services/dashboardService";
 
-const pieColors = [
-
-    "#00695C",   // stock
-
-    "#1976D2",   // instalados
-
-    "#EF6C00",   // reparacion
-
-    "#8E24AA",   // ensayo
-
-    "#C62828"    // baja
-];
+import type { MarcaCantidad } from "../types/MarcaCantidad";
 
 function HomePage() {
 
@@ -76,6 +69,12 @@ function HomePage() {
 
     }, []);
 
+    const [
+        marcasData,
+        setMarcasData
+    ] =
+        useState<MarcaCantidad[]>([]);
+
     const cargarDashboard =
     async () => {
 
@@ -87,19 +86,32 @@ function HomePage() {
             const movimientosData =
                 await obtenerUltimosMovimientos();
 
-            setKpis(kpiData);
+            const marcas =
+                await obtenerRelesPorMarca();
+
+            setKpis(
+                kpiData
+            );
 
             setMovimientos(
                 movimientosData
             );
 
+            setMarcasData(
+                marcas
+            );
+
         } catch (error) {
 
-            console.error(error);
+            console.error(
+                error
+            );
 
         } finally {
 
-            setLoading(false);
+            setLoading(
+                false
+            );
         }
     };
 
@@ -121,7 +133,64 @@ function HomePage() {
         );
     }
 
-    const cards = [
+    const totalReles =
+            kpis.totalReles;
+
+    const activos =
+            kpis.relesActivos;
+
+    const inactivos =
+            kpis.relesBaja;
+
+    const relesConHistorial =
+
+        totalReles
+
+        -
+
+        kpis.relesSinHistorial;
+
+
+    const porcentajeTrazabilidad =
+
+        totalReles > 0
+
+            ?
+
+            (relesConHistorial / totalReles) * 100
+
+            :
+
+            0;
+    
+    const cardsGenerales = [
+
+        {
+            title: "Total Relés",
+            value: totalReles,
+            color: "#455A64"
+        },
+
+        {
+            title: "Activos",
+            value: activos,
+            color: "#2E7D32"
+        },
+
+        {
+            title: "Inactivos",
+            value: inactivos,
+            color: "#616161"
+        },
+
+        {
+            title: "Pendientes de Trazar",
+            value: kpis.relesSinHistorial,
+            color: "#6D4C41"
+        }
+    ];
+
+    const cardsOperativas = [
 
         {
             title: "En Stock",
@@ -210,30 +279,118 @@ function HomePage() {
 
             </Box>
 
+             {/* Sección de KPIs de parte superior*/}
+            <Typography
+                variant="subtitle2"
+                sx={{
+                    mt: 3,
+                    mb: 2,
+                    fontWeight: 600,
+                    color: "#616161"
+                }}
+            >
+                Resumen General
+            </Typography>
+
             <Grid
                 container
-                spacing={3}
+                spacing={2}
             >
 
-                {cards.map((card) => (
+                {cardsGenerales.map((card) => (
 
                     <Grid
                         item
                         xs={12}
                         sm={6}
-                        md={4}
-                        lg={2}
+                        md
                         key={card.title}
+                        sx={{
+                            flexGrow: 1,
+                            display: "flex"
+                        }}
+                    >
+
+                        <Paper
+                            elevation={2}
+                            sx={{
+                                p: 2.5,
+                                width: "100%",
+                                minHeight: 110,
+                                borderLeft:
+                                    `5px solid ${card.color}`,
+                                borderRadius: 3,
+                                display: "flex",
+                                flexDirection: "column",
+                                justifyContent: "center"
+                            }}
+                        >
+
+                            <Typography
+                                variant="body2"
+                                color="text.secondary"
+                                gutterBottom
+                            >
+
+                                {card.title}
+
+                            </Typography>
+
+                            <Typography
+                                variant="h4"
+                                fontWeight={700}
+                            >
+
+                                {card.value}
+
+                            </Typography>
+
+                        </Paper>
+
+                    </Grid>
+                ))}
+
+            </Grid>
+            
+            <Typography
+                variant="subtitle2"
+                sx={{
+                    mt: 4,
+                    mb: 2,
+                    fontWeight: 600,
+                    color: "#616161"
+                }}
+            >
+                Estado Operativo
+            </Typography>
+
+            <Grid
+                container
+                spacing={2}
+            >
+
+                {cardsOperativas.map((card) => (
+
+                    <Grid
+                        item
+                        xs={12}
+                        sm={6}
+                        md
+                        key={card.title}
+                        sx={{
+                            flexGrow: 1,
+                            display: "flex"
+                        }}
                     >
 
                         <Paper
                             elevation={2}
                             sx={{
                                 p: 2,
+                                width: "100%",
                                 minHeight: 110,
-                                borderLeft:
-                                    `6px solid ${card.color}`,
-                                height: "100%"
+                                borderLeft: `5px solid ${card.color}`,
+                                borderRadius: 3
                             }}
                         >
 
@@ -263,212 +420,148 @@ function HomePage() {
 
             </Grid>
 
-            <Grid
-                container
-                spacing={3}
+            {/* Ultima actividad*/}
+            <Paper
+                sx={{
+                    p: 3,
+                    borderRadius: 3
+                }}
             >
 
-                <Grid
-                    item
-                    xs={12}
-                    md={5}
+                <Typography
+                    variant="body1"
                 >
+                    Última actividad
+                </Typography>
+
+                <Typography
+                    variant="h6"
+                    sx={{
+                        fontWeight: 600
+                    }}
+                >
+                    {
+                        movimientos.length > 0
+                            ? new Date(
+                                movimientos[0].fechaMovimiento
+                            ).toLocaleString("es-AR")
+                            : "-"
+                    }
+                </Typography>
+
+            </Paper>
+            
+            {/*Graficos de zona media*/}
+            <Grid container spacing={3} sx={{ mb: 4 }}>
+            
+                {/*Grafico de estados de relés*/}
+                <Grid size={{ xs: 12, md: 6 }}>
 
                     <Paper
-                        elevation={2}
                         sx={{
                             p: 3,
-                            height: 450
+                            borderRadius: 4,
+                            height: 380
                         }}
                     >
 
                         <Typography
                             variant="h6"
-                            gutterBottom
+                            sx={{ mb: 3 }}
                         >
-                            Estado del Stock Operativo
+                            Estado de Relés
                         </Typography>
 
                         <ResponsiveContainer
                             width="100%"
-                            height={250}
+                            height={280}
                         >
-                            <PieChart>
 
-                                <Pie
-                                    data={estadosData}
-                                    dataKey="value"
-                                    nameKey="name"
-                                    innerRadius={55}
-                                    outerRadius={105}
-                                >
+                            <BarChart
+                                data={estadosData}
+                            >
 
-                                    {estadosData.map(
-                                        (_, index) => (
+                                <CartesianGrid
+                                    strokeDasharray="3 3"
+                                />
 
-                                        <Cell
-                                            key={index}
-                                            fill={
-                                                pieColors[index]
-                                            }
-                                        />
-                                    ))}
+                                <XAxis dataKey="name" />
 
-                                </Pie>
+                                <YAxis />
 
                                 <Tooltip />
 
-                            </PieChart>
+                                <Bar
+                                    dataKey="value"
+                                    fill="#00695C"
+                                />
+
+                            </BarChart>
 
                         </ResponsiveContainer>
-
-                        <Stack
-                            direction="row"
-                            spacing={2}
-                            flexWrap="wrap"
-                            sx={{ mt: 2 }}
-                        >
-
-                            {estadosData.map(
-                                (item, index) => (
-
-                                <Box
-                                    key={item.name}
-                                    sx={{
-                                        display: "flex",
-                                        alignItems: "center",
-                                        gap: 1
-                                    }}
-                                >
-
-                                    <Box
-                                        sx={{
-                                            width: 14,
-                                            height: 14,
-                                            borderRadius: "50%",
-                                            backgroundColor:
-                                                pieColors[index]
-                                        }}
-                                    />
-
-                                    <Typography
-                                        variant="body2"
-                                    >
-                                        {item.name}: {item.value}
-                                    </Typography>
-
-                                </Box>
-                            ))}
-                        </Stack>
 
                     </Paper>
 
                 </Grid>
 
-                <Grid
-                    item
-                    xs={12}
-                    md={7}
-                >
+                {/* Gráfico de cantidad de relés por marca*/}
+                <Grid size={{ xs: 12, md: 6 }}>
 
                     <Paper
-                        elevation={2}
                         sx={{
                             p: 3,
-                            height: 320
+                            borderRadius: 4,
+                            height: 380
                         }}
                     >
 
                         <Typography
                             variant="h6"
-                            gutterBottom
+                            sx={{ mb: 3 }}
                         >
-
-                            Resumen Operativo
-
+                            Distribución por Marca
                         </Typography>
 
-                        <Stack
-                            spacing={2}
-                            sx={{ mt: 3 }}
+                        <ResponsiveContainer
+                            width="100%"
+                            height={280}
                         >
 
-                            <Box>
+                            <BarChart
+                                data={marcasData}
+                                layout="vertical"
+                                margin={{
+                                    top: 5,
+                                    right: 20,
+                                    left: 20,
+                                    bottom: 5
+                                }}
+                            >
 
-                                <Typography
-                                    variant="body2"
-                                    color="text.secondary"
-                                >
+                                <CartesianGrid
+                                    strokeDasharray="3 3"
+                                />
 
-                                    Relés dados de baja
+                                <XAxis
+                                    type="number"
+                                />
 
-                                </Typography>
+                                <YAxis
+                                    type="category"
+                                    dataKey="marca"
+                                    width={80}
+                                />
 
-                                <Typography
-                                    variant="h5"
-                                    fontWeight={700}
-                                >
+                                <Tooltip />
 
-                                    {kpis.relesBaja}
+                                <Bar
+                                    dataKey="cantidad"
+                                    fill="#1976D2"
+                                />
 
-                                </Typography>
+                            </BarChart>
 
-                            </Box>
-
-                            <Divider />
-
-                            <Box>
-
-                                <Typography
-                                    variant="body2"
-                                    color="text.secondary"
-                                >
-
-                                    Movimientos registrados
-
-                                </Typography>
-
-                                <Typography
-                                    variant="h5"
-                                    fontWeight={700}
-                                >
-
-                                    {movimientos.length}
-
-                                </Typography>
-
-                            </Box>
-
-                            <Divider />
-
-                            <Box>
-
-                                <Typography
-                                    variant="body2"
-                                    color="text.secondary"
-                                >
-
-                                    Última actualización
-
-                                </Typography>
-
-                                <Typography
-                                    variant="body1"
-                                    fontWeight={600}
-                                >
-
-                                    {
-                                        new Date()
-                                            .toLocaleString(
-                                                "es-AR"
-                                            )
-                                    }
-
-                                </Typography>
-
-                            </Box>
-
-                        </Stack>
+                        </ResponsiveContainer>
 
                     </Paper>
 
@@ -476,45 +569,218 @@ function HomePage() {
 
             </Grid>
 
+            {/*Alertas operativas*/}
+            <Typography
+                variant="subtitle2"
+                sx={{
+                    mt: 4,
+                    mb: 2,
+                    fontWeight: 600,
+                    color: "#616161"
+                }}
+            >
+                Estado Documental
+            </Typography>
+            <Grid
+                container
+                spacing={3}
+                sx={{ mb: 4 }}
+            >
+
+                <Grid size={{ xs: 12, md: 3 }}>
+
+                    <Paper sx={{ p: 3, borderRadius: 3 }}>
+
+                        <Typography variant="body2">
+                            Garantías vencidas
+                        </Typography>
+
+                        <Typography
+                            variant="h4"
+                            color="error"
+                        >
+                            {kpis.garantiasVencidas}
+                        </Typography>
+
+                    </Paper>
+
+                </Grid>
+
+                <Grid size={{ xs: 12, md: 3 }}>
+
+                    <Paper sx={{ p: 3, borderRadius: 3 }}>
+
+                        <Typography variant="body2">
+                            Relés migrados sin trazabilidad documental
+                        </Typography>
+
+                        <Typography
+                            variant="h4"
+                            color="warning.main"
+                        >
+                            {kpis.relesSinDocumentacion}
+                        </Typography>
+
+                    </Paper>
+
+                </Grid>
+
+                <Grid size={{ xs: 12, md: 3 }}>
+
+                    <Paper sx={{ p: 3, borderRadius: 3 }}>
+
+                        <Typography variant="body2">
+                            Remitos cargados
+                        </Typography>
+
+                        <Typography
+                            variant="h4"
+                            color="info.main"
+                        >
+                            {kpis.remitosPendientes}
+                        </Typography>
+
+                    </Paper>
+
+                </Grid>
+
+                <Grid size={{ xs: 12, md: 3 }}>
+
+                    <Paper sx={{ p: 3, borderRadius: 3 }}>
+
+                        <Typography variant="body2">
+                            Ordenes de Provisión cargadas
+                        </Typography>
+
+                        <Typography
+                            variant="h4"
+                            color="success.main"
+                        >
+                            {kpis.ordenesPendientes}
+                        </Typography>
+
+                    </Paper>
+
+                </Grid>
+
+            </Grid>
+
+            {/* Barra de progreso de trazabilidad */}
+
             <Paper
                 elevation={2}
-                sx={{ p: 3 }}
+                sx={{
+                    p: 4,
+                    mt: 4,
+                    borderRadius: 3
+                }}
+            >
+
+                <Typography
+                    variant="h6"
+                    fontWeight={600}
+                >
+
+                    Nivel de Trazabilidad
+
+                </Typography>
+
+                <LinearProgress
+                    variant="determinate"
+                    value={porcentajeTrazabilidad}
+                    sx={{
+                        height: 12,
+                        borderRadius: 2,
+                        mt: 2
+                    }}
+                />
+
+                <Typography
+                    variant="body2"
+                    sx={{
+                        mt: 2,
+                        fontWeight: 500
+                    }}
+                >
+
+                    Cobertura actual: {" "}
+
+                    {porcentajeTrazabilidad.toFixed(1)}%
+
+                    {" "}de trazabilidad operativa
+
+                </Typography>
+
+                <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{
+                        display: "block",
+                        mt: 1
+                    }}
+                >
+
+                    {relesConHistorial}
+
+                    {" "}de{" "}
+
+                    {totalReles}
+
+                    {" "}relés poseen historial operativo registrado
+
+                </Typography>
+
+            </Paper>
+
+            
+            {/*Ultimos movimientos*/}
+            <Paper
+                elevation={2}
+                sx={{
+                    p: 3,
+                    mt: 4,
+                    maxHeight: 550,
+                    overflowY: "auto",
+                    borderRadius: 3
+                }}
             >
 
                 <Typography
                     variant="h6"
                     gutterBottom
+                    fontWeight={600}
                 >
 
                     Últimos Movimientos
 
                 </Typography>
 
-                <Divider sx={{ mb: 2 }} />
+                <Divider sx={{ mb: 3 }} />
 
                 <Stack spacing={2}>
 
-                    {movimientos.map(
-                        (mov) => (
+                    {movimientos.map((mov) => (
 
                         <Box
                             key={mov.id}
                             sx={{
                                 display: "flex",
-                                justifyContent:
-                                    "space-between",
+                                justifyContent: "space-between",
                                 alignItems: "center",
-                                p: 2,
-                                borderRadius: 2,
-                                backgroundColor:
-                                    "#F8F9FA"
+                                p: 2.5,
+                                borderRadius: 3,
+                                backgroundColor: "#F8F9FA",
+                                border: "1px solid #ECEFF1"
                             }}
                         >
 
-                            <Stack spacing={0.5}>
+                            {/* Información del relé */}
+
+                            <Box sx={{ width: "35%" }}>
 
                                 <Typography
-                                    fontWeight={600}
+                                    fontWeight={700}
+                                    variant="body1"
                                 >
 
                                     {mov.rele}
@@ -533,7 +799,7 @@ function HomePage() {
                                 </Typography>
 
                                 <Typography
-                                    variant="body2"
+                                    variant="caption"
                                     color="text.secondary"
                                 >
 
@@ -543,41 +809,97 @@ function HomePage() {
 
                                 </Typography>
 
-                            </Stack>
+                            </Box>
 
-                            <Chip
-                                label={mov.estado}
-                                color={
-                                    mov.estado ===
-                                    "INSTALADO"
 
-                                        ? "primary"
+                            {/* Estado */}
 
-                                        : mov.estado ===
-                                          "EN REPARACION"
+                            <Box sx={{ width: "20%" }}>
 
-                                            ? "warning"
+                                <Chip
+                                    label={mov.estado}
 
-                                            : "success"
-                                }
-                            />
+                                    color={
+                                        mov.estado === "INSTALADO"
 
-                            <Typography
-                                variant="body2"
-                                color="text.secondary"
+                                            ? "primary"
+
+                                            : mov.estado === "EN REPARACION"
+
+                                                ? "warning"
+
+                                                : mov.estado === "EN ENSAYO"
+
+                                                    ? "secondary"
+
+                                                    : "success"
+                                    }
+
+                                    sx={{
+                                        minWidth: 120,
+                                        fontWeight: 600
+                                    }}
+                                />
+
+                            </Box>
+
+
+                            {/* Fecha */}
+
+                            <Box
+                                sx={{
+                                    width: "25%",
+                                    textAlign: "right"
+                                }}
                             >
 
-                                {
-                                    mov.fechaMovimiento
-                                        ? new Date(
-                                            mov.fechaMovimiento
-                                          ).toLocaleString(
-                                            "es-AR"
-                                          )
-                                        : "-"
-                                }
+                                <Typography
+                                    variant="body2"
+                                    color="text.secondary"
+                                >
 
-                            </Typography>
+                                    {
+                                        mov.fechaMovimiento
+
+                                            ?
+
+                                            new Date(
+                                                mov.fechaMovimiento
+                                            ).toLocaleDateString(
+                                                "es-AR"
+                                            )
+
+                                            :
+
+                                            "-"
+                                    }
+
+                                </Typography>
+
+                                <Typography
+                                    variant="caption"
+                                    color="text.secondary"
+                                >
+
+                                    {
+                                        mov.fechaMovimiento
+
+                                            ?
+
+                                            new Date(
+                                                mov.fechaMovimiento
+                                            ).toLocaleTimeString(
+                                                "es-AR"
+                                            )
+
+                                            :
+
+                                            "-"
+                                    }
+
+                                </Typography>
+
+                            </Box>
 
                         </Box>
                     ))}

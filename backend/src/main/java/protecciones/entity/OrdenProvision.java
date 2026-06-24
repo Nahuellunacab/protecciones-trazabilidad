@@ -14,12 +14,14 @@ public class OrdenProvision {
             nullable = false,
             unique = true
     )
-
     private String numero;
 
     private String observaciones;
 
     private Boolean activo = true;
+
+    @Column(nullable = false)
+    private Boolean asociado = false;
 
     @Column(name = "nombre_archivo")
     private String nombreArchivo;
@@ -44,6 +46,10 @@ public class OrdenProvision {
 
     public Boolean getActivo() {
         return activo;
+    }
+
+    public Boolean getAsociado() {
+        return asociado;
     }
 
     public String getNombreArchivo() {
@@ -74,11 +80,21 @@ public class OrdenProvision {
         this.activo = activo;
     }
 
-    public void setNombreArchivo(String nombreArchivo) {
+    public void setAsociado(
+            Boolean asociado
+    ) {
+        this.asociado = asociado;
+    }
+
+    public void setNombreArchivo(
+            String nombreArchivo
+    ) {
         this.nombreArchivo = nombreArchivo;
     }
 
-    public void setRutaArchivo(String rutaArchivo) {
+    public void setRutaArchivo(
+            String rutaArchivo
+    ) {
         this.rutaArchivo = rutaArchivo;
     }
 }

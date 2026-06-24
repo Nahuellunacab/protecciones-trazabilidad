@@ -1,5 +1,7 @@
 export interface DashboardKpi {
 
+    totalReles: number;
+
     relesActivos: number;
 
     relesEnStock: number;
@@ -13,4 +15,12 @@ export interface DashboardKpi {
     relesEnsayo: number;
 
     garantiasVencidas: number;
+
+    relesSinDocumentacion: number;
+
+    remitosPendientes: number;
+
+    ordenesPendientes: number;
+
+    relesSinHistorial: number;
 }

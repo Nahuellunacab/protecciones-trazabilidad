@@ -4,9 +4,14 @@ import org.springframework.stereotype.Service;
 
 import protecciones.dto.MovimientoResponseDTO;
 import protecciones.dto.dashboard.DashboardKpiDTO;
+import protecciones.dto.dashboard.MarcaCantidadDTO;
+
 import protecciones.entity.Movimiento;
+
 import protecciones.repository.MovimientoRepository;
 import protecciones.repository.ReleRepository;
+import protecciones.repository.RemitoRepository;
+import protecciones.repository.OrdenProvisionRepository;
 
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -25,10 +30,18 @@ public class DashboardService {
     private final MovimientoService
             movimientoService;
 
+    private final RemitoRepository
+            remitoRepository;
+
+    private final OrdenProvisionRepository
+            ordenProvisionRepository;
+
     public DashboardService(
             ReleRepository releRepository,
             MovimientoRepository movimientoRepository,
-            MovimientoService movimientoService
+            MovimientoService movimientoService,
+            RemitoRepository remitoRepository,
+            OrdenProvisionRepository ordenProvisionRepository
     ) {
 
         this.releRepository =
@@ -39,10 +52,20 @@ public class DashboardService {
 
         this.movimientoService =
                 movimientoService;
+
+        this.remitoRepository =
+                remitoRepository;
+
+        this.ordenProvisionRepository =
+                ordenProvisionRepository;
     }
 
     public DashboardKpiDTO
     obtenerKpis() {
+
+        long totalReles =
+                releRepository
+                        .count();
 
         long activos =
                 releRepository
@@ -58,6 +81,22 @@ public class DashboardService {
                                 LocalDate.now()
                         );
 
+        long relesSinDocumentacion =
+                releRepository
+                        .countSinDocumentacion();
+
+        long remitosPendientes =
+                remitoRepository
+                        .countByAsociadoFalse();
+
+        long ordenesPendientes =
+                ordenProvisionRepository
+                        .countByAsociadoFalse();
+
+        long relesSinHistorial =
+                releRepository
+                        .countSinHistorial();
+
         long instalados = 0;
 
         long reparacion = 0;
@@ -67,8 +106,8 @@ public class DashboardService {
         long enStock = 0;
 
         List<Movimiento> movimientos =
-        movimientoRepository
-                .findAllByOrderByFechaMovimientoDesc();
+                movimientoRepository
+                        .findAllByOrderByFechaMovimientoDesc();
 
         Set<Long> procesados =
                 new HashSet<>();
@@ -139,6 +178,8 @@ public class DashboardService {
 
         return new DashboardKpiDTO(
 
+                totalReles,
+
                 activos,
 
                 enStock,
@@ -151,7 +192,15 @@ public class DashboardService {
 
                 ensayo,
 
-                garantiasVencidas
+                garantiasVencidas,
+
+                relesSinDocumentacion,
+
+                remitosPendientes,
+
+                ordenesPendientes,
+
+                relesSinHistorial
         );
     }
 
@@ -163,5 +212,12 @@ public class DashboardService {
                 .stream()
                 .map(movimientoService::mapToDTO)
                 .toList();
+    }
+
+    public List<MarcaCantidadDTO>
+    obtenerRelesPorMarca() {
+
+        return releRepository
+                .contarRelesPorMarca();
     }
 }

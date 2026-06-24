@@ -9,4 +9,5 @@ extends JpaRepository<
         OrdenProvision,
         Long
 > {
+        long countByAsociadoFalse();
 }

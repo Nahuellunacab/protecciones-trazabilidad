@@ -8,6 +8,8 @@ import type {
     Movimiento
 } from "../types/Movimiento";
 
+import type { MarcaCantidad } from "../types/MarcaCantidad";
+
 export async function
 obtenerDashboardKpis():
 Promise<DashboardKpi> {
@@ -31,3 +33,14 @@ Promise<Movimiento[]> {
 
     return response.data;
 }
+
+export const obtenerRelesPorMarca =
+    async (): Promise<MarcaCantidad[]> => {
+
+        const response =
+            await api.get(
+                "/dashboard/marcas"
+            );
+
+        return response.data;
+    };

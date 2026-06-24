@@ -1,0 +1,5 @@
+ALTER TABLE remito
+ADD COLUMN asociado BOOLEAN NOT NULL DEFAULT false;
+
+ALTER TABLE orden_provision
+ADD COLUMN asociado BOOLEAN NOT NULL DEFAULT false;

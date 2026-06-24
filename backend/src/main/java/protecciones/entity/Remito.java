@@ -22,6 +22,9 @@ public class Remito {
     @Column(name = "ruta_archivo")
     private String rutaArchivo;
 
+    @Column(nullable = false)
+    private Boolean asociado = false;
+
     @ManyToOne
     @JoinColumn(name = "proveedor_id", nullable = false)
     private Proveedor proveedor;
@@ -29,19 +32,22 @@ public class Remito {
     public Remito() {
     }
 
-    public Remito(Long id,
-                  String numeroRemito,
-                  LocalDate fecha,
-                  String nombreArchivo,
-                  String rutaArchivo,
-                  Proveedor proveedor) {
-
+    public Remito(
+            Long id,
+            String numeroRemito,
+            LocalDate fecha,
+            String nombreArchivo,
+            String rutaArchivo,
+            Proveedor proveedor,
+            Boolean asociado
+    ) {
         this.id = id;
         this.numeroRemito = numeroRemito;
         this.fecha = fecha;
         this.nombreArchivo = nombreArchivo;
         this.rutaArchivo = rutaArchivo;
         this.proveedor = proveedor;
+        this.asociado = asociado;
     }
 
     public Long getId() {
@@ -68,6 +74,10 @@ public class Remito {
         return rutaArchivo;
     }
 
+    public Boolean getAsociado() {
+        return asociado;
+    }
+
     public void setId(Long id) {
         this.id = id;
     }
@@ -90,5 +100,9 @@ public class Remito {
 
     public void setRutaArchivo(String rutaArchivo) {
         this.rutaArchivo = rutaArchivo;
+    }
+
+    public void setAsociado(Boolean asociado) {
+        this.asociado = asociado;
     }
 }

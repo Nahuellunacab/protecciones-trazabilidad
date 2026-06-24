@@ -1,13 +1,10 @@
 package protecciones.controller;
-
 import org.springframework.web.bind.annotation.*;
-
 import protecciones.dto.MovimientoResponseDTO;
 import protecciones.dto.dashboard.DashboardKpiDTO;
-
 import protecciones.service.DashboardService;
-
 import java.util.List;
+import protecciones.dto.dashboard.MarcaCantidadDTO;
 
 @RestController
 @RequestMapping("/api/dashboard")
@@ -39,4 +36,12 @@ public class DashboardController {
         return dashboardService
                 .obtenerUltimosMovimientos();
     }
+
+    @GetMapping("/marcas")
+        public List<MarcaCantidadDTO>
+        obtenerRelesPorMarca() {
+
+        return dashboardService
+                .obtenerRelesPorMarca();
+        }
 }

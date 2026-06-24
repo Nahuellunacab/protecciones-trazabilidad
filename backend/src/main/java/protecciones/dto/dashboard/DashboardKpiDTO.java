@@ -16,15 +16,33 @@ public class DashboardKpiDTO {
 
     private long garantiasVencidas;
 
+    private long relesSinDocumentacion;
+
+    private long remitosPendientes;
+
+    private long ordenesPendientes;
+
+    private long totalReles;
+
+    private long relesSinHistorial;
+
     public DashboardKpiDTO(
+            long totalReles,
             long relesActivos,
             long relesEnStock,
             long relesBaja,
             long relesInstalados,
             long relesReparacion,
             long relesEnsayo,
-            long garantiasVencidas
+            long garantiasVencidas,
+            long relesSinDocumentacion,
+            long remitosPendientes,
+            long ordenesPendientes,
+            long relesSinHistorial
     ) {
+
+        this.totalReles =
+                totalReles;
 
         this.relesActivos =
                 relesActivos;
@@ -46,6 +64,18 @@ public class DashboardKpiDTO {
 
         this.garantiasVencidas =
                 garantiasVencidas;
+
+        this.relesSinDocumentacion =
+                relesSinDocumentacion;
+
+        this.remitosPendientes =
+                remitosPendientes;
+
+        this.ordenesPendientes =
+                ordenesPendientes;
+
+        this.relesSinHistorial =
+                relesSinHistorial;
     }
 
     public long getRelesActivos() {
@@ -74,5 +104,25 @@ public class DashboardKpiDTO {
 
     public long getGarantiasVencidas() {
         return garantiasVencidas;
+    }
+
+    public long getRelesSinDocumentacion() {
+        return relesSinDocumentacion;
+    }
+
+    public long getRemitosPendientes() {
+        return remitosPendientes;
+    }
+
+    public long getOrdenesPendientes() {
+        return ordenesPendientes;
+    }
+
+    public long getTotalReles() {
+    return totalReles;
+}
+
+    public long getRelesSinHistorial() {
+        return relesSinHistorial;
     }
 }

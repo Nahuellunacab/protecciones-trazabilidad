@@ -18,4 +18,5 @@ public interface RemitoRepository
             String numeroRemito
     );
 
+    long countByAsociadoFalse();
 }
