@@ -7,4 +7,6 @@ export interface OrdenProvision {
     observaciones: string;
 
     cantidadReles: number;
+
+    nombreArchivo?: string;
 }

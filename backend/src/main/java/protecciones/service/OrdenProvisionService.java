@@ -256,11 +256,12 @@ public class OrdenProvisionService {
     }
 
     private OrdenProvisionResponseDTO
-    mapToDTO(
-            OrdenProvision orden
-    ) {
+        mapToDTO(
+                OrdenProvision orden
+        ) {
 
         long cantidadReles =
+
                 releRepository
                         .countByOrdenProvisionId(
                                 orden.getId()
@@ -274,7 +275,9 @@ public class OrdenProvisionService {
 
                 orden.getObservaciones(),
 
-                cantidadReles
+                cantidadReles,
+
+                orden.getNombreArchivo()
         );
-    }
+        }
 }

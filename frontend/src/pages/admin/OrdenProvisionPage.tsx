@@ -20,26 +20,39 @@ import {
     TableRow,
     TextField,
     Typography,
-    Chip
+    Chip,
+    Grid,
+    IconButton,
+    InputAdornment
 
 } from "@mui/material";
+
+import EditIcon
+from "@mui/icons-material/Edit";
+
+import DeleteIcon
+from "@mui/icons-material/Delete";
+
+import SearchIcon
+from "@mui/icons-material/Search";
 
 import type {
     OrdenProvision
 } from "../../types/OrdenProvision";
 
-import type {
-    OrdenProvisionRequest
-} from "../../types/OrdenProvisionRequest";
+import PictureAsPdfIcon
+from "@mui/icons-material/PictureAsPdf";
 
 import {
 
     obtenerOrdenesProvision,
     crearOrdenProvision,
     actualizarOrdenProvision,
-    eliminarOrdenProvision
+    eliminarOrdenProvision,
+    subirArchivoOP
 
 } from "../../services/ordenProvisionService";
+
 
 function OrdenProvisionPage() {
 
@@ -55,8 +68,29 @@ function OrdenProvisionPage() {
     const [editandoId, setEditandoId] =
         useState<number | null>(null);
 
-    const [errorMessage, setErrorMessage] =
+    const [, setErrorMessage] =
         useState("");
+
+    const [busqueda, setBusqueda] =
+        useState("");
+
+    const [archivo, setArchivo] =
+        useState<File | null>(null);
+
+    const [mensaje, setMensaje] =
+        useState("");
+
+    const [tipoMensaje, setTipoMensaje] =
+        useState<"success" | "error">(
+            "success"
+        );
+
+    const [openSnackbar, setOpenSnackbar] =
+        useState(false);
+
+    const [guardando, setGuardando] =
+        useState(false);
+
 
     async function cargarDatos() {
 
@@ -75,27 +109,32 @@ function OrdenProvisionPage() {
         }
     }
 
+
     useEffect(() => {
 
         cargarDatos();
 
     }, []);
 
-    async function handleSubmit(
+
+    const handleSubmit =
+    async (
         e: React.FormEvent
-    ) {
+    ) => {
 
         e.preventDefault();
 
+        setGuardando(true);
+
         try {
 
-            const data:
-            OrdenProvisionRequest = {
+            const data = {
 
                 numero,
 
                 observaciones
             };
+
 
             if (editandoId) {
 
@@ -106,27 +145,85 @@ function OrdenProvisionPage() {
                     data
                 );
 
+                setMensaje(
+                    "Orden actualizada correctamente"
+                );
+
             } else {
 
-                await crearOrdenProvision(
-                    data
+                const nuevaOrden =
+
+                    await crearOrdenProvision(
+                        data
+                    );
+
+
+                if (archivo) {
+
+                    await subirArchivoOP(
+
+                        nuevaOrden.id,
+
+                        archivo
+                    );
+                }
+
+                setMensaje(
+                    "Orden creada correctamente"
                 );
             }
 
+
+            setTipoMensaje(
+                "success"
+            );
+
+            setOpenSnackbar(true);
+
+
             limpiarFormulario();
 
-            cargarDatos();
+
+            await cargarDatos();
+
 
         } catch (error: any) {
 
-            setErrorMessage(
+            console.error(error);
 
-                error.response?.data?.message ||
 
-                "Ocurrió un error"
+            if (
+
+                error.response?.status === 409 ||
+
+                error.response?.status === 400
+
+            ) {
+
+                setMensaje(
+                    "Ese número de orden ya existe"
+                );
+
+            } else {
+
+                setMensaje(
+                    "Error al guardar orden"
+                );
+            }
+
+
+            setTipoMensaje(
+                "error"
             );
+
+            setOpenSnackbar(true);
+
+        } finally {
+
+            setGuardando(false);
         }
-    }
+    };
+
 
     async function handleEliminar(
         id: number
@@ -134,13 +231,40 @@ function OrdenProvisionPage() {
 
         try {
 
+            const confirmar =
+                window.confirm(
+                    `¿Eliminar orden ${id}?`
+                );
+
+            if (!confirmar) return;
+
             await eliminarOrdenProvision(
                 id
             );
 
-            cargarDatos();
+            await cargarDatos();
+
+            setMensaje(
+                "Orden eliminada correctamente"
+            );
+
+            setTipoMensaje(
+                "success"
+            );
+
+            setOpenSnackbar(true);
 
         } catch (error: any) {
+
+            setMensaje(
+                "Error al eliminar orden ya que se encuentra asignada a un Relé"
+            );
+
+            setTipoMensaje(
+                "error"
+            );
+
+            setOpenSnackbar(true);
 
             setErrorMessage(
 
@@ -150,6 +274,7 @@ function OrdenProvisionPage() {
             );
         }
     }
+
 
     function handleEditar(
         orden: OrdenProvision
@@ -168,19 +293,34 @@ function OrdenProvisionPage() {
         );
     }
 
+
     function limpiarFormulario() {
 
         setNumero("");
 
         setObservaciones("");
 
+        setArchivo(null);
+
         setEditandoId(null);
     }
+
+
+    const ordenesFiltradas =
+
+        ordenes.filter((orden) =>
+
+            orden.numero
+                .toLowerCase()
+                .includes(
+                    busqueda.toLowerCase()
+                )
+        );
 
     return (
 
         <Box>
-
+            {/*Titulo de página */}
             <Typography
                 variant="h3"
                 sx={{
@@ -190,7 +330,8 @@ function OrdenProvisionPage() {
             >
                 Órdenes de Provisión
             </Typography>
-
+            
+            {/*Descripción de página*/}
             <Typography
                 variant="h6"
                 color="text.secondary"
@@ -201,60 +342,196 @@ function OrdenProvisionPage() {
                 Gestión de órdenes de provisión
                 asociadas a ingresos de relés.
             </Typography>
-
+            
+            {/*Formulario de carga */}
             <Paper
+                elevation={2}
                 sx={{
-                    p: 3,
-                    mb: 4
+                    p: 4,
+                    mb: 4,
+                    borderRadius: 3
                 }}
             >
+
+                <Typography
+                    variant="h6"
+                    sx={{ mb: 3 }}
+                >
+                    Nueva Orden de Provisión
+                </Typography>
 
                 <Box
                     component="form"
                     onSubmit={handleSubmit}
-                    sx={{
-                        display: "flex",
-                        gap: 2
-                    }}
                 >
 
-                    <TextField
-                        fullWidth
-                        label="Número"
-                        value={numero}
-                        onChange={(e) =>
-                            setNumero(
-                                e.target.value
-                            )
-                        }
-                    />
-
-                    <TextField
-                        fullWidth
-                        label="Observaciones"
-                        value={observaciones}
-                        onChange={(e) =>
-                            setObservaciones(
-                                e.target.value
-                            )
-                        }
-                    />
-
-                    <Button
-                        type="submit"
-                        variant="contained"
+                    <Grid
+                        container
+                        spacing={3}
                     >
 
-                        {editandoId
-                            ? "GUARDAR"
-                            : "CREAR"}
+                        {/* Número */}
+                        <Grid item xs={12} md={4}>
 
-                    </Button>
+                            <TextField
+                                fullWidth
+                                label="Número"
+                                value={numero}
+                                onChange={(e) =>
+                                    setNumero(
+                                        e.target.value
+                                    )
+                                }
+                            />
+
+                        </Grid>
+
+                        {/* Observaciones */}
+                        <Grid item xs={12} md={4}>
+
+                            <TextField
+                                fullWidth
+                                label="Observaciones"
+                                value={observaciones}
+                                onChange={(e) =>
+                                    setObservaciones(
+                                        e.target.value
+                                    )
+                                }
+                            />
+
+                        </Grid>
+
+                        {/* PDF */}
+                        <Grid item xs={12} md={2}>
+
+                            <Button
+                                variant="outlined"
+                                component="label"
+                                fullWidth
+                                sx={{
+                                    height: 56
+                                }}
+                            >
+
+                                {archivo
+                                    ? "PDF CARGADO"
+                                    : "SUBIR PDF"}
+
+                                <input
+                                    hidden
+                                    type="file"
+                                    accept="application/pdf"
+                                    onChange={(e) =>
+                                        setArchivo(
+                                            e.target.files?.[0]
+                                            || null
+                                        )
+                                    }
+                                />
+
+                            </Button>
+
+                            {archivo && (
+
+                                <Typography
+                                    variant="caption"
+                                    sx={{
+                                        display: "block",
+                                        mt: 1
+                                    }}
+                                >
+
+                                </Typography>
+                            )}
+
+                        </Grid>
+
+                        {/* Crear */}
+                        <Grid item xs={12} md={2}>
+
+                            <Button
+                                fullWidth
+                                type="submit"
+                                disabled={guardando}
+                                variant="contained"
+                                sx={{
+                                    height: 56
+                                }}
+                            >
+
+                                {guardando
+
+                                    ? "GUARDANDO..."
+
+                                    : editandoId
+
+                                        ? "GUARDAR"
+
+                                        : "CREAR"}
+
+                            </Button>
+
+                        </Grid>
+
+                    </Grid>
+
+                    {archivo && (
+
+                        <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            sx={{
+                                mt: 2
+                            }}
+                        >
+
+                            Archivo seleccionado:
+                            {" "}
+                            {archivo.name}
+
+                        </Typography>
+
+                    )}
 
                 </Box>
 
             </Paper>
 
+            {/*Buscador */}                    
+            <Paper
+                elevation={2}
+                sx={{
+                    p: 3,
+                    mb: 3,
+                    borderRadius: 3
+                }}
+            >
+
+                <TextField
+                    fullWidth
+                    label="Buscar Orden de Provisión"
+                    value={busqueda}
+                    onChange={(e) =>
+                        setBusqueda(
+                            e.target.value
+                        )
+                    }
+                    InputProps={{
+                        startAdornment: (
+
+                            <InputAdornment
+                                position="start"
+                            >
+                                <SearchIcon />
+                            </InputAdornment>
+                        )
+                    }}
+                />
+
+            </Paper>
+
+            {/*Tabla de contenidos*/}
             <TableContainer
                 component={Paper}
             >
@@ -274,7 +551,7 @@ function OrdenProvisionPage() {
                             </TableCell>
 
                             <TableCell>
-                                Relés Asociados
+                                Documento
                             </TableCell>
 
                             <TableCell>
@@ -291,7 +568,7 @@ function OrdenProvisionPage() {
 
                     <TableBody>
 
-                        {ordenes.map(
+                        {ordenesFiltradas.map(
                             (orden) => (
 
                                 <TableRow
@@ -310,18 +587,43 @@ function OrdenProvisionPage() {
                                         }
                                     </TableCell>
 
+                                    {/* Documento */}
+
                                     <TableCell>
 
-                                        <Chip
-                                            label={
-                                                `${orden.cantidadReles} relés`
-                                            }
-                                            size="small"
-                                            color="primary"
-                                            variant="outlined"
-                                        />
+                                        {orden.nombreArchivo ? (
+
+                                            <IconButton
+                                                color="error"
+                                                onClick={() =>
+
+                                                    window.open(
+
+                                                        `http://localhost:8080/api/ordenes-provision/${orden.id}/archivo`,
+
+                                                        "_blank"
+                                                    )
+                                                }
+                                            >
+
+                                                <PictureAsPdfIcon />
+
+                                            </IconButton>
+
+                                        ) : (
+
+                                            <Chip
+                                                label="Sin PDF"
+                                                size="small"
+                                                variant="outlined"
+                                            />
+
+                                        )}
 
                                     </TableCell>
+
+
+                                    {/* Estado */}
 
                                     <TableCell>
 
@@ -337,32 +639,34 @@ function OrdenProvisionPage() {
                                             ) : (
 
                                                 <Chip
-                                                    label="LIBRE"
+                                                    label="PENDIENTE"
+                                                    color="warning"
                                                     size="small"
-                                                    variant="outlined"
                                                 />
                                             )
                                         }
 
                                     </TableCell>
 
-                                    <TableCell
-                                        align="right"
-                                    >
 
-                                        <Button
-                                            size="small"
+                                    {/* Acciones */}
+
+                                    <TableCell align="right">
+
+                                        <IconButton
+                                            color="primary"
                                             onClick={() =>
                                                 handleEditar(
                                                     orden
                                                 )
                                             }
                                         >
-                                            EDITAR
-                                        </Button>
 
-                                        <Button
-                                            size="small"
+                                            <EditIcon />
+
+                                        </IconButton>
+
+                                        <IconButton
                                             color="error"
                                             onClick={() =>
                                                 handleEliminar(
@@ -370,8 +674,10 @@ function OrdenProvisionPage() {
                                                 )
                                             }
                                         >
-                                            ELIMINAR
-                                        </Button>
+
+                                            <DeleteIcon />
+
+                                        </IconButton>
 
                                     </TableCell>
 
@@ -386,18 +692,22 @@ function OrdenProvisionPage() {
             </TableContainer>
 
             <Snackbar
-                open={
-                    !!errorMessage
-                }
-                autoHideDuration={4000}
+                open={openSnackbar}
+                autoHideDuration={3000}
                 onClose={() =>
-                    setErrorMessage("")
+                    setOpenSnackbar(false)
                 }
             >
 
-                <Alert severity="error">
+                <Alert
+                    severity={tipoMensaje}
+                    onClose={() =>
+                        setOpenSnackbar(false)
+                    }
+                    sx={{ width: "100%" }}
+                >
 
-                    {errorMessage}
+                    {mensaje}
 
                 </Alert>
 
