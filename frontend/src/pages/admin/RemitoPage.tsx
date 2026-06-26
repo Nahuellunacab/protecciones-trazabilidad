@@ -22,10 +22,11 @@ import {
     TextField,
     Typography,
     Chip,
-    Grid,
     IconButton
 
 } from "@mui/material";
+
+import Grid from "@mui/material/Grid";
 
 import type {
     Remito
@@ -368,10 +369,8 @@ function RemitoPage() {
                                 type="date"
                                 fullWidth
                                 label="Fecha"
-                                slotProps={{
-                                    inputLabel: {
-                                        shrink: true
-                                    }
+                                InputLabelProps={{
+                                    shrink: true
                                 }}
                                 value={fecha}
                                 onChange={(e) =>
