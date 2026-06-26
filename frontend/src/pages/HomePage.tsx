@@ -455,7 +455,7 @@ function HomePage() {
             <Grid container spacing={3} sx={{ mb: 4 }}>
             
                 {/*Grafico de estados de relés*/}
-                <Grid size={{ xs: 12, md: 6 }}>
+                <Grid item xs={12} md={6}>
 
                     <Paper
                         sx={{
@@ -505,7 +505,7 @@ function HomePage() {
                 </Grid>
 
                 {/* Gráfico de cantidad de relés por marca*/}
-                <Grid size={{ xs: 12, md: 6 }}>
+                <Grid item xs={12} md={6}>
 
                     <Paper
                         sx={{
@@ -581,13 +581,14 @@ function HomePage() {
             >
                 Estado Documental
             </Typography>
+
             <Grid
                 container
                 spacing={3}
                 sx={{ mb: 4 }}
             >
 
-                <Grid size={{ xs: 12, md: 3 }}>
+                <Grid item xs={12} md={3}>
 
                     <Paper sx={{ p: 3, borderRadius: 3 }}>
 
@@ -606,8 +607,7 @@ function HomePage() {
 
                 </Grid>
 
-                <Grid size={{ xs: 12, md: 3 }}>
-
+                <Grid item xs={12} md={3}>
                     <Paper sx={{ p: 3, borderRadius: 3 }}>
 
                         <Typography variant="body2">
@@ -625,7 +625,7 @@ function HomePage() {
 
                 </Grid>
 
-                <Grid size={{ xs: 12, md: 3 }}>
+                <Grid item xs={12} md={3}>
 
                     <Paper sx={{ p: 3, borderRadius: 3 }}>
 
@@ -644,7 +644,7 @@ function HomePage() {
 
                 </Grid>
 
-                <Grid size={{ xs: 12, md: 3 }}>
+                <Grid item xs={12} md={3}>
 
                     <Paper sx={{ p: 3, borderRadius: 3 }}>
 
