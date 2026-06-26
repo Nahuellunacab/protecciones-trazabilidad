@@ -312,6 +312,9 @@ private final ReleRepository releRepository;
                                 remito.getId()
                         );
 
+        boolean tieneArchivo =
+                remito.getRutaArchivo() != null;
+
         return new RemitoResponseDTO(
 
                 remito.getId(),
@@ -320,10 +323,11 @@ private final ReleRepository releRepository;
 
                 remito.getFecha(),
 
-                remito.getProveedor()
-                        .getNombre(),
+                remito.getProveedor().getNombre(),
 
-                cantidadReles
+                cantidadReles,
+
+                tieneArchivo
         );
         }
 }

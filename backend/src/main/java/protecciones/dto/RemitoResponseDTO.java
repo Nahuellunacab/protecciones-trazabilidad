@@ -14,13 +14,16 @@ public class RemitoResponseDTO {
 
     private Long cantidadReles;
 
+    private Boolean tieneArchivo;
+
     public RemitoResponseDTO(
 
             Long id,
             String numeroRemito,
             LocalDate fecha,
             String proveedor,
-            Long cantidadReles
+            Long cantidadReles,
+            Boolean tieneArchivo
     ) {
 
         this.id = id;
@@ -28,6 +31,7 @@ public class RemitoResponseDTO {
         this.fecha = fecha;
         this.proveedor = proveedor;
         this.cantidadReles = cantidadReles;
+        this.tieneArchivo = tieneArchivo;
     }
 
     public Long getId() {
@@ -48,5 +52,9 @@ public class RemitoResponseDTO {
 
     public Long getCantidadReles() {
         return cantidadReles;
+    }
+
+    public Boolean getTieneArchivo() {
+        return tieneArchivo;
     }
 }

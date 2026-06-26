@@ -9,4 +9,6 @@ export interface Remito {
     proveedor: string;
 
     cantidadReles: number;
+
+    tieneArchivo: boolean;
 }

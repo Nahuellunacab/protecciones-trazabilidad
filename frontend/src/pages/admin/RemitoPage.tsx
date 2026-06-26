@@ -21,7 +21,9 @@ import {
     TableRow,
     TextField,
     Typography,
-    Chip
+    Chip,
+    Grid,
+    IconButton
 
 } from "@mui/material";
 
@@ -42,13 +44,20 @@ import {
     obtenerRemitos,
     crearRemito,
     actualizarRemito,
-    eliminarRemito
+    eliminarRemito,
+    subirArchivoRemito
 
 } from "../../services/remitoService";
 
 import {
     obtenerProveedores
 } from "../../services/proveedorService";
+
+import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
+
+import EditIcon from "@mui/icons-material/Edit";
+
+import DeleteIcon from "@mui/icons-material/Delete";
 
 function RemitoPage() {
 
@@ -70,8 +79,25 @@ function RemitoPage() {
     const [editandoId, setEditandoId] =
         useState<number | null>(null);
 
-    const [errorMessage, setErrorMessage] =
+    const [, setErrorMessage] =
         useState("");
+
+    const [archivo, setArchivo] =
+        useState<File | null>(null);
+
+    const [mensaje, setMensaje] =
+        useState("");
+
+    const [tipoMensaje, setTipoMensaje] =
+        useState<"success" | "error">(
+            "success"
+        );
+
+    const [openSnackbar, setOpenSnackbar] =
+        useState(false);
+
+    const [guardando, setGuardando] =
+        useState(false);
         
 
     async function cargarDatos() {
@@ -116,7 +142,7 @@ function RemitoPage() {
 
         e.preventDefault();
 
-        setErrorMessage("");
+        setGuardando(true);
 
         try {
 
@@ -131,33 +157,86 @@ function RemitoPage() {
                     Number(proveedorId)
             };
 
+
             if (editandoId) {
 
                 await actualizarRemito(
 
                     editandoId,
+
                     data
+                );
+
+                setMensaje(
+                    "Remito actualizado correctamente"
                 );
 
             } else {
 
-                await crearRemito(
-                    data
+                const nuevoRemito =
+                    await crearRemito(data);
+
+                if (archivo) {
+
+                    await subirArchivoRemito(
+                        nuevoRemito.id,
+                        archivo
+                    );
+                }
+
+                setMensaje(
+                    "Remito creado correctamente"
                 );
             }
 
+
+            setTipoMensaje(
+                "success"
+            );
+
+            setOpenSnackbar(true);
+
+
             limpiarFormulario();
 
-            cargarDatos();
+
+            await cargarDatos();
+
 
         } catch (error: any) {
 
-            setErrorMessage(
+            console.error(error);
 
-                error.response?.data?.message ||
 
-                "Ocurrió un error"
+            if (
+
+                error.response?.status === 409 ||
+
+                error.response?.status === 400
+
+            ) {
+
+                setMensaje(
+                    "Ese número de remito ya existe"
+                );
+
+            } else {
+
+                setMensaje(
+                    "Error al guardar remito"
+                );
+            }
+
+
+            setTipoMensaje(
+                "error"
             );
+
+            setOpenSnackbar(true);
+
+        } finally {
+
+            setGuardando(false);
         }
     }
 
@@ -209,25 +288,34 @@ function RemitoPage() {
 
         setProveedorId("");
 
+        setArchivo(null);
+
         setEditandoId(null);
+
     }
 
     return (
 
         <Box>
 
+            {/*Titulo principal */}
             <Typography
                 variant="h3"
-                fontWeight={700}
-                mb={2}
+                sx={{
+                    fontWeight: 700,
+                    mb: 2
+                }}
             >
                 Remitos
             </Typography>
 
+            {/*Descripción*/}
             <Typography
                 variant="h6"
                 color="text.secondary"
-                mb={5}
+                sx={{
+                    mb: 5
+                }}
             >
                 Gestión de remitos de
                 ingreso utilizados para
@@ -235,95 +323,172 @@ function RemitoPage() {
                 y recepción de equipos.
             </Typography>
 
+            {/*Formulario*/}
             <Paper
+                elevation={2}
                 sx={{
-                    p: 3,
-                    mb: 4
+                    p: 4,
+                    mb: 4,
+                    borderRadius: 3
                 }}
             >
+
+                <Typography
+                    variant="h6"
+                    sx={{ mb: 3 }}
+                >
+                    Nuevo Remito
+                </Typography>
 
                 <Box
                     component="form"
                     onSubmit={handleSubmit}
-                    sx={{
-                        display: "flex",
-                        gap: 2
-                    }}
                 >
 
-                    <TextField
-                        fullWidth
-                        label="Número Remito"
-                        value={numeroRemito}
-                        onChange={(e) =>
-                            setNumeroRemito(
-                                e.target.value
-                            )
-                        }
-                    />
-
-                    <TextField
-                        type="date"
-                        fullWidth
-                        label="Fecha"
-                        InputLabelProps={{
-                            shrink: true
-                        }}
-                        value={fecha}
-                        onChange={(e) =>
-                            setFecha(
-                                e.target.value
-                            )
-                        }
-                    />
-
-                    <TextField
-                        select
-                        fullWidth
-                        label="Proveedor"
-                        value={proveedorId}
-                        onChange={(e) =>
-                            setProveedorId(
-                                e.target.value
-                            )
-                        }
+                    <Grid
+                        container
+                        spacing={2}
                     >
 
-                        {proveedores.map(
-                            (proveedor) => (
+                        <Grid item xs={12} md={3}>
+                            <TextField
+                                fullWidth
+                                label="Número Remito"
+                                value={numeroRemito}
+                                onChange={(e) =>
+                                    setNumeroRemito(
+                                        e.target.value
+                                    )
+                                }
+                            />
+                        </Grid>
 
-                                <MenuItem
-                                    key={
-                                        proveedor.id
+                        <Grid item xs={12} md={2}>
+                            <TextField
+                                type="date"
+                                fullWidth
+                                label="Fecha"
+                                slotProps={{
+                                    inputLabel: {
+                                        shrink: true
                                     }
-                                    value={
-                                        proveedor.id
+                                }}
+                                value={fecha}
+                                onChange={(e) =>
+                                    setFecha(
+                                        e.target.value
+                                    )
+                                }
+                            />
+                        </Grid>
+
+                        <Grid item xs={12} md={3}>
+                            <TextField
+                                select
+                                fullWidth
+                                label="Proveedor"
+                                value={proveedorId}
+                                onChange={(e) =>
+                                    setProveedorId(
+                                        e.target.value
+                                    )
+                                }
+                            >
+
+                                {proveedores.map(
+                                    (proveedor) => (
+
+                                        <MenuItem
+                                            key={proveedor.id}
+                                            value={proveedor.id}
+                                        >
+
+                                            {proveedor.nombre}
+
+                                        </MenuItem>
+                                    )
+                                )}
+
+                            </TextField>
+                        </Grid>
+
+                        <Grid item xs={12} md={2}>
+                            <Button
+                                variant="outlined"
+                                component="label"
+                                fullWidth
+                                sx={{
+                                    height: 56
+                                }}
+                            >
+
+                                {archivo
+                                    ? "PDF OK"
+                                    : "SUBIR PDF"}
+
+                                <input
+                                    hidden
+                                    type="file"
+                                    accept="application/pdf"
+                                    onChange={(e) =>
+                                        setArchivo(
+                                            e.target.files?.[0]
+                                            || null
+                                        )
                                     }
-                                >
+                                />
 
-                                    {proveedor.nombre}
+                            </Button>
+                        </Grid>
 
-                                </MenuItem>
-                            )
-                        )}
+                        <Grid item xs={12} md={2}>
+                            <Button
+                                fullWidth
+                                type="submit"
+                                disabled={guardando}
+                                variant="contained"
+                                sx={{
+                                    height: 56
+                                }}
+                            >
 
-                    </TextField>
+                                {guardando
 
-                    <Button
-                        type="submit"
-                        variant="contained"
-                    >
+                                    ? "GUARDANDO..."
 
-                        {editandoId
-                            ? "GUARDAR"
-                            : "CREAR"}
+                                    : editandoId
 
-                    </Button>
+                                        ? "GUARDAR"
+
+                                        : "CREAR"}
+
+                            </Button>
+                        </Grid>
+
+                    </Grid>
+
+                    {archivo && (
+
+                        <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            sx={{
+                                mt: 2
+                            }}
+                        >
+
+                            Archivo: {archivo.name}
+
+                        </Typography>
+
+                    )}
 
                 </Box>
 
             </Paper>
 
+
+            {/* Tabla */}
             <TableContainer
                 component={Paper}
             >
@@ -347,7 +512,7 @@ function RemitoPage() {
                             </TableCell>
 
                             <TableCell>
-                                Relés Asociados
+                                Documento
                             </TableCell>
 
                             <TableCell>
@@ -364,92 +529,99 @@ function RemitoPage() {
 
                     <TableBody>
 
-                        {remitos.map(
-                            (remito) => (
+                        {remitos.map((remito) => (
 
-                                <TableRow
-                                    key={remito.id}
-                                    hover
-                                >
+                            <TableRow
+                                key={remito.id}
+                                hover
+                            >
 
-                                    <TableCell>
-                                        {remito.numeroRemito}
-                                    </TableCell>
+                                <TableCell>
+                                    {remito.numeroRemito}
+                                </TableCell>
 
-                                    <TableCell>
-                                        {remito.fecha}
-                                    </TableCell>
+                                <TableCell>
+                                    {remito.fecha}
+                                </TableCell>
 
-                                    <TableCell>
-                                        {remito.proveedor}
-                                    </TableCell>
+                                <TableCell>
+                                    {remito.proveedor}
+                                </TableCell>
 
-                                    <TableCell>
+                                <TableCell>
 
-                                        <Chip
-                                            label={
-                                                `${remito.cantidadReles} relés`
-                                            }
-                                            size="small"
-                                            color="primary"
-                                            variant="outlined"
-                                        />
+                                    {remito.tieneArchivo ? (
 
-                                    </TableCell>
-
-                                    <TableCell>
-
-                                        {
-                                            remito.cantidadReles > 0 ? (
-
-                                                <Chip
-                                                    label="ASOCIADO"
-                                                    color="success"
-                                                    size="small"
-                                                />
-
-                                            ) : (
-
-                                                <Chip
-                                                    label="LIBRE"
-                                                    size="small"
-                                                    variant="outlined"
-                                                />
-                                            )
-                                        }
-
-                                    </TableCell>
-
-                                    <TableCell align="right">
-
-                                        <Button
-                                            size="small"
-                                            onClick={() =>
-                                                handleEditar(
-                                                    remito
-                                                )
-                                            }
-                                        >
-                                            EDITAR
-                                        </Button>
-
-                                        <Button
-                                            size="small"
+                                        <IconButton
                                             color="error"
                                             onClick={() =>
-                                                handleEliminar(
-                                                    remito.id
+
+                                                window.open(
+
+                                                    `http://localhost:8080/api/remitos/${remito.id}/archivo`,
+                                                    "_blank"
                                                 )
                                             }
                                         >
-                                            ELIMINAR
-                                        </Button>
 
-                                    </TableCell>
+                                            <PictureAsPdfIcon />
 
-                                </TableRow>
-                            )
-                        )}
+                                        </IconButton>
+
+                                    ) : (
+
+                                        <Chip
+                                            label="Sin PDF"
+                                            size="small"
+                                        />
+
+                                    )}
+
+                                </TableCell>
+
+                                <TableCell>
+
+                                    <Chip
+                                        label="ASOCIADO"
+                                        color="success"
+                                        size="small"
+                                    />
+
+                                </TableCell>
+
+                                <TableCell align="right">
+
+                                    <IconButton
+                                        color="primary"
+                                        onClick={() =>
+                                            handleEditar(
+                                                remito
+                                            )
+                                        }
+                                    >
+
+                                        <EditIcon />
+
+                                    </IconButton>
+
+                                    <IconButton
+                                        color="error"
+                                        onClick={() =>
+                                            handleEliminar(
+                                                remito.id
+                                            )
+                                        }
+                                    >
+
+                                        <DeleteIcon />
+
+                                    </IconButton>
+
+                                </TableCell>
+
+                            </TableRow>
+
+                        ))}
 
                     </TableBody>
 
@@ -457,19 +629,28 @@ function RemitoPage() {
 
             </TableContainer>
 
+
+            {/* Snackbar */}
             <Snackbar
-                open={
-                    !!errorMessage
-                }
-                autoHideDuration={4000}
+                open={openSnackbar}
+                autoHideDuration={3000}
                 onClose={() =>
-                    setErrorMessage("")
+                    setOpenSnackbar(false)
                 }
+                anchorOrigin={{
+                    vertical: "bottom",
+                    horizontal: "right"
+                }}
             >
 
-                <Alert severity="error">
+                <Alert
+                    severity={tipoMensaje}
+                    onClose={() =>
+                        setOpenSnackbar(false)
+                    }
+                >
 
-                    {errorMessage}
+                    {mensaje}
 
                 </Alert>
 

@@ -64,6 +64,7 @@ function RelePage() {
         setMostrarFormulario] =
         useState(false);
 
+    // cargar relés 
     const cargarReles = async () => {
 
         const data =
@@ -144,9 +145,11 @@ function RelePage() {
     const relesFiltrados =
         reles.filter((rele) => {
 
+            // Se convierte el texto ingresado en minúscula 
             const texto =
                 textoBusqueda.toLowerCase();
 
+            // cuadro de busqueda por serie, marca, modelo o estado
             const coincideBusqueda =
 
                 rele.numeroSerie
@@ -163,8 +166,15 @@ function RelePage() {
 
                 rele.modelo
                     .toLowerCase()
+                    .includes(texto)
+
+                ||
+
+                rele.estadoActual
+                    .toLowerCase()
                     .includes(texto);
 
+            // estados de los botones de filtros en tabla
             const coincideEstado =
 
                 filtroEstado === "TODOS"
@@ -238,7 +248,7 @@ function RelePage() {
             }
 
             <TextField
-                label="Buscar por serie, marca o modelo"
+                label="Buscar por serie, marca, modelo o estado"
                 value={textoBusqueda}
                 onChange={(e) => {
 
