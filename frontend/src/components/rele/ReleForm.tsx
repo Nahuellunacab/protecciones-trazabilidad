@@ -392,7 +392,7 @@ function ReleForm({
             } catch {
 
                 setError(
-                    "Error al crear marca"
+                    "La marca ya existe"
                 );
             }
         };
@@ -921,7 +921,7 @@ function ReleForm({
                     container
                     spacing={2}
                 >
-                    <Grid size={12}>
+                    <Grid item xs={12}>
 
                         <FormControl fullWidth>
 
@@ -961,7 +961,7 @@ function ReleForm({
 
                     </Grid>
 
-                    <Grid size={12}>
+                    <Grid item xs={12}>
 
                         <FormControl
                         
@@ -1028,7 +1028,7 @@ function ReleForm({
 
                     </Grid>
 
-                    <Grid size={12}>
+                    <Grid item xs={12}>
 
                         <FormControl
                             fullWidth
@@ -1070,24 +1070,22 @@ function ReleForm({
 
                     </Grid>
 
-                    <Grid size={12}>
+                    <Grid item xs={12}>
 
                         <TextField
                             label="Tensión"
                             value={
                                 obtenerTension()
                             }
-                            slotProps={{
-                                input: {
-                                    readOnly: true
-                                }
+                            InputProps={{
+                                readOnly: true
                             }}
                             fullWidth
                         />
 
                     </Grid>
 
-                    <Grid size={12}>
+                    <Grid item xs={12}>
 
                         <TextField
                             label="Número Serie"
@@ -1105,7 +1103,7 @@ function ReleForm({
 
                     </Grid>
 
-                    <Grid size={12}>
+                    <Grid item xs={12}>
 
                         <TextField
                             label="Cod. Configuración"
@@ -1122,7 +1120,7 @@ function ReleForm({
 
                     </Grid>
 
-                    <Grid size={12}>
+                    <Grid item xs={12}>
 
                         <FormControlLabel
                             control={
@@ -1148,7 +1146,7 @@ function ReleForm({
 
                             <>
 
-                                <Grid size={6}>
+                                <Grid item xs={6}>
 
                                     <TextField
                                         type="number"
@@ -1170,7 +1168,7 @@ function ReleForm({
 
                                 </Grid>
 
-                                <Grid size={6}>
+                                <Grid item xs={6}>
 
                                     <ToggleButtonGroup
                                         exclusive
@@ -1207,7 +1205,7 @@ function ReleForm({
                                 {
                                     !formData.usarFechaActual && (
 
-                                        <Grid size={12}>
+                                        <Grid item xs={12}>
 
                                             <TextField
                                                 type="date"
@@ -1216,7 +1214,7 @@ function ReleForm({
                                                 value={
                                                     formData.inicioGarantia || ""
                                                 }
-                                                slotProps={{
+                                                inputProps={{
                                                     inputLabel: {
                                                         shrink: true
                                                     }
@@ -1241,7 +1239,7 @@ function ReleForm({
                         {
                         !releEditando && (
 
-                            <Grid size={12}>
+                            <Grid item xs={12}>
 
                                 <FormControl fullWidth>
 
@@ -1300,17 +1298,17 @@ function ReleForm({
                         "NUEVO" && (
 
                             <>
-                                <Grid size={12}>
+                                <Grid item xs={12}>
 
                                     <Alert severity="info">
 
                                         La documentación inicial es opcional. Puede asociarse
-                                        un remito, una orden de provisión, ambos o ningubo.
+                                        un remito, una orden de provisión, ambos o ninguno.
 
                                     </Alert>
 
                                 </Grid>
-                                <Grid size={6}>
+                                <Grid item xs={6}>
 
                                     {
                                         opSeleccionada && (
@@ -1356,7 +1354,7 @@ function ReleForm({
                                     {
                                         modoOP === "nuevo" && (
 
-                                            <Grid size={12}>
+                                            <Grid item xs={12}>
 
                                                 <Paper
                                                     sx={{
@@ -1377,7 +1375,7 @@ function ReleForm({
                                                         spacing={2}
                                                     >
 
-                                                        <Grid size={3}>
+                                                        <Grid item xs={3}>
 
                                                             <TextField
                                                                 label="Número OP"
@@ -1398,7 +1396,7 @@ function ReleForm({
 
                                                         </Grid>
 
-                                                        <Grid size={3}>
+                                                        <Grid item xs={3}>
 
                                                             <TextField
                                                                 label="Observaciones"
@@ -1419,7 +1417,7 @@ function ReleForm({
 
                                                         </Grid>
 
-                                                        <Grid size={3}>
+                                                        <Grid item xs={3}>
 
                                                             <Button
                                                                 variant="outlined"
@@ -1445,7 +1443,7 @@ function ReleForm({
 
                                                         </Grid>
 
-                                                        <Grid size={3}>
+                                                        <Grid item xs={3}>
 
                                                             <Button
                                                                 variant="contained"
@@ -1485,7 +1483,7 @@ function ReleForm({
                                     {
                                         modoOP === "existente" && (
 
-                                            <Grid size={12}>
+                                            <Grid item xs={12}>
 
                                                 <TextField
                                                     select
@@ -1537,7 +1535,7 @@ function ReleForm({
 
                                 </Grid>
 
-                                <Grid size={6}>
+                                <Grid item xs={6}>
 
                                     {
                                         remitoSeleccionado && (
@@ -1583,7 +1581,7 @@ function ReleForm({
                                     {
                                         modoRemito === "nuevo" && (
 
-                                            <Grid size={12}>
+                                            <Grid item xs={12}>
 
                                                 <Paper
                                                     sx={{
@@ -1604,7 +1602,7 @@ function ReleForm({
                                                         spacing={2}
                                                     >
 
-                                                        <Grid size={3}>
+                                                        <Grid item xs={3}>
 
                                                             <TextField
                                                                 label="Número Remito"
@@ -1625,7 +1623,7 @@ function ReleForm({
 
                                                         </Grid>
 
-                                                        <Grid size={3}>
+                                                        <Grid item xs={3}>
 
                                                             <TextField
                                                                 select
@@ -1671,7 +1669,7 @@ function ReleForm({
 
                                                         </Grid>
 
-                                                        <Grid size={3}>
+                                                        <Grid item xs={3}>
 
                                                             <Button
                                                                 variant="outlined"
@@ -1697,7 +1695,7 @@ function ReleForm({
 
                                                         </Grid>
 
-                                                        <Grid size={3}>
+                                                        <Grid item xs={3}>
 
                                                             <Button
                                                                 variant="contained"
@@ -1737,7 +1735,7 @@ function ReleForm({
                                     {
                                         modoRemito === "existente" && (
 
-                                            <Grid size={12}>
+                                            <Grid item xs={12}>
 
                                                 <TextField
                                                     select
@@ -1793,7 +1791,7 @@ function ReleForm({
                         )
                     }
 
-                    <Grid size={12}>
+                    <Grid item xs={12}>
 
                         <Box
                             sx={{ display: "flex", gap: 2 }}
