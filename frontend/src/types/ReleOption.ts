@@ -7,6 +7,4 @@ export interface ReleOption {
     modelo: string;
 
     marca: string;
-
-    tension: string;
 }
