@@ -243,10 +243,6 @@ function ReleTable({
                             </TableCell>
 
                             <TableCell>
-                                Tensión
-                            </TableCell>
-
-                            <TableCell>
                                 Estado
                             </TableCell>
 
@@ -321,15 +317,6 @@ function ReleTable({
 
                                         <TableCell>
                                             {rele.modelo}
-                                        </TableCell>
-
-                                        <TableCell>
-
-                                            {
-                                                rele.tension
-                                                || "-"
-                                            }
-
                                         </TableCell>
 
                                         <TableCell>

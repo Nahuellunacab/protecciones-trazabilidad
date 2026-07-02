@@ -47,9 +47,6 @@ import {
     obtenerModelos
 } from "../../services/modeloService";
 
-import type { Tipo } from "../../types/Tipo";
-import { obtenerTipos } from "../../services/tipoService";
-
 import MarcaForm from "../admin/marca/MarcaForm";
 import ModeloForm from "../admin/modelo/ModeloForm";
 import type { Posicion } from "../../types/Posicion";
@@ -143,9 +140,6 @@ function ReleForm({
 
     const [modelos, setModelos] =
         useState<Modelo[]>([]);
-
-    const [tipos, setTipos] =
-        useState<Tipo[]>([]);
 
     const [marcaId, setMarcaId] =
         useState<number | "">("");
@@ -605,8 +599,6 @@ function ReleForm({
 
                 modelosData,
 
-                tiposData,
-
                 remitosData,
 
                 ordenesProvisionData,
@@ -622,8 +614,6 @@ function ReleForm({
                 obtenerMarcas(),
 
                 obtenerModelos(),
-
-                obtenerTipos(),
 
                 obtenerRemitos(),
 
@@ -643,11 +633,6 @@ function ReleForm({
             setModelos(
                 modelosData
             );
-
-            setTipos(
-                tiposData
-            );
-
             setRemitos(
                 remitosData
             );
@@ -698,26 +683,6 @@ function ReleForm({
                 );
             }
         };
-
-
-    const obtenerTension = () => {
-
-        const modelo =
-            modelos.find(
-                (m) =>
-                    m.id ===
-                    formData.modeloId
-            );
-
-        if (!modelo) {
-
-            return "-";
-        }
-
-        return `${modelo.tensionDesde}
-        - ${modelo.tensionHasta}
-        ${modelo.tipoTension}`;
-    };
 
     const limpiarFormulario = () => {
 
@@ -1067,21 +1032,6 @@ function ReleForm({
                             </Select>
 
                         </FormControl>
-
-                    </Grid>
-
-                    <Grid item xs={12}>
-
-                        <TextField
-                            label="Tensión"
-                            value={
-                                obtenerTension()
-                            }
-                            InputProps={{
-                                readOnly: true
-                            }}
-                            fullWidth
-                        />
 
                     </Grid>
 
@@ -1881,8 +1831,6 @@ function ReleForm({
                                 }
 
                                 marcas={marcas}
-
-                                tipos={tipos}
 
                                 cancelarEdicion={() => {
 

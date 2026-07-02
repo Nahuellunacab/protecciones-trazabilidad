@@ -9,14 +9,12 @@ import protecciones.dto.ModeloResponseDTO;
 
 import protecciones.entity.Marca;
 import protecciones.entity.Modelo;
-import protecciones.entity.Tipo;
 
 import protecciones.exception.BusinessException;
 
 import protecciones.repository.MarcaRepository;
 import protecciones.repository.ModeloRepository;
 import protecciones.repository.ReleRepository;
-import protecciones.repository.TipoRepository;
 
 import java.util.List;
 
@@ -29,9 +27,6 @@ public class ModeloService {
     private final MarcaRepository
             marcaRepository;
 
-    private final TipoRepository
-            tipoRepository;
-
     private final ReleRepository
             releRepository;
 
@@ -41,8 +36,6 @@ public class ModeloService {
 
             MarcaRepository marcaRepository,
 
-            TipoRepository tipoRepository,
-
             ReleRepository releRepository
     ) {
 
@@ -51,9 +44,6 @@ public class ModeloService {
 
         this.marcaRepository =
                 marcaRepository;
-
-        this.tipoRepository =
-                tipoRepository;
 
         this.releRepository =
                 releRepository;
@@ -90,10 +80,6 @@ public class ModeloService {
                         dto.getMarcaId()
                 ).orElseThrow();
 
-        Tipo tipo =
-                tipoRepository.findById(
-                        dto.getTipoId()
-                ).orElseThrow();
 
         Modelo modelo = new Modelo();
 
@@ -101,21 +87,7 @@ public class ModeloService {
                 dto.getNombre().trim()
         );
 
-        modelo.setTensionDesde(
-                dto.getTensionDesde()
-        );
-
-        modelo.setTensionHasta(
-                dto.getTensionHasta()
-        );
-
-        modelo.setTipoTension(
-                dto.getTipoTension().trim()
-        );
-
         modelo.setMarca(marca);
-
-        modelo.setTipo(tipo);
 
         Modelo guardado =
                 modeloRepository.save(modelo);
@@ -153,30 +125,11 @@ public class ModeloService {
                         dto.getMarcaId()
                 ).orElseThrow();
 
-        Tipo tipo =
-                tipoRepository.findById(
-                        dto.getTipoId()
-                ).orElseThrow();
-
         modelo.setNombre(
                 dto.getNombre().trim()
         );
 
-        modelo.setTensionDesde(
-                dto.getTensionDesde()
-        );
-
-        modelo.setTensionHasta(
-                dto.getTensionHasta()
-        );
-
-        modelo.setTipoTension(
-                dto.getTipoTension().trim()
-        );
-
         modelo.setMarca(marca);
-
-        modelo.setTipo(tipo);
 
         Modelo actualizado =
                 modeloRepository.save(modelo);
@@ -243,22 +196,10 @@ public class ModeloService {
 
                 modelo.getNombre(),
 
-                modelo.getTensionDesde(),
-
-                modelo.getTensionHasta(),
-
-                modelo.getTipoTension(),
-
                 modelo.getMarca()
                         .getId(),
 
                 modelo.getMarca()
-                        .getNombre(),
-
-                modelo.getTipo()
-                        .getId(),
-
-                modelo.getTipo()
                         .getNombre(),
 
                 activos,

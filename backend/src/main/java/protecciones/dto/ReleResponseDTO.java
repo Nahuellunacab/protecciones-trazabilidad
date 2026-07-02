@@ -21,10 +21,6 @@ public class ReleResponseDTO {
 
     private String marca;
 
-    private String tension;
-
-    private String tipo;
-
     private String estadoActual;
 
     private String posicionActual;
@@ -59,8 +55,6 @@ public class ReleResponseDTO {
             LocalDate finGarantia,
             String modelo,
             String marca,
-            String tension,
-            String tipo,
             String estadoActual,
             String posicionActual,
             String localidadActual,
@@ -73,7 +67,6 @@ public class ReleResponseDTO {
             Boolean activo,
             String motivoBaja,
             LocalDateTime fechaBaja
-            
     ) {
 
         this.id = id;
@@ -84,8 +77,6 @@ public class ReleResponseDTO {
         this.finGarantia = finGarantia;
         this.modelo = modelo;
         this.marca = marca;
-        this.tension = tension;
-        this.tipo = tipo;
         this.estadoActual = estadoActual;
         this.posicionActual = posicionActual;
         this.localidadActual = localidadActual;
@@ -130,14 +121,6 @@ public class ReleResponseDTO {
 
     public String getMarca() {
         return marca;
-    }
-
-    public String getTension() {
-        return tension;
-    }
-
-    public String getTipo() {
-        return tipo;
     }
 
     public String getEstadoActual() {
@@ -221,14 +204,6 @@ public class ReleResponseDTO {
 
     public void setMarca(String marca) {
         this.marca = marca;
-    }
-
-    public void setTension(String tension) {
-        this.tension = tension;
-    }
-
-    public void setTipo(String tipo) {
-        this.tipo = tipo;
     }
 
     public void setEstadoActual(String estadoActual) {
