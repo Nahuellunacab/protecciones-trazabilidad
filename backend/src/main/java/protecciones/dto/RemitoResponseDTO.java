@@ -10,6 +10,8 @@ public class RemitoResponseDTO {
 
     private LocalDate fecha;
 
+    private Long proveedorId;
+
     private String proveedor;
 
     private Long cantidadReles;
@@ -21,14 +23,15 @@ public class RemitoResponseDTO {
             Long id,
             String numeroRemito,
             LocalDate fecha,
+            Long proveedorId,
             String proveedor,
             Long cantidadReles,
-            Boolean tieneArchivo
-    ) {
+            Boolean tieneArchivo) {
 
         this.id = id;
         this.numeroRemito = numeroRemito;
         this.fecha = fecha;
+        this.proveedorId = proveedorId;
         this.proveedor = proveedor;
         this.cantidadReles = cantidadReles;
         this.tieneArchivo = tieneArchivo;
@@ -44,6 +47,10 @@ public class RemitoResponseDTO {
 
     public LocalDate getFecha() {
         return fecha;
+    }
+
+    public Long getProveedorId() {
+        return proveedorId;
     }
 
     public String getProveedor() {

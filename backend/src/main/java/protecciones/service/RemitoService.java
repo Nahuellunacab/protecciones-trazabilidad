@@ -1,4 +1,6 @@
 package protecciones.service;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import protecciones.dto.RemitoRequestDTO;
@@ -16,318 +18,258 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
+import org.springframework.core.io.PathResource;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 import java.net.MalformedURLException;
 
 @Service
 public class RemitoService {
 
-    private final RemitoRepository
-            remitoRepository;
+        private final RemitoRepository remitoRepository;
 
-    private final ProveedorRepository
-            proveedorRepository;
+        private final ProveedorRepository proveedorRepository;
 
-private final ReleRepository releRepository;
+        private final ReleRepository releRepository;
 
-    public RemitoService(
+        private final String uploadDir;
 
-            RemitoRepository remitoRepository,
+        public RemitoService(
 
-            ProveedorRepository proveedorRepository,
-            
-            ReleRepository releRepository
-    ) {
+                        RemitoRepository remitoRepository,
 
-        this.remitoRepository =
-                remitoRepository;
+                        ProveedorRepository proveedorRepository,
 
-        this.proveedorRepository =
-                proveedorRepository;
-        
-        this.releRepository = releRepository;
-    }
+                        ReleRepository releRepository,
 
-    public List<RemitoResponseDTO>
-    obtenerTodos() {
+                        @Value("${file.upload-dir}") String uploadDir) {
 
-        return remitoRepository
-                .findAllByOrderByFechaDesc()
-                .stream()
-                .map(this::mapToDTO)
-                .toList();
-    }
+                this.remitoRepository = remitoRepository;
 
-    public RemitoResponseDTO guardar(
-            RemitoRequestDTO dto
-    ) {
+                this.proveedorRepository = proveedorRepository;
 
-        validarDuplicado(
-                dto.getNumeroRemito()
-        );
+                this.releRepository = releRepository;
 
-        Proveedor proveedor =
-                proveedorRepository
-                        .findById(
-                                dto.getProveedorId()
-                        )
-                        .orElseThrow();
-
-        Remito remito =
-                new Remito();
-
-        remito.setNumeroRemito(
-                dto.getNumeroRemito().trim()
-        );
-
-        remito.setFecha(
-                dto.getFecha()
-        );
-
-        remito.setProveedor(
-                proveedor
-        );
-
-        Remito guardado =
-                remitoRepository.save(
-                        remito
-                );
-
-        return mapToDTO(
-                guardado
-        );
-    }
-
-    public RemitoResponseDTO actualizar(
-
-            Long id,
-            RemitoRequestDTO dto
-    ) {
-
-        Remito remito =
-                remitoRepository
-                        .findById(id)
-                        .orElseThrow();
-
-        remitoRepository
-                .findByNumeroRemitoIgnoreCase(
-                        dto.getNumeroRemito()
-                )
-                .ifPresent(existente -> {
-
-                    if (!existente.getId()
-                            .equals(id)) {
-
-                        throw new BusinessException(
-                                "El número de remito ya existe"
-                        );
-                    }
-                });
-
-        Proveedor proveedor =
-                proveedorRepository
-                        .findById(
-                                dto.getProveedorId()
-                        )
-                        .orElseThrow();
-
-        remito.setNumeroRemito(
-                dto.getNumeroRemito().trim()
-        );
-
-        remito.setFecha(
-                dto.getFecha()
-        );
-
-        remito.setProveedor(
-                proveedor
-        );
-
-        Remito actualizado =
-                remitoRepository.save(
-                        remito
-                );
-
-        return mapToDTO(
-                actualizado
-        );
-    }
-
-    public void eliminar(
-            Long id
-    ) {
-
-        try {
-
-            remitoRepository
-                    .deleteById(id);
-
-        } catch (
-                DataIntegrityViolationException ex
-        ) {
-
-            throw new BusinessException(
-                    "No se puede eliminar el remito porque tiene relés asociados"
-            );
+                this.uploadDir = uploadDir;
         }
-    }
 
-    public void subirArchivo(
+        public List<RemitoResponseDTO> obtenerTodos() {
 
-                Long remitoId,
+                return remitoRepository
+                                .findAllByOrderByFechaDesc()
+                                .stream()
+                                .map(this::mapToDTO)
+                                .toList();
+        }
 
-                MultipartFile archivo
-        ) {
+        public RemitoResponseDTO guardar(
+                        RemitoRequestDTO dto) {
 
-        try {
+                validarDuplicado(
+                                dto.getNumeroRemito());
 
-                Remito remito =
-                        remitoRepository
+                Proveedor proveedor = proveedorRepository
                                 .findById(
-                                        remitoId
-                                )
+                                                dto.getProveedorId())
                                 .orElseThrow();
 
-                Path carpeta =
-                        Paths.get(
-                                "uploads/remitos"
-                        );
+                Remito remito = new Remito();
 
-                Files.createDirectories(
-                        carpeta
-                );
+                remito.setNumeroRemito(
+                                dto.getNumeroRemito().trim());
 
-                String nombreArchivo =
+                remito.setFecha(
+                                dto.getFecha());
 
-                        System.currentTimeMillis()
+                remito.setProveedor(
+                                proveedor);
 
-                        + "_"
+                Remito guardado = remitoRepository.save(
+                                remito);
 
-                        + archivo.getOriginalFilename();
-
-                Path destino =
-                        carpeta.resolve(
-                                nombreArchivo
-                        );
-
-                Files.copy(
-
-                        archivo.getInputStream(),
-
-                        destino,
-
-                        StandardCopyOption
-                                .REPLACE_EXISTING
-                );
-
-                remito.setNombreArchivo(
-                        archivo.getOriginalFilename()
-                );
-
-                remito.setRutaArchivo(
-                        destino.toString()
-                );
-
-                remitoRepository.save(
-                        remito
-                );
-
-        } catch (
-                IOException ex
-        ) {
-
-                throw new RuntimeException(
-                        "Error al guardar archivo"
-                );
+                return mapToDTO(
+                                guardado);
         }
+
+        public RemitoResponseDTO actualizar(
+
+                        Long id,
+                        RemitoRequestDTO dto) {
+
+                Remito remito = remitoRepository
+                                .findById(id)
+                                .orElseThrow();
+
+                remitoRepository
+                                .findByNumeroRemitoIgnoreCase(
+                                                dto.getNumeroRemito())
+                                .ifPresent(existente -> {
+
+                                        if (!existente.getId()
+                                                        .equals(id)) {
+
+                                                throw new BusinessException(
+                                                                "El número de remito ya existe");
+                                        }
+                                });
+
+                Proveedor proveedor = proveedorRepository
+                                .findById(
+                                                dto.getProveedorId())
+                                .orElseThrow();
+
+                remito.setNumeroRemito(
+                                dto.getNumeroRemito().trim());
+
+                remito.setFecha(
+                                dto.getFecha());
+
+                remito.setProveedor(
+                                proveedor);
+
+                Remito actualizado = remitoRepository.save(
+                                remito);
+
+                return mapToDTO(
+                                actualizado);
+        }
+
+        public void eliminar(
+                        Long id) {
+
+                try {
+
+                        remitoRepository
+                                        .deleteById(id);
+
+                } catch (DataIntegrityViolationException ex) {
+
+                        throw new BusinessException(
+                                        "No se puede eliminar el remito porque tiene relés asociados");
+                }
+        }
+
+        public void subirArchivo(
+
+                        Long remitoId,
+
+                        MultipartFile archivo) {
+
+                try {
+
+                        Remito remito = remitoRepository
+                                        .findById(
+                                                        remitoId)
+                                        .orElseThrow();
+
+                        Path carpeta = Paths.get(
+                                        uploadDir,
+                                        "remitos");
+
+                        Files.createDirectories(
+                                        carpeta);
+
+                        String nombreArchivo =
+
+                                        System.currentTimeMillis()
+
+                                                        + "_"
+
+                                                        + archivo.getOriginalFilename();
+
+                        Path destino = carpeta.resolve(
+                                        nombreArchivo);
+
+                        Files.copy(
+
+                                        archivo.getInputStream(),
+
+                                        destino,
+
+                                        StandardCopyOption.REPLACE_EXISTING);
+
+                        remito.setNombreArchivo(
+                                        archivo.getOriginalFilename());
+
+                        remito.setRutaArchivo(
+                                        destino.toString());
+
+                        remitoRepository.save(
+                                        remito);
+
+                } catch (IOException ex) {
+
+                        throw new RuntimeException(
+                                        "Error al guardar archivo");
+                }
         }
 
         public Resource obtenerArchivo(
-                Long remitoId
-        ) {
+                        Long remitoId) {
 
-        try {
-
-                Remito remito =
-                        remitoRepository
-                                .findById(
-                                        remitoId
-                                )
+                Remito remito = remitoRepository
+                                .findById(remitoId)
                                 .orElseThrow();
 
-                Path archivo =
-                        Paths.get(
-                                remito.getRutaArchivo()
-                        );
+                if (remito.getRutaArchivo() == null) {
+                        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Archivo no encontrado");
+                }
 
-                return new UrlResource(
-                        archivo.toUri()
-                );
+                Path archivo = Paths.get(remito.getRutaArchivo());
 
-        } catch (
-                MalformedURLException ex
-        ) {
+                if (!Files.exists(archivo) || !Files.isReadable(archivo)) {
+                        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Archivo no encontrado");
+                }
 
-                throw new RuntimeException(
-                        "Archivo no encontrado"
-                );
-        }
+                return new PathResource(archivo);
         }
 
-        public List<RemitoResponseDTO>
-        obtenerDisponibles() {
+        public List<RemitoResponseDTO> obtenerDisponibles() {
 
-        return remitoRepository
-                .findAllByOrderByFechaDesc()
-                .stream()
-                .map(this::mapToDTO)
-                .toList();
+                return remitoRepository
+                                .findAllByOrderByFechaDesc()
+                                .stream()
+                                .map(this::mapToDTO)
+                                .toList();
         }
 
-    private void validarDuplicado(
-            String numeroRemito
-    ) {
+        private void validarDuplicado(
+                        String numeroRemito) {
 
-        remitoRepository
-                .findByNumeroRemitoIgnoreCase(
-                        numeroRemito.trim()
-                )
-                .ifPresent(remito -> {
+                remitoRepository
+                                .findByNumeroRemitoIgnoreCase(
+                                                numeroRemito.trim())
+                                .ifPresent(remito -> {
 
-                    throw new BusinessException(
-                            "El número de remito ya existe"
-                    );
-                });
-    }
+                                        throw new BusinessException(
+                                                        "El número de remito ya existe");
+                                });
+        }
 
-    private RemitoResponseDTO
-        mapToDTO(
-                Remito remito
-        ) {
+        private RemitoResponseDTO mapToDTO(
+                        Remito remito) {
 
-        long cantidadReles =
-                releRepository
-                        .countByRemitoId(
-                                remito.getId()
-                        );
+                long cantidadReles = releRepository
+                                .countByRemitoId(
+                                                remito.getId());
 
-        boolean tieneArchivo =
-                remito.getRutaArchivo() != null;
+                boolean tieneArchivo = remito.getRutaArchivo() != null;
 
-        return new RemitoResponseDTO(
+                return new RemitoResponseDTO(
 
-                remito.getId(),
+                                remito.getId(),
 
-                remito.getNumeroRemito(),
+                                remito.getNumeroRemito(),
 
-                remito.getFecha(),
+                                remito.getFecha(),
 
-                remito.getProveedor().getNombre(),
+                                remito.getProveedor().getId(),
 
-                cantidadReles,
+                                remito.getProveedor().getNombre(),
 
-                tieneArchivo
-        );
+                                cantidadReles,
+
+                                tieneArchivo);
         }
 }

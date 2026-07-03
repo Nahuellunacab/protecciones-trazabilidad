@@ -19,7 +19,9 @@ public class CorsConfig {
                     CorsRegistry registry) {
 
                 registry.addMapping("/**")
-                        .allowedOriginPatterns("http://localhost:*")
+                        .allowedOriginPatterns(
+                                "http://localhost:*",
+                                "http://127.0.0.1:*")
                         .allowedMethods(
                                 "GET",
                                 "POST",
@@ -27,7 +29,8 @@ public class CorsConfig {
                                 "DELETE",
                                 "OPTIONS",
                                 "PATCH")
-                        .allowedHeaders("*");
+                        .allowedHeaders("*")
+                        .allowCredentials(true);
             }
         };
     }

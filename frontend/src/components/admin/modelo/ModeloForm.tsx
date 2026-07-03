@@ -17,6 +17,8 @@ from "../../../types/Modelo";
 
 import type { Marca }
 from "../../../types/Marca";
+import type { Tipo }
+from "../../../types/Tipo";
 interface Props {
 
     onSubmit: (
@@ -29,6 +31,7 @@ interface Props {
     modeloEditando?: Modelo | null;
 
     marcas: Marca[];
+    tipos?: Tipo[];
 
     cancelarEdicion: () => void;
 

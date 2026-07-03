@@ -82,12 +82,6 @@ export async function subirArchivoRemito(
 
     await api.post(
         `/remitos/${remitoId}/archivo`,
-        formData,
-        {
-            headers: {
-                "Content-Type":
-                    "multipart/form-data"
-            }
-        }
+        formData
     );
 }

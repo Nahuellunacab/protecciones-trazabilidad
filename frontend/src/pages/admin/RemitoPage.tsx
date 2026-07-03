@@ -22,23 +22,16 @@ import {
     TextField,
     Typography,
     Chip,
-                                                    <Button
-                                                        size="small"
-                                                        variant="text"
-                                                        startIcon={<PictureAsPdfIcon />}
-                                                        onClick={() =>
-                                                            window.open(
-                                                                `/api/remitos/${remito.id}/archivo`,
-                                                                "_blank"
-                                                            )
-                                                        }
-                                                    >
-                                                        VER
-                                                    </Button>
+    Grid,
+    IconButton,
+} from "@mui/material";
 
 import type {
     Proveedor
 } from "../../types/Proveedor";
+
+import type { Remito } from "../../types/Remito";
+import type { RemitoRequest } from "../../types/RemitoRequest";
 
 import {
 
@@ -143,6 +136,15 @@ function RemitoPage() {
 
         e.preventDefault();
 
+        if (!proveedorId) {
+            setMensaje(
+                "Seleccione un proveedor antes de guardar"
+            );
+            setTipoMensaje("error");
+            setOpenSnackbar(true);
+            return;
+        }
+
         setGuardando(true);
 
         try {
@@ -159,7 +161,7 @@ function RemitoPage() {
             };
 
 
-            if (editandoId) {
+            if (editandoId !== null) {
 
                 await actualizarRemito(
 
@@ -167,6 +169,13 @@ function RemitoPage() {
 
                     data
                 );
+
+                if (archivo) {
+                    await subirArchivoRemito(
+                        editandoId,
+                        archivo
+                    );
+                }
 
                 setMensaje(
                     "Remito actualizado correctamente"
@@ -278,6 +287,10 @@ function RemitoPage() {
 
         setFecha(
             remito.fecha
+        );
+
+        setProveedorId(
+            remito.proveedorId.toString()
         );
     }
 
@@ -391,6 +404,12 @@ function RemitoPage() {
                                     setProveedorId(
                                         e.target.value
                                     )
+                                }
+                                error={!proveedorId}
+                                helperText={
+                                    !proveedorId
+                                        ? "Seleccione un proveedor"
+                                        : ""
                                 }
                             >
 

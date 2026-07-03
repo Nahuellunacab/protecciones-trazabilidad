@@ -6,6 +6,8 @@ export interface Remito {
 
     fecha: string;
 
+    proveedorId: number;
+
     proveedor: string;
 
     cantidadReles: number;

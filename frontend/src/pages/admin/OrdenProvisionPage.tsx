@@ -77,6 +77,9 @@ function OrdenProvisionPage() {
     const [archivo, setArchivo] =
         useState<File | null>(null);
 
+    const [archivoActual, setArchivoActual] =
+        useState("");
+
     const [mensaje, setMensaje] =
         useState("");
 
@@ -124,6 +127,15 @@ function OrdenProvisionPage() {
 
         e.preventDefault();
 
+        if (!numero.trim()) {
+            setMensaje(
+                "Ingrese el número de orden antes de guardar"
+            );
+            setTipoMensaje("error");
+            setOpenSnackbar(true);
+            return;
+        }
+
         setGuardando(true);
 
         try {
@@ -136,7 +148,7 @@ function OrdenProvisionPage() {
             };
 
 
-            if (editandoId) {
+            if (editandoId !== null) {
 
                 await actualizarOrdenProvision(
 
@@ -144,6 +156,13 @@ function OrdenProvisionPage() {
 
                     data
                 );
+
+                if (archivo) {
+                    await subirArchivoOP(
+                        editandoId,
+                        archivo
+                    );
+                }
 
                 setMensaje(
                     "Orden actualizada correctamente"
@@ -291,6 +310,11 @@ function OrdenProvisionPage() {
         setObservaciones(
             orden.observaciones
         );
+
+        setArchivo(null);
+        setArchivoActual(
+            orden.nombreArchivo || ""
+        );
     }
 
 
@@ -301,6 +325,8 @@ function OrdenProvisionPage() {
         setObservaciones("");
 
         setArchivo(null);
+
+        setArchivoActual("");
 
         setEditandoId(null);
     }
@@ -357,13 +383,15 @@ function OrdenProvisionPage() {
                     variant="h6"
                     sx={{ mb: 3 }}
                 >
-                    Nueva Orden de Provisión
+                    {editandoId !== null
+                        ? "Editar Orden de Provisión"
+                        : "Nueva Orden de Provisión"}
                 </Typography>
 
                 <form onSubmit={handleSubmit}>
                     <Grid container spacing={2}>
-
-                        <TextField
+                        <Grid item xs={12} md={4}>
+                            <TextField
                                 fullWidth
                                 label="Número"
                                 value={numero}
@@ -372,8 +400,13 @@ function OrdenProvisionPage() {
                                         e.target.value
                                     )
                                 }
+                                error={!numero.trim()}
+                                helperText={
+                                    !numero.trim()
+                                        ? "Ingrese un número"
+                                        : ""
+                                }
                             />
-
                         </Grid>
 
                         {/* Observaciones */}
@@ -406,7 +439,9 @@ function OrdenProvisionPage() {
 
                                 {archivo
                                     ? "PDF CARGADO"
-                                    : "SUBIR PDF"}
+                                    : editandoId !== null
+                                        ? "SUBIR/REEMPLAZAR PDF"
+                                        : "SUBIR PDF"}
 
                                 <input
                                     hidden
@@ -422,8 +457,7 @@ function OrdenProvisionPage() {
 
                             </Button>
 
-                            {archivo && (
-
+                            {archivo ? (
                                 <Typography
                                     variant="caption"
                                     sx={{
@@ -431,9 +465,19 @@ function OrdenProvisionPage() {
                                         mt: 1
                                     }}
                                 >
-
+                                    Archivo seleccionado: {archivo.name}
                                 </Typography>
-                            )}
+                            ) : editandoId !== null && archivoActual ? (
+                                <Typography
+                                    variant="caption"
+                                    sx={{
+                                        display: "block",
+                                        mt: 1
+                                    }}
+                                >
+                                    Archivo actual: {archivoActual}
+                                </Typography>
+                            ) : null}
 
                         </Grid>
 
@@ -464,6 +508,22 @@ function OrdenProvisionPage() {
 
                         </Grid>
 
+                        {editandoId !== null && (
+                            <Grid item xs={12} md={2}>
+                                <Button
+                                    fullWidth
+                                    variant="outlined"
+                                    color="secondary"
+                                    sx={{ height: 56 }}
+                                    onClick={() => {
+                                        limpiarFormulario();
+                                    }}
+                                >
+                                    Cancelar
+                                </Button>
+                            </Grid>
+                        )}
+
                     </Grid>
                 </form>
 
@@ -484,8 +544,6 @@ function OrdenProvisionPage() {
                         </Typography>
 
                     )}
-
-                </Box>
 
             </Paper>
 
