@@ -360,20 +360,10 @@ function OrdenProvisionPage() {
                     Nueva Orden de Provisión
                 </Typography>
 
-                                                        <Button
-                                                            size="small"
-                                                            variant="text"
-                                                            startIcon={<PictureAsPdfIcon />}
-                                                            onClick={() =>
-                                                                window.open(
-                                                                    `/api/ordenes-provision/${orden.id}/archivo`,
-                                                                    "_blank"
-                                                                )
-                                                            }
-                                                        >
-                                                            VER
-                                                        </Button>
-                            <TextField
+                <form onSubmit={handleSubmit}>
+                    <Grid container spacing={2}>
+
+                        <TextField
                                 fullWidth
                                 label="Número"
                                 value={numero}
@@ -475,6 +465,7 @@ function OrdenProvisionPage() {
                         </Grid>
 
                     </Grid>
+                </form>
 
                     {archivo && (
 
