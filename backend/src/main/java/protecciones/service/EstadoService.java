@@ -83,7 +83,7 @@ public class EstadoService {
 
         Optional<Movimiento> ultimoMovimiento =
                 movimientoRepository
-                        .findTopByReleIdOrderByFechaMovimientoDesc(
+                        .findTopByReleIdOrderByFechaMovimientoDescIdDesc(
                                 rele.getId()
                         );
 

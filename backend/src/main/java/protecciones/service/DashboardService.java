@@ -6,17 +6,13 @@ import protecciones.dto.MovimientoResponseDTO;
 import protecciones.dto.dashboard.DashboardKpiDTO;
 import protecciones.dto.dashboard.MarcaCantidadDTO;
 
-import protecciones.entity.Movimiento;
-
 import protecciones.repository.MovimientoRepository;
 import protecciones.repository.ReleRepository;
 import protecciones.repository.RemitoRepository;
 import protecciones.repository.OrdenProvisionRepository;
 
 import java.time.LocalDate;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Service
 public class DashboardService {
@@ -105,35 +101,17 @@ public class DashboardService {
 
         long enStock = 0;
 
-        List<Movimiento> movimientos =
+        List<Object[]> estadosActuales =
                 movimientoRepository
-                        .findAllByOrderByFechaMovimientoDesc();
+                        .countUltimosMovimientosPorEstado();
 
-        Set<Long> procesados =
-                new HashSet<>();
-
-        for (Movimiento mov : movimientos) {
-
-            Long releId =
-                    mov.getRele()
-                            .getId();
-
-            if (
-                    procesados.contains(
-                            releId
-                    )
-            ) {
-
-                continue;
-            }
-
-            procesados.add(
-                    releId
-            );
+        for (Object[] estadoActual : estadosActuales) {
 
             String estado =
-                    mov.getEstado()
-                            .getNombre();
+                    (String) estadoActual[0];
+
+            long cantidad =
+                    (Long) estadoActual[1];
 
             if (
                     "INSTALADO"
@@ -142,7 +120,8 @@ public class DashboardService {
                             )
             ) {
 
-                instalados++;
+                instalados =
+                        cantidad;
             }
 
             if (
@@ -152,7 +131,8 @@ public class DashboardService {
                             )
             ) {
 
-                reparacion++;
+                reparacion =
+                        cantidad;
             }
 
             if (
@@ -162,7 +142,8 @@ public class DashboardService {
                             )
             ) {
 
-                ensayo++;
+                ensayo =
+                        cantidad;
             }
 
             if (
@@ -172,7 +153,8 @@ public class DashboardService {
                             )
             ) {
 
-                enStock++;
+                enStock =
+                        cantidad;
             }
         }
 
@@ -208,7 +190,7 @@ public class DashboardService {
     obtenerUltimosMovimientos() {
 
         return movimientoRepository
-                .findTop10ByOrderByFechaMovimientoDesc()
+                .findTop10ByOrderByFechaMovimientoDescIdDesc()
                 .stream()
                 .map(movimientoService::mapToDTO)
                 .toList();

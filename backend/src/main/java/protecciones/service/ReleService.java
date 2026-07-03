@@ -19,6 +19,7 @@ import protecciones.repository.RemitoRepository;
 import protecciones.repository.EstadoRepository;
 import protecciones.repository.PosicionRepository;
 import protecciones.repository.UsuarioRepository;
+import protecciones.repository.TransicionEstadoRepository;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -53,6 +54,11 @@ public class ReleService {
 
     private final UsuarioRepository usuarioRepository;
 
+    private final ReleBajaService releBajaService;
+
+    private final TransicionEstadoRepository
+            transicionEstadoRepository;
+
     public ReleService(
             ReleRepository releRepository,
             ModeloRepository modeloRepository,
@@ -61,7 +67,9 @@ public class ReleService {
             EstadoRepository estadoRepository,
             PosicionRepository posicionRepository,
             UsuarioRepository usuarioRepository,
-            OrdenProvisionRepository ordenProvisionRepository
+            OrdenProvisionRepository ordenProvisionRepository,
+            ReleBajaService releBajaService,
+            TransicionEstadoRepository transicionEstadoRepository
     ) {
 
         this.releRepository =
@@ -87,6 +95,12 @@ public class ReleService {
 
         this.ordenProvisionRepository =
                 ordenProvisionRepository;
+
+        this.releBajaService =
+                releBajaService;
+
+        this.transicionEstadoRepository =
+                transicionEstadoRepository;
     }
 
     public List<ReleResponseDTO>
@@ -377,7 +391,7 @@ public class ReleService {
     ) {
 
         return movimientoRepository
-                .findByReleIdOrderByFechaMovimientoDesc(
+                .findByReleIdOrderByFechaMovimientoDescIdDesc(
                         releId
                 )
                 .stream()
@@ -591,7 +605,7 @@ public class ReleService {
 
         Movimiento ultimoMovimiento =
                 movimientoRepository
-                        .findTopByReleIdOrderByFechaMovimientoDesc(
+                        .findTopByReleIdOrderByFechaMovimientoDescIdDesc(
                                 rele.getId()
                         )
                         .orElse(null);
@@ -609,7 +623,7 @@ public class ReleService {
 
         Movimiento movimiento =
                 movimientoRepository
-                        .findTopByReleIdOrderByFechaMovimientoDesc(
+                        .findTopByReleIdOrderByFechaMovimientoDescIdDesc(
                                 releId
                         )
                         .orElseThrow(() ->
@@ -628,25 +642,17 @@ public class ReleService {
             String estadoNombre
     ) {
 
-        return releRepository.findAll()
-                .stream()
-                .filter(rele ->
-
-                        movimientoRepository
-                                .findTopByReleIdOrderByFechaMovimientoDesc(
-                                        rele.getId()
-                                )
-                                .map(movimiento ->
-
-                                        movimiento.getEstado()
-                                                .getNombre()
-                                                .equalsIgnoreCase(
-                                                        estadoNombre
-                                                )
-                                )
-                                .orElse(false)
+        return movimientoRepository
+                .findUltimosMovimientosByEstado(
+                        estadoNombre
                 )
-                .map(this::mapToResponseDTOCompleto)
+                .stream()
+                .map(movimiento ->
+                        mapToResponseDTO(
+                                movimiento.getRele(),
+                                movimiento
+                        )
+                )
                 .toList();
     }
 
@@ -654,7 +660,9 @@ public class ReleService {
     obtenerPaginados(
             int page,
             int size,
-            String sort
+            String sort,
+            String texto,
+            String filtroEstado
     ) {
 
         String[] sortParams =
@@ -686,9 +694,56 @@ public class ReleService {
                         )
                 );
 
-        return releRepository
-                .findAll(pageable)
-                .map(this::mapToResponseDTOCompleto);
+        Boolean activo =
+                switch (filtroEstado.toUpperCase()) {
+
+                    case "ACTIVOS" -> true;
+
+                    case "INACTIVOS" -> false;
+
+                    default -> null;
+                };
+
+        Page<Rele> relesPage =
+                releRepository.buscarPaginado(
+                        texto,
+                        activo,
+                        pageable
+                );
+
+        List<Long> releIds =
+                relesPage.getContent()
+                        .stream()
+                        .map(Rele::getId)
+                        .toList();
+
+        Map<Long, Movimiento> ultimosMovimientos =
+                releIds.isEmpty()
+                        ? Map.of()
+                        : movimientoRepository
+                                .findUltimosMovimientosByReleIds(
+                                        releIds
+                                )
+                                .stream()
+                                .collect(
+                                        Collectors.toMap(
+                                                movimiento ->
+                                                        movimiento
+                                                                .getRele()
+                                                                .getId(),
+                                                movimiento ->
+                                                        movimiento
+                                        )
+                                );
+
+        return relesPage.map(rele ->
+                mapToResponseDTO(
+                        rele,
+                        ultimosMovimientos.get(
+                                rele.getId()
+                        )
+                )
+        );
     }
 
     public List<ReleResponseDTO>
@@ -881,6 +936,7 @@ public class ReleService {
         );
     }
 
+    @Transactional
     public void darDeBaja(
             Long id,
             String motivo
@@ -894,14 +950,100 @@ public class ReleService {
                                 )
                         );
 
-        rele.setActivo(false);
+        if (!Boolean.TRUE.equals(
+                rele.getActivo()
+        )) {
 
-        rele.setMotivoBaja(
+            throw new BusinessException(
+                    "El relÃ© ya se encuentra dado de baja"
+            );
+        }
+
+        Movimiento ultimoMovimiento =
+                movimientoRepository
+                        .findTopByReleIdOrderByFechaMovimientoDescIdDesc(
+                                rele.getId()
+                        )
+                        .orElseThrow(() ->
+                                new BusinessException(
+                                        "No se puede dar de baja un relÃ© sin historial operativo"
+                                )
+                        );
+
+        Estado estadoBaja =
+                estadoRepository
+                        .findByNombreIgnoreCase(
+                                "BAJA"
+                        )
+                        .orElseThrow(() ->
+                                new BusinessException(
+                                        "Estado BAJA no encontrado"
+                                )
+                        );
+
+        boolean transicionPermitida =
+                transicionEstadoRepository
+                        .existsByEstadoOrigenIdAndEstadoDestinoId(
+                                ultimoMovimiento
+                                        .getEstado()
+                                        .getId(),
+                                estadoBaja.getId()
+                        );
+
+        if (!transicionPermitida) {
+
+            throw new BusinessException(
+                    "TransiciÃ³n de estado no permitida: "
+                            + ultimoMovimiento
+                                    .getEstado()
+                                    .getNombre()
+                            + " -> "
+                            + estadoBaja.getNombre()
+            );
+        }
+
+        Usuario usuarioSistema =
+                usuarioRepository.findById(1L)
+                        .orElseThrow(() ->
+                                new BusinessException(
+                                        "Usuario sistema no encontrado"
+                                )
+                        );
+
+        Movimiento movimientoBaja =
+                new Movimiento();
+
+        movimientoBaja.setRele(
+                rele
+        );
+
+        movimientoBaja.setEstado(
+                estadoBaja
+        );
+
+        movimientoBaja.setPosicion(
+                ultimoMovimiento.getPosicion()
+        );
+
+        movimientoBaja.setUsuario(
+                usuarioSistema
+        );
+
+        movimientoBaja.setFechaMovimiento(
+                LocalDateTime.now()
+        );
+
+        movimientoBaja.setNotas(
                 motivo.trim()
         );
 
-        rele.setFechaBaja(
-                LocalDateTime.now()
+        movimientoRepository.save(
+                movimientoBaja
+        );
+
+        releBajaService.aplicarBaja(
+                rele,
+                motivo
         );
 
         releRepository.save(rele);

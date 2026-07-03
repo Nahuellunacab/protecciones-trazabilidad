@@ -4,14 +4,34 @@ import type { Rele } from "../types/Rele";
 import type { ReleRequest } from "../types/ReleRequest";
 import type { ReleOption } from "../types/ReleOption";
 
-export const obtenerReles = async (): Promise<Rele[]> => {
+interface RelePageResponse {
+
+    content: Rele[];
+
+    totalElements: number;
+}
+
+export const obtenerReles = async (
+    page: number,
+    size: number,
+    texto: string,
+    filtroEstado: "ACTIVOS" | "INACTIVOS" | "TODOS"
+): Promise<RelePageResponse> => {
 
     const response =
         await api.get(
-            "/reles?page=0&size=5000"
+            "/reles",
+            {
+                params: {
+                    page,
+                    size,
+                    texto,
+                    filtroEstado
+                }
+            }
         );
 
-    return response.data.content;
+    return response.data;
 };
 
 export const crearRele = async (

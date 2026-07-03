@@ -44,13 +44,16 @@ public class MovimientoService {
     private final TransicionEstadoRepository
             transicionEstadoRepository;
 
+    private final ReleBajaService releBajaService;
+
     public MovimientoService(
             MovimientoRepository movimientoRepository,
             ReleRepository releRepository,
             EstadoRepository estadoRepository,
             PosicionRepository posicionRepository,
             UsuarioRepository usuarioRepository,
-            TransicionEstadoRepository transicionEstadoRepository
+            TransicionEstadoRepository transicionEstadoRepository,
+            ReleBajaService releBajaService
     ) {
 
         this.movimientoRepository =
@@ -70,6 +73,9 @@ public class MovimientoService {
 
         this.transicionEstadoRepository =
                 transicionEstadoRepository;
+
+        this.releBajaService =
+                releBajaService;
     }
 
     public List<MovimientoResponseDTO>
@@ -116,7 +122,7 @@ public class MovimientoService {
 
         Optional<Movimiento> ultimoMovimiento =
                 movimientoRepository
-                        .findTopByReleIdOrderByFechaMovimientoDesc(
+                        .findTopByReleIdOrderByFechaMovimientoDescIdDesc(
                                 rele.getId()
                         );
 
@@ -188,15 +194,8 @@ public class MovimientoService {
                         )
         ) {
 
-            rele.setActivo(
-                    false
-            );
-
-            rele.setFechaBaja(
-                    LocalDateTime.now()
-            );
-
-            rele.setMotivoBaja(
+            releBajaService.aplicarBaja(
+                    rele,
                     dto.getNotas()
             );
 

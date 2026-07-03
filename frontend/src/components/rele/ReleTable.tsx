@@ -50,15 +50,14 @@ interface Props {
         "TODOS";
 
     setFiltroEstado:
-        React.Dispatch<
-            React.SetStateAction<
+        (
+            value:
                 "ACTIVOS"
                 |
                 "INACTIVOS"
                 |
                 "TODOS"
-            >
-        >;
+        ) => void;
 
     onEditar: (
         rele: Rele

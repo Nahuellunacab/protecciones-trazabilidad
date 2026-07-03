@@ -40,6 +40,9 @@ function RelePage() {
     const [reles, setReles] =
         useState<Rele[]>([]);
 
+    const [totalReles, setTotalReles] =
+        useState(0);
+
     const [textoBusqueda, setTextoBusqueda] =
         useState("");
     
@@ -67,16 +70,31 @@ function RelePage() {
     const cargarReles = async () => {
 
         const data =
-            await obtenerReles();
+            await obtenerReles(
+                page,
+                rowsPerPage,
+                textoBusqueda,
+                filtroEstado
+            );
 
-        setReles(data);
+        setReles(
+            data.content
+        );
+
+        setTotalReles(
+            data.totalElements
+        );
     };
 
     useEffect(() => {
 
         cargarReles();
 
-    }, []);
+    }, [
+        page,
+        textoBusqueda,
+        filtroEstado
+    ]);
 
     const handleCreate = async (
         data: ReleRequest
@@ -140,55 +158,6 @@ function RelePage() {
             false
         );
     };
-
-    const relesFiltrados =
-        reles.filter((rele) => {
-
-            const texto =
-                textoBusqueda.toLowerCase();
-
-            const coincideBusqueda =
-
-                rele.numeroSerie
-                    .toLowerCase()
-                    .includes(texto)
-
-                ||
-
-                rele.marca
-                    .toLowerCase()
-                    .includes(texto)
-
-                ||
-
-                rele.modelo
-                    .toLowerCase()
-                    .includes(texto);
-
-            const coincideEstado =
-
-                filtroEstado === "TODOS"
-
-                    ? true
-
-                    : filtroEstado === "ACTIVOS"
-
-                        ? rele.activo
-
-                        : !rele.activo;
-
-            return (
-                coincideBusqueda
-                &&
-                coincideEstado
-            );
-        });
-    
-    const relesPaginados =
-        relesFiltrados.slice(
-            page * rowsPerPage,
-            page * rowsPerPage + rowsPerPage
-        );
 
     return (
 
@@ -260,21 +229,26 @@ function RelePage() {
                 color="text.secondary"
                 sx={{ mb: 2 }}
             >
-                {relesFiltrados.length} relés encontrados
+                {totalReles} relés encontrados
             </Typography>
 
             <ReleTable
-                reles={relesPaginados}
+                reles={reles}
                 onEditar={handleEditar}
                 filtroEstado={filtroEstado}
-                setFiltroEstado={setFiltroEstado}
+                setFiltroEstado={(value) => {
+
+                    setFiltroEstado(value);
+
+                    setPage(0);
+                }}
             />
 
             <TablePagination
 
                 component="div"
 
-                count={relesFiltrados.length}
+                count={totalReles}
 
                 page={page}
 
