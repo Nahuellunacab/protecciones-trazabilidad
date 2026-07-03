@@ -8,6 +8,7 @@ import protecciones.entity.Movimiento;
 import protecciones.entity.Posicion;
 import protecciones.entity.Rele;
 import protecciones.entity.Usuario;
+import protecciones.exception.BusinessException;
 import protecciones.repository.EstadoRepository;
 import protecciones.repository.MovimientoRepository;
 import protecciones.repository.PosicionRepository;
@@ -94,7 +95,7 @@ public class MovimientoService {
                 rele.getActivo()
         )) {
 
-            throw new RuntimeException(
+            throw new BusinessException(
                     "No se pueden registrar movimientos sobre un relé dado de baja"
             );
         }
@@ -135,7 +136,7 @@ public class MovimientoService {
 
             if (!transicionPermitida) {
 
-                throw new RuntimeException(
+                throw new BusinessException(
                         "Transición de estado no permitida: "
                                 + estadoActual.getNombre()
                                 + " -> "

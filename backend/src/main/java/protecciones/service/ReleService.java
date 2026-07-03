@@ -11,6 +11,7 @@ import protecciones.entity.Posicion;
 import protecciones.entity.Rele;
 import protecciones.entity.Remito;
 import protecciones.entity.Usuario;
+import protecciones.exception.BusinessException;
 import protecciones.repository.ModeloRepository;
 import protecciones.repository.MovimientoRepository;
 import protecciones.repository.ReleRepository;
@@ -129,7 +130,7 @@ public class ReleService {
                 modeloRepository.findById(
                         dto.getModeloId()
                 ).orElseThrow(() ->
-                        new RuntimeException(
+                        new BusinessException(
                                 "Modelo no encontrado"
                         )
                 );
@@ -144,7 +145,7 @@ public class ReleService {
                     remitoRepository.findById(
                             dto.getRemitoId()
                     ).orElseThrow(() ->
-                            new RuntimeException(
+                            new BusinessException(
                                     "Remito no encontrado"
                             )
                     );
@@ -161,7 +162,7 @@ public class ReleService {
                                 dto.getOrdenProvisionId()
                         )
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new BusinessException(
                                         "Orden de provisión no encontrada"
                                 )
                         );
@@ -173,7 +174,7 @@ public class ReleService {
                 )
         ) {
 
-            throw new RuntimeException(
+            throw new BusinessException(
                     "Ya existe un relé con ese número de serie"
             );
         }
@@ -274,7 +275,7 @@ public class ReleService {
                         )
                         .orElseThrow(() ->
 
-                                new RuntimeException(
+                                new BusinessException(
                                         "Estado EN STOCK no encontrado"
                                 )
                         );
@@ -284,7 +285,7 @@ public class ReleService {
                         dto.getPosicionInicialId()
                 )
                 .orElseThrow(() ->
-                        new RuntimeException(
+                        new BusinessException(
                                 "Posición inicial no encontrada"
                         )
                 );
@@ -292,7 +293,7 @@ public class ReleService {
         Usuario usuarioSistema =
                 usuarioRepository.findById(1L)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new BusinessException(
                                         "Usuario sistema no encontrado"
                                 )
                         );
@@ -344,7 +345,7 @@ public class ReleService {
                 releRepository.findByNumeroSerieAndActivoTrue(
                         numeroSerie
                 ).orElseThrow(() ->
-                        new RuntimeException(
+                        new BusinessException(
                                 "Relé no encontrado"
                         )
                 );
@@ -362,7 +363,7 @@ public class ReleService {
         Rele rele =
                 releRepository.findById(id)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new BusinessException(
                                         "Relé no encontrado"
                                 )
                         );
@@ -612,7 +613,7 @@ public class ReleService {
                                 releId
                         )
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new BusinessException(
                                         "El relé no tiene movimientos"
                                 )
                         );
@@ -740,7 +741,7 @@ public class ReleService {
         Rele rele =
                 releRepository.findById(id)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new BusinessException(
                                         "Relé no encontrado"
                                 )
                         );
@@ -752,7 +753,7 @@ public class ReleService {
                 )
         ) {
 
-            throw new RuntimeException(
+            throw new BusinessException(
                     "Ya existe un relé con ese número de serie"
             );
         }
@@ -761,7 +762,7 @@ public class ReleService {
                 modeloRepository.findById(
                         dto.getModeloId()
                 ).orElseThrow(() ->
-                        new RuntimeException(
+                        new BusinessException(
                                 "Modelo no encontrado"
                         )
                 );
@@ -781,7 +782,7 @@ public class ReleService {
                                 dto.getOrdenProvisionId()
                         )
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new BusinessException(
                                         "Orden de provisión no encontrada"
                                 )
                         );
@@ -793,7 +794,7 @@ public class ReleService {
                 remitoRepository.findById(
                         dto.getRemitoId()
                 ).orElseThrow(() ->
-                        new RuntimeException(
+                        new BusinessException(
                                 "Remito no encontrado"
                         )
                 );
@@ -886,7 +887,7 @@ public class ReleService {
         Rele rele =
                 releRepository.findById(id)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new BusinessException(
                                         "Relé no encontrado"
                                 )
                         );

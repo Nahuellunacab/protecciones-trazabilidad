@@ -5,6 +5,7 @@ import protecciones.entity.Estado;
 import protecciones.entity.Movimiento;
 import protecciones.entity.Rele;
 import protecciones.entity.TransicionEstado;
+import protecciones.exception.BusinessException;
 import protecciones.repository.EstadoRepository;
 import protecciones.repository.MovimientoRepository;
 import protecciones.repository.ReleRepository;
@@ -75,7 +76,7 @@ public class EstadoService {
                         releId
                 ).orElseThrow(() ->
 
-                        new RuntimeException(
+                        new BusinessException(
                                 "Relé no encontrado"
                         )
                 );
