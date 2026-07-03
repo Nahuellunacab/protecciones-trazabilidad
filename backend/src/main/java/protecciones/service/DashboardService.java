@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import protecciones.dto.MovimientoResponseDTO;
 import protecciones.dto.dashboard.DashboardKpiDTO;
 import protecciones.dto.dashboard.MarcaCantidadDTO;
+import protecciones.dto.dashboard.ModeloCantidadDTO;
 
 import protecciones.repository.MovimientoRepository;
 import protecciones.repository.ReleRepository;
@@ -17,189 +18,152 @@ import java.util.List;
 @Service
 public class DashboardService {
 
-    private final ReleRepository
-            releRepository;
+        private final ReleRepository releRepository;
 
-    private final MovimientoRepository
-            movimientoRepository;
+        private final MovimientoRepository movimientoRepository;
 
-    private final MovimientoService
-            movimientoService;
+        private final MovimientoService movimientoService;
 
-    private final RemitoRepository
-            remitoRepository;
+        private final RemitoRepository remitoRepository;
 
-    private final OrdenProvisionRepository
-            ordenProvisionRepository;
+        private final OrdenProvisionRepository ordenProvisionRepository;
 
-    public DashboardService(
-            ReleRepository releRepository,
-            MovimientoRepository movimientoRepository,
-            MovimientoService movimientoService,
-            RemitoRepository remitoRepository,
-            OrdenProvisionRepository ordenProvisionRepository
-    ) {
+        public DashboardService(
+                        ReleRepository releRepository,
+                        MovimientoRepository movimientoRepository,
+                        MovimientoService movimientoService,
+                        RemitoRepository remitoRepository,
+                        OrdenProvisionRepository ordenProvisionRepository) {
 
-        this.releRepository =
-                releRepository;
+                this.releRepository = releRepository;
 
-        this.movimientoRepository =
-                movimientoRepository;
+                this.movimientoRepository = movimientoRepository;
 
-        this.movimientoService =
-                movimientoService;
+                this.movimientoService = movimientoService;
 
-        this.remitoRepository =
-                remitoRepository;
+                this.remitoRepository = remitoRepository;
 
-        this.ordenProvisionRepository =
-                ordenProvisionRepository;
-    }
-
-    public DashboardKpiDTO
-    obtenerKpis() {
-
-        long totalReles =
-                releRepository
-                        .count();
-
-        long activos =
-                releRepository
-                        .countByActivoTrue();
-
-        long baja =
-                releRepository
-                        .countByActivoFalse();
-
-        long garantiasVencidas =
-                releRepository
-                        .countByFinGarantiaBefore(
-                                LocalDate.now()
-                        );
-
-        long relesSinDocumentacion =
-                releRepository
-                        .countSinDocumentacion();
-
-        long remitosPendientes =
-                remitoRepository
-                        .countByAsociadoFalse();
-
-        long ordenesPendientes =
-                ordenProvisionRepository
-                        .countByAsociadoFalse();
-
-        long relesSinHistorial =
-                releRepository
-                        .countSinHistorial();
-
-        long instalados = 0;
-
-        long reparacion = 0;
-
-        long ensayo = 0;
-
-        long enStock = 0;
-
-        List<Object[]> estadosActuales =
-                movimientoRepository
-                        .countUltimosMovimientosPorEstado();
-
-        for (Object[] estadoActual : estadosActuales) {
-
-            String estado =
-                    (String) estadoActual[0];
-
-            long cantidad =
-                    (Long) estadoActual[1];
-
-            if (
-                    "INSTALADO"
-                            .equalsIgnoreCase(
-                                    estado
-                            )
-            ) {
-
-                instalados =
-                        cantidad;
-            }
-
-            if (
-                    "EN REPARACION"
-                            .equalsIgnoreCase(
-                                    estado
-                            )
-            ) {
-
-                reparacion =
-                        cantidad;
-            }
-
-            if (
-                    "EN ENSAYO"
-                            .equalsIgnoreCase(
-                                    estado
-                            )
-            ) {
-
-                ensayo =
-                        cantidad;
-            }
-
-            if (
-                    "EN STOCK"
-                            .equalsIgnoreCase(
-                                    estado
-                            )
-            ) {
-
-                enStock =
-                        cantidad;
-            }
+                this.ordenProvisionRepository = ordenProvisionRepository;
         }
 
-        return new DashboardKpiDTO(
+        public DashboardKpiDTO obtenerKpis() {
 
-                totalReles,
+                long totalReles = releRepository
+                                .count();
 
-                activos,
+                long activos = releRepository
+                                .countByActivoTrue();
 
-                enStock,
+                long baja = releRepository
+                                .countByActivoFalse();
 
-                baja,
+                long garantiasVencidas = releRepository
+                                .countByFinGarantiaBefore(
+                                                LocalDate.now());
 
-                instalados,
+                long relesSinDocumentacion = releRepository
+                                .countSinDocumentacion();
 
-                reparacion,
+                long remitosPendientes = remitoRepository
+                                .countByAsociadoFalse();
 
-                ensayo,
+                long ordenesPendientes = ordenProvisionRepository
+                                .countByAsociadoFalse();
 
-                garantiasVencidas,
+                long relesSinHistorial = releRepository
+                                .countSinHistorial();
 
-                relesSinDocumentacion,
+                long instalados = 0;
 
-                remitosPendientes,
+                long reparacion = 0;
 
-                ordenesPendientes,
+                long ensayo = 0;
 
-                relesSinHistorial
-        );
-    }
+                long enStock = 0;
 
-    public List<MovimientoResponseDTO>
-    obtenerUltimosMovimientos() {
+                List<Object[]> estadosActuales = movimientoRepository
+                                .countUltimosMovimientosPorEstado();
 
-        return movimientoRepository
-                .findTop10ByOrderByFechaMovimientoDescIdDesc()
-                .stream()
-                .map(movimientoService::mapToDTO)
-                .toList();
-    }
+                for (Object[] estadoActual : estadosActuales) {
 
-    public List<MarcaCantidadDTO>
-    obtenerRelesPorMarca() {
+                        String estado = (String) estadoActual[0];
 
-        return releRepository
-                .contarRelesPorMarca();
-    }
+                        long cantidad = (Long) estadoActual[1];
+
+                        if ("INSTALADO"
+                                        .equalsIgnoreCase(
+                                                        estado)) {
+
+                                instalados = cantidad;
+                        }
+
+                        if ("EN REPARACION"
+                                        .equalsIgnoreCase(
+                                                        estado)) {
+
+                                reparacion = cantidad;
+                        }
+
+                        if ("EN ENSAYO"
+                                        .equalsIgnoreCase(
+                                                        estado)) {
+
+                                ensayo = cantidad;
+                        }
+
+                        if ("EN STOCK"
+                                        .equalsIgnoreCase(
+                                                        estado)) {
+
+                                enStock = cantidad;
+                        }
+                }
+
+                return new DashboardKpiDTO(
+
+                                totalReles,
+
+                                activos,
+
+                                enStock,
+
+                                baja,
+
+                                instalados,
+
+                                reparacion,
+
+                                ensayo,
+
+                                garantiasVencidas,
+
+                                relesSinDocumentacion,
+
+                                remitosPendientes,
+
+                                ordenesPendientes,
+
+                                relesSinHistorial);
+        }
+
+        public List<MovimientoResponseDTO> obtenerUltimosMovimientos() {
+
+                return movimientoRepository
+                                .findTop10ByOrderByFechaMovimientoDescIdDesc()
+                                .stream()
+                                .map(movimientoService::mapToDTO)
+                                .toList();
+        }
+
+        public List<MarcaCantidadDTO> obtenerRelesPorMarca() {
+
+                return releRepository
+                                .contarRelesPorMarca();
+        }
+
+        public List<ModeloCantidadDTO> obtenerRelesPorModelo() {
+
+                return releRepository
+                                .contarRelesPorModelo();
+        }
 }
