@@ -40,6 +40,9 @@ function RelePage() {
     const [reles, setReles] =
         useState<Rele[]>([]);
 
+    const [totalReles, setTotalReles] =
+        useState(0);
+
     const [textoBusqueda, setTextoBusqueda] =
         useState("");
     
@@ -64,20 +67,34 @@ function RelePage() {
         setMostrarFormulario] =
         useState(false);
 
-    // cargar relés 
     const cargarReles = async () => {
 
         const data =
-            await obtenerReles();
+            await obtenerReles(
+                page,
+                rowsPerPage,
+                textoBusqueda,
+                filtroEstado
+            );
 
-        setReles(data);
+        setReles(
+            data.content
+        );
+
+        setTotalReles(
+            data.totalElements
+        );
     };
 
     useEffect(() => {
 
         cargarReles();
 
-    }, []);
+    }, [
+        page,
+        textoBusqueda,
+        filtroEstado
+    ]);
 
     const handleCreate = async (
         data: ReleRequest
@@ -142,64 +159,6 @@ function RelePage() {
         );
     };
 
-    const relesFiltrados =
-        reles.filter((rele) => {
-
-            // Se convierte el texto ingresado en minúscula 
-            const texto =
-                textoBusqueda.toLowerCase();
-
-            // cuadro de busqueda por serie, marca, modelo o estado
-            const coincideBusqueda =
-
-                rele.numeroSerie
-                    .toLowerCase()
-                    .includes(texto)
-
-                ||
-
-                rele.marca
-                    .toLowerCase()
-                    .includes(texto)
-
-                ||
-
-                rele.modelo
-                    .toLowerCase()
-                    .includes(texto)
-
-                ||
-
-                rele.estadoActual
-                    .toLowerCase()
-                    .includes(texto);
-
-            // estados de los botones de filtros en tabla
-            const coincideEstado =
-
-                filtroEstado === "TODOS"
-
-                    ? true
-
-                    : filtroEstado === "ACTIVOS"
-
-                        ? rele.activo
-
-                        : !rele.activo;
-
-            return (
-                coincideBusqueda
-                &&
-                coincideEstado
-            );
-        });
-    
-    const relesPaginados =
-        relesFiltrados.slice(
-            page * rowsPerPage,
-            page * rowsPerPage + rowsPerPage
-        );
-
     return (
 
         <div>
@@ -248,7 +207,7 @@ function RelePage() {
             }
 
             <TextField
-                label="Buscar por serie, marca, modelo o estado"
+                label="Buscar por serie, marca o modelo"
                 value={textoBusqueda}
                 onChange={(e) => {
 
@@ -270,21 +229,26 @@ function RelePage() {
                 color="text.secondary"
                 sx={{ mb: 2 }}
             >
-                {relesFiltrados.length} relés encontrados
+                {totalReles} relés encontrados
             </Typography>
 
             <ReleTable
-                reles={relesPaginados}
+                reles={reles}
                 onEditar={handleEditar}
                 filtroEstado={filtroEstado}
-                setFiltroEstado={setFiltroEstado}
+                setFiltroEstado={(value) => {
+
+                    setFiltroEstado(value);
+
+                    setPage(0);
+                }}
             />
 
             <TablePagination
 
                 component="div"
 
-                count={relesFiltrados.length}
+                count={totalReles}
 
                 page={page}
 

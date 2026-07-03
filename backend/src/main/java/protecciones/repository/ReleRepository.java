@@ -103,6 +103,26 @@ public interface ReleRepository
     );
 
     @Query("""
+        SELECT r
+        FROM Rele r
+        JOIN r.modelo m
+        JOIN m.marca ma
+        WHERE (:activo IS NULL OR r.activo = :activo)
+        AND (
+                :texto IS NULL
+                OR :texto = ''
+                OR LOWER(r.numeroSerie) LIKE LOWER(CONCAT('%', :texto, '%'))
+                OR LOWER(m.nombre) LIKE LOWER(CONCAT('%', :texto, '%'))
+                OR LOWER(ma.nombre) LIKE LOWER(CONCAT('%', :texto, '%'))
+        )
+        """)
+    Page<Rele> buscarPaginado(
+            @Param("texto") String texto,
+            @Param("activo") Boolean activo,
+            Pageable pageable
+    );
+
+    @Query("""
             SELECT new protecciones.dto.dashboard.MarcaCantidadDTO(
             m.marca.nombre,
             COUNT(r)

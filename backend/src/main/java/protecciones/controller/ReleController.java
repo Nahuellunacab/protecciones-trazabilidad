@@ -46,12 +46,20 @@ public class ReleController {
             int size,
 
             @RequestParam(defaultValue = "id,asc")
-            String sort) {
+            String sort,
+
+            @RequestParam(defaultValue = "")
+            String texto,
+
+            @RequestParam(defaultValue = "ACTIVOS")
+            String filtroEstado) {
 
         return releService.obtenerPaginados(
                 page,
                 size,
-                sort);
+                sort,
+                texto,
+                filtroEstado);
     }
 
     @GetMapping("/serial/{numeroSerie}")

@@ -8,6 +8,7 @@ import protecciones.entity.Movimiento;
 import protecciones.entity.Posicion;
 import protecciones.entity.Rele;
 import protecciones.entity.Usuario;
+import protecciones.exception.BusinessException;
 import protecciones.repository.EstadoRepository;
 import protecciones.repository.MovimientoRepository;
 import protecciones.repository.PosicionRepository;
@@ -43,13 +44,16 @@ public class MovimientoService {
     private final TransicionEstadoRepository
             transicionEstadoRepository;
 
+    private final ReleBajaService releBajaService;
+
     public MovimientoService(
             MovimientoRepository movimientoRepository,
             ReleRepository releRepository,
             EstadoRepository estadoRepository,
             PosicionRepository posicionRepository,
             UsuarioRepository usuarioRepository,
-            TransicionEstadoRepository transicionEstadoRepository
+            TransicionEstadoRepository transicionEstadoRepository,
+            ReleBajaService releBajaService
     ) {
 
         this.movimientoRepository =
@@ -69,6 +73,9 @@ public class MovimientoService {
 
         this.transicionEstadoRepository =
                 transicionEstadoRepository;
+
+        this.releBajaService =
+                releBajaService;
     }
 
     public List<MovimientoResponseDTO>
@@ -94,7 +101,7 @@ public class MovimientoService {
                 rele.getActivo()
         )) {
 
-            throw new RuntimeException(
+            throw new BusinessException(
                     "No se pueden registrar movimientos sobre un relé dado de baja"
             );
         }
@@ -115,7 +122,7 @@ public class MovimientoService {
 
         Optional<Movimiento> ultimoMovimiento =
                 movimientoRepository
-                        .findTopByReleIdOrderByFechaMovimientoDesc(
+                        .findTopByReleIdOrderByFechaMovimientoDescIdDesc(
                                 rele.getId()
                         );
 
@@ -135,7 +142,7 @@ public class MovimientoService {
 
             if (!transicionPermitida) {
 
-                throw new RuntimeException(
+                throw new BusinessException(
                         "Transición de estado no permitida: "
                                 + estadoActual.getNombre()
                                 + " -> "
@@ -187,15 +194,8 @@ public class MovimientoService {
                         )
         ) {
 
-            rele.setActivo(
-                    false
-            );
-
-            rele.setFechaBaja(
-                    LocalDateTime.now()
-            );
-
-            rele.setMotivoBaja(
+            releBajaService.aplicarBaja(
+                    rele,
                     dto.getNotas()
             );
 

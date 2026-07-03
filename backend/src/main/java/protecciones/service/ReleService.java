@@ -11,6 +11,7 @@ import protecciones.entity.Posicion;
 import protecciones.entity.Rele;
 import protecciones.entity.Remito;
 import protecciones.entity.Usuario;
+import protecciones.exception.BusinessException;
 import protecciones.repository.ModeloRepository;
 import protecciones.repository.MovimientoRepository;
 import protecciones.repository.ReleRepository;
@@ -18,6 +19,7 @@ import protecciones.repository.RemitoRepository;
 import protecciones.repository.EstadoRepository;
 import protecciones.repository.PosicionRepository;
 import protecciones.repository.UsuarioRepository;
+import protecciones.repository.TransicionEstadoRepository;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -52,6 +54,11 @@ public class ReleService {
 
     private final UsuarioRepository usuarioRepository;
 
+    private final ReleBajaService releBajaService;
+
+    private final TransicionEstadoRepository
+            transicionEstadoRepository;
+
     public ReleService(
             ReleRepository releRepository,
             ModeloRepository modeloRepository,
@@ -60,7 +67,9 @@ public class ReleService {
             EstadoRepository estadoRepository,
             PosicionRepository posicionRepository,
             UsuarioRepository usuarioRepository,
-            OrdenProvisionRepository ordenProvisionRepository
+            OrdenProvisionRepository ordenProvisionRepository,
+            ReleBajaService releBajaService,
+            TransicionEstadoRepository transicionEstadoRepository
     ) {
 
         this.releRepository =
@@ -86,6 +95,12 @@ public class ReleService {
 
         this.ordenProvisionRepository =
                 ordenProvisionRepository;
+
+        this.releBajaService =
+                releBajaService;
+
+        this.transicionEstadoRepository =
+                transicionEstadoRepository;
     }
 
     public List<ReleResponseDTO>
@@ -129,7 +144,7 @@ public class ReleService {
                 modeloRepository.findById(
                         dto.getModeloId()
                 ).orElseThrow(() ->
-                        new RuntimeException(
+                        new BusinessException(
                                 "Modelo no encontrado"
                         )
                 );
@@ -144,7 +159,7 @@ public class ReleService {
                     remitoRepository.findById(
                             dto.getRemitoId()
                     ).orElseThrow(() ->
-                            new RuntimeException(
+                            new BusinessException(
                                     "Remito no encontrado"
                             )
                     );
@@ -161,7 +176,7 @@ public class ReleService {
                                 dto.getOrdenProvisionId()
                         )
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new BusinessException(
                                         "Orden de provisión no encontrada"
                                 )
                         );
@@ -173,7 +188,7 @@ public class ReleService {
                 )
         ) {
 
-            throw new RuntimeException(
+            throw new BusinessException(
                     "Ya existe un relé con ese número de serie"
             );
         }
@@ -189,9 +204,9 @@ public class ReleService {
         );
 
         rele.setCodigoConfiguracion(
-                dto.getCodigoConfiguracion()
-                        .toUpperCase()
-                        .trim()
+                normalizarCodigoConfiguracion(
+                        dto.getCodigoConfiguracion()
+                )
         );
         rele.setModelo(
                 modelo
@@ -274,7 +289,7 @@ public class ReleService {
                         )
                         .orElseThrow(() ->
 
-                                new RuntimeException(
+                                new BusinessException(
                                         "Estado EN STOCK no encontrado"
                                 )
                         );
@@ -284,7 +299,7 @@ public class ReleService {
                         dto.getPosicionInicialId()
                 )
                 .orElseThrow(() ->
-                        new RuntimeException(
+                        new BusinessException(
                                 "Posición inicial no encontrada"
                         )
                 );
@@ -292,7 +307,7 @@ public class ReleService {
         Usuario usuarioSistema =
                 usuarioRepository.findById(1L)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new BusinessException(
                                         "Usuario sistema no encontrado"
                                 )
                         );
@@ -344,7 +359,7 @@ public class ReleService {
                 releRepository.findByNumeroSerieAndActivoTrue(
                         numeroSerie
                 ).orElseThrow(() ->
-                        new RuntimeException(
+                        new BusinessException(
                                 "Relé no encontrado"
                         )
                 );
@@ -362,7 +377,7 @@ public class ReleService {
         Rele rele =
                 releRepository.findById(id)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new BusinessException(
                                         "Relé no encontrado"
                                 )
                         );
@@ -376,7 +391,7 @@ public class ReleService {
     ) {
 
         return movimientoRepository
-                .findByReleIdOrderByFechaMovimientoDesc(
+                .findByReleIdOrderByFechaMovimientoDescIdDesc(
                         releId
                 )
                 .stream()
@@ -529,7 +544,7 @@ public class ReleService {
 
         Movimiento ultimoMovimiento =
                 movimientoRepository
-                        .findTopByReleIdOrderByFechaMovimientoDesc(
+                        .findTopByReleIdOrderByFechaMovimientoDescIdDesc(
                                 rele.getId()
                         )
                         .orElse(null);
@@ -547,11 +562,11 @@ public class ReleService {
 
         Movimiento movimiento =
                 movimientoRepository
-                        .findTopByReleIdOrderByFechaMovimientoDesc(
+                        .findTopByReleIdOrderByFechaMovimientoDescIdDesc(
                                 releId
                         )
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new BusinessException(
                                         "El relé no tiene movimientos"
                                 )
                         );
@@ -566,25 +581,17 @@ public class ReleService {
             String estadoNombre
     ) {
 
-        return releRepository.findAll()
-                .stream()
-                .filter(rele ->
-
-                        movimientoRepository
-                                .findTopByReleIdOrderByFechaMovimientoDesc(
-                                        rele.getId()
-                                )
-                                .map(movimiento ->
-
-                                        movimiento.getEstado()
-                                                .getNombre()
-                                                .equalsIgnoreCase(
-                                                        estadoNombre
-                                                )
-                                )
-                                .orElse(false)
+        return movimientoRepository
+                .findUltimosMovimientosByEstado(
+                        estadoNombre
                 )
-                .map(this::mapToResponseDTOCompleto)
+                .stream()
+                .map(movimiento ->
+                        mapToResponseDTO(
+                                movimiento.getRele(),
+                                movimiento
+                        )
+                )
                 .toList();
     }
 
@@ -592,7 +599,9 @@ public class ReleService {
     obtenerPaginados(
             int page,
             int size,
-            String sort
+            String sort,
+            String texto,
+            String filtroEstado
     ) {
 
         String[] sortParams =
@@ -624,9 +633,56 @@ public class ReleService {
                         )
                 );
 
-        return releRepository
-                .findAll(pageable)
-                .map(this::mapToResponseDTOCompleto);
+        Boolean activo =
+                switch (filtroEstado.toUpperCase()) {
+
+                    case "ACTIVOS" -> true;
+
+                    case "INACTIVOS" -> false;
+
+                    default -> null;
+                };
+
+        Page<Rele> relesPage =
+                releRepository.buscarPaginado(
+                        texto,
+                        activo,
+                        pageable
+                );
+
+        List<Long> releIds =
+                relesPage.getContent()
+                        .stream()
+                        .map(Rele::getId)
+                        .toList();
+
+        Map<Long, Movimiento> ultimosMovimientos =
+                releIds.isEmpty()
+                        ? Map.of()
+                        : movimientoRepository
+                                .findUltimosMovimientosByReleIds(
+                                        releIds
+                                )
+                                .stream()
+                                .collect(
+                                        Collectors.toMap(
+                                                movimiento ->
+                                                        movimiento
+                                                                .getRele()
+                                                                .getId(),
+                                                movimiento ->
+                                                        movimiento
+                                        )
+                                );
+
+        return relesPage.map(rele ->
+                mapToResponseDTO(
+                        rele,
+                        ultimosMovimientos.get(
+                                rele.getId()
+                        )
+                )
+        );
     }
 
     public List<ReleResponseDTO>
@@ -676,7 +732,7 @@ public class ReleService {
         Rele rele =
                 releRepository.findById(id)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new BusinessException(
                                         "Relé no encontrado"
                                 )
                         );
@@ -688,7 +744,7 @@ public class ReleService {
                 )
         ) {
 
-            throw new RuntimeException(
+            throw new BusinessException(
                     "Ya existe un relé con ese número de serie"
             );
         }
@@ -697,7 +753,7 @@ public class ReleService {
                 modeloRepository.findById(
                         dto.getModeloId()
                 ).orElseThrow(() ->
-                        new RuntimeException(
+                        new BusinessException(
                                 "Modelo no encontrado"
                         )
                 );
@@ -717,7 +773,7 @@ public class ReleService {
                                 dto.getOrdenProvisionId()
                         )
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new BusinessException(
                                         "Orden de provisión no encontrada"
                                 )
                         );
@@ -729,7 +785,7 @@ public class ReleService {
                 remitoRepository.findById(
                         dto.getRemitoId()
                 ).orElseThrow(() ->
-                        new RuntimeException(
+                        new BusinessException(
                                 "Remito no encontrado"
                         )
                 );
@@ -740,7 +796,9 @@ public class ReleService {
         );
         
         rele.setCodigoConfiguracion(
-                dto.getCodigoConfiguracion()
+                normalizarCodigoConfiguracion(
+                        dto.getCodigoConfiguracion()
+                )
         );
 
         rele.setModelo(modelo);
@@ -814,6 +872,7 @@ public class ReleService {
         );
     }
 
+    @Transactional
     public void darDeBaja(
             Long id,
             String motivo
@@ -822,19 +881,105 @@ public class ReleService {
         Rele rele =
                 releRepository.findById(id)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new BusinessException(
                                         "Relé no encontrado"
                                 )
                         );
 
-        rele.setActivo(false);
+        if (!Boolean.TRUE.equals(
+                rele.getActivo()
+        )) {
 
-        rele.setMotivoBaja(
+            throw new BusinessException(
+                    "El relÃ© ya se encuentra dado de baja"
+            );
+        }
+
+        Movimiento ultimoMovimiento =
+                movimientoRepository
+                        .findTopByReleIdOrderByFechaMovimientoDescIdDesc(
+                                rele.getId()
+                        )
+                        .orElseThrow(() ->
+                                new BusinessException(
+                                        "No se puede dar de baja un relÃ© sin historial operativo"
+                                )
+                        );
+
+        Estado estadoBaja =
+                estadoRepository
+                        .findByNombreIgnoreCase(
+                                "BAJA"
+                        )
+                        .orElseThrow(() ->
+                                new BusinessException(
+                                        "Estado BAJA no encontrado"
+                                )
+                        );
+
+        boolean transicionPermitida =
+                transicionEstadoRepository
+                        .existsByEstadoOrigenIdAndEstadoDestinoId(
+                                ultimoMovimiento
+                                        .getEstado()
+                                        .getId(),
+                                estadoBaja.getId()
+                        );
+
+        if (!transicionPermitida) {
+
+            throw new BusinessException(
+                    "TransiciÃ³n de estado no permitida: "
+                            + ultimoMovimiento
+                                    .getEstado()
+                                    .getNombre()
+                            + " -> "
+                            + estadoBaja.getNombre()
+            );
+        }
+
+        Usuario usuarioSistema =
+                usuarioRepository.findById(1L)
+                        .orElseThrow(() ->
+                                new BusinessException(
+                                        "Usuario sistema no encontrado"
+                                )
+                        );
+
+        Movimiento movimientoBaja =
+                new Movimiento();
+
+        movimientoBaja.setRele(
+                rele
+        );
+
+        movimientoBaja.setEstado(
+                estadoBaja
+        );
+
+        movimientoBaja.setPosicion(
+                ultimoMovimiento.getPosicion()
+        );
+
+        movimientoBaja.setUsuario(
+                usuarioSistema
+        );
+
+        movimientoBaja.setFechaMovimiento(
+                LocalDateTime.now()
+        );
+
+        movimientoBaja.setNotas(
                 motivo.trim()
         );
 
-        rele.setFechaBaja(
-                LocalDateTime.now()
+        movimientoRepository.save(
+                movimientoBaja
+        );
+
+        releBajaService.aplicarBaja(
+                rele,
+                motivo
         );
 
         releRepository.save(rele);
@@ -884,5 +1029,23 @@ public class ReleService {
 
                 movimiento.getNotas()
         );
+    }
+
+    private String normalizarCodigoConfiguracion(
+            String codigoConfiguracion
+    ) {
+
+        if (
+                codigoConfiguracion == null
+                ||
+                codigoConfiguracion.isBlank()
+        ) {
+
+            return null;
+        }
+
+        return codigoConfiguracion
+                .trim()
+                .toUpperCase();
     }
 }

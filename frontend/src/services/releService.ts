@@ -4,19 +4,36 @@ import type { Rele } from "../types/Rele";
 import type { ReleRequest } from "../types/ReleRequest";
 import type { ReleOption } from "../types/ReleOption";
 
-// Se traen 5000 relés páginados del Backend.
-export const obtenerReles = async (): Promise<Rele[]> => {
+interface RelePageResponse {
+
+    content: Rele[];
+
+    totalElements: number;
+}
+
+export const obtenerReles = async (
+    page: number,
+    size: number,
+    texto: string,
+    filtroEstado: "ACTIVOS" | "INACTIVOS" | "TODOS"
+): Promise<RelePageResponse> => {
 
     const response =
-        // await = esperar hasta que responda
         await api.get(
-            "/reles?page=0&size=5000"
+            "/reles",
+            {
+                params: {
+                    page,
+                    size,
+                    texto,
+                    filtroEstado
+                }
+            }
         );
 
-    return response.data.content;
+    return response.data;
 };
 
-// Crear un rele con formato ReleRequest
 export const crearRele = async (
     rele: ReleRequest
 ): Promise<void> => {
@@ -24,7 +41,6 @@ export const crearRele = async (
     await api.post("/reles", rele);
 };
 
-// Actualizar rele con id y demas datos
 export async function actualizar(
     id: number,
     rele: ReleRequest
@@ -39,7 +55,6 @@ export async function actualizar(
     return response.data;
 }
 
-// Obtener catalogos de reles, se muestran los reles de las opciones.
 export async function obtenerOpciones():
 Promise<ReleOption[]> {
 
@@ -49,7 +64,6 @@ Promise<ReleOption[]> {
     return response.data;
 }
 
-// Obtener reles por ID
 export async function obtenerRelePorId(
     id: number
 ): Promise<Rele> {
@@ -62,7 +76,6 @@ export async function obtenerRelePorId(
     return response.data;
 }
 
-// Dar de baja un rele con id y motivo
 export async function darDeBaja(
     id: number,
     motivo: string
