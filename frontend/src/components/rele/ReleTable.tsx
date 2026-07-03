@@ -33,10 +33,14 @@ import {
     CircularProgress,
     Box,
     Tooltip,
+    IconButton,
 } from "@mui/material";
 
 import PictureAsPdfIcon
 from "@mui/icons-material/PictureAsPdf";
+
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import CheckIcon from '@mui/icons-material/Check';
 
 interface Props {
 
@@ -90,6 +94,7 @@ function ReleTable({
         releHistorial,
         setReleHistorial
     ] = useState<Rele | null>(null);
+    const [copiedId, setCopiedId] = useState<number | null>(null);
         
     const getEstadoColor = (estado: string) => {
 
@@ -118,6 +123,28 @@ function ReleTable({
 
             default:
                 return "default";
+        }
+    };
+
+    const handleCopy = async (texto: string | undefined, id: number) => {
+        if (!texto) return;
+
+        try {
+            if (navigator && navigator.clipboard && navigator.clipboard.writeText) {
+                await navigator.clipboard.writeText(texto);
+            } else {
+                const ta = document.createElement('textarea');
+                ta.value = texto;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+            }
+
+            setCopiedId(id);
+            setTimeout(() => setCopiedId(null), 1500);
+        } catch (err) {
+            console.error('Error copying text', err);
         }
     };
         
@@ -303,10 +330,32 @@ function ReleTable({
 
                                         <TableCell>
 
-                                        {
-                                            rele.codigoConfiguracion
-                                                || "-"
-                                        }
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+
+                                            {
+                                                rele.codigoConfiguracion
+                                                    ? (
+                                                        <>
+                                                            <Typography>
+                                                                {rele.codigoConfiguracion}
+                                                            </Typography>
+
+                                                            <Tooltip title={copiedId === rele.id ? "Copiado" : "Copiar"}>
+                                                                <IconButton
+                                                                    size="small"
+                                                                    onClick={() => handleCopy(rele.codigoConfiguracion, rele.id)}
+                                                                >
+                                                                    {copiedId === rele.id ? <CheckIcon fontSize="small" color="success" /> : <ContentCopyIcon fontSize="small" />}
+                                                                </IconButton>
+                                                            </Tooltip>
+                                                        </>
+                                                    )
+                                                    : (
+                                                        "-"
+                                                    )
+                                            }
+
+                                        </Box>
 
                                         </TableCell>
 
