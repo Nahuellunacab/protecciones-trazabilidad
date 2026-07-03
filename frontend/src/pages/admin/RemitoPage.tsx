@@ -557,7 +557,7 @@ function RemitoPage() {
 
                                                 window.open(
 
-                                                    `http://localhost:8080/api/remitos/${remito.id}/archivo`,
+                                                    `/api/remitos/${remito.id}/archivo`,
                                                     "_blank"
                                                 )
                                             }

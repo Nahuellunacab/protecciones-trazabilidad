@@ -599,7 +599,7 @@ function OrdenProvisionPage() {
 
                                                     window.open(
 
-                                                        `http://localhost:8080/api/ordenes-provision/${orden.id}/archivo`,
+                                                        `/api/ordenes-provision/${orden.id}/archivo`,
 
                                                         "_blank"
                                                     )
