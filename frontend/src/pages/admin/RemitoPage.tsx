@@ -22,19 +22,19 @@ import {
     TextField,
     Typography,
     Chip,
-    IconButton
-
-} from "@mui/material";
-
-import Grid from "@mui/material/Grid";
-
-import type {
-    Remito
-} from "../../types/Remito";
-
-import type {
-    RemitoRequest
-} from "../../types/RemitoRequest";
+                                                    <Button
+                                                        size="small"
+                                                        variant="text"
+                                                        startIcon={<PictureAsPdfIcon />}
+                                                        onClick={() =>
+                                                            window.open(
+                                                                `/api/remitos/${remito.id}/archivo`,
+                                                                "_blank"
+                                                            )
+                                                        }
+                                                    >
+                                                        VER
+                                                    </Button>
 
 import type {
     Proveedor

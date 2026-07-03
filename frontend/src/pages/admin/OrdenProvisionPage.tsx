@@ -360,19 +360,19 @@ function OrdenProvisionPage() {
                     Nueva Orden de Provisión
                 </Typography>
 
-                <Box
-                    component="form"
-                    onSubmit={handleSubmit}
-                >
-
-                    <Grid
-                        container
-                        spacing={3}
-                    >
-
-                        {/* Número */}
-                        <Grid item xs={12} md={4}>
-
+                                                        <Button
+                                                            size="small"
+                                                            variant="text"
+                                                            startIcon={<PictureAsPdfIcon />}
+                                                            onClick={() =>
+                                                                window.open(
+                                                                    `/api/ordenes-provision/${orden.id}/archivo`,
+                                                                    "_blank"
+                                                                )
+                                                            }
+                                                        >
+                                                            VER
+                                                        </Button>
                             <TextField
                                 fullWidth
                                 label="Número"

@@ -487,7 +487,7 @@ function ReleTable({
                                                                 startIcon={<PictureAsPdfIcon />}
                                                                 onClick={() =>
                                                                     window.open(
-                                                                        `http://localhost:8080/api/remitos/${rele.remitoId}/archivo`,
+                                                                        `/api/remitos/${rele.remitoId}/archivo`,
                                                                         "_blank"
                                                                     )
                                                                 }
@@ -511,7 +511,7 @@ function ReleTable({
                                                                 startIcon={<PictureAsPdfIcon />}
                                                                 onClick={() =>
                                                                     window.open(
-                                                                        `http://localhost:8080/api/ordenes-provision/${rele.ordenProvisionId}/archivo`,
+                                                                        `/api/ordenes-provision/${rele.ordenProvisionId}/archivo`,
                                                                         "_blank"
                                                                     )
                                                                 }
