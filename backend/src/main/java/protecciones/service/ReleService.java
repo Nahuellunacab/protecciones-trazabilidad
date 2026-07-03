@@ -190,9 +190,9 @@ public class ReleService {
         );
 
         rele.setCodigoConfiguracion(
-                dto.getCodigoConfiguracion()
-                        .toUpperCase()
-                        .trim()
+                normalizarCodigoConfiguracion(
+                        dto.getCodigoConfiguracion()
+                )
         );
         rele.setModelo(
                 modelo
@@ -805,7 +805,9 @@ public class ReleService {
         );
         
         rele.setCodigoConfiguracion(
-                dto.getCodigoConfiguracion()
+                normalizarCodigoConfiguracion(
+                        dto.getCodigoConfiguracion()
+                )
         );
 
         rele.setModelo(modelo);
@@ -949,5 +951,23 @@ public class ReleService {
 
                 movimiento.getNotas()
         );
+    }
+
+    private String normalizarCodigoConfiguracion(
+            String codigoConfiguracion
+    ) {
+
+        if (
+                codigoConfiguracion == null
+                ||
+                codigoConfiguracion.isBlank()
+        ) {
+
+            return null;
+        }
+
+        return codigoConfiguracion
+                .trim()
+                .toUpperCase();
     }
 }
