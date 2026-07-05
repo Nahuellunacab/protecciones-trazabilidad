@@ -165,7 +165,7 @@ function MovimientoTable({
                                 <TableCell>
 
                                     <Typography
-                                        fontWeight={600}
+                                        sx={{ fontWeight: 600 }}
                                     >
 
                                         {

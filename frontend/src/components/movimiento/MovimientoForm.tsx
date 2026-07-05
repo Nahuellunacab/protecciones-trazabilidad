@@ -22,7 +22,6 @@ import type {
 
 import {
 
-    obtenerEstados,
     obtenerEstadosPermitidos
 
 } from "../../services/estadoService";
@@ -329,7 +328,7 @@ function MovimientoForm({
                                     <Stack>
 
                                         <Typography
-                                            fontWeight={600}
+                                            sx={{ fontWeight: 600 }}
                                         >
 
                                             {option.numeroSerie}
@@ -367,8 +366,8 @@ function MovimientoForm({
 
                                     <Typography
                                         variant="subtitle1"
-                                        fontWeight={600}
                                         gutterBottom
+                                        sx={{ fontWeight: 600 }}
                                     >
                                         Estado Operacional Actual
                                     </Typography>
@@ -380,8 +379,8 @@ function MovimientoForm({
                                     <Stack
                                         direction="row"
                                         spacing={1}
-                                        flexWrap="wrap"
                                         useFlexGap
+                                        sx={{ flexWrap: "wrap" }}
                                     >
 
                                         <Chip

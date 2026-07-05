@@ -300,10 +300,7 @@ function HomePage() {
                 {cardsGenerales.map((card) => (
 
                     <Grid
-                        item
-                        xs={12}
-                        sm={6}
-                        md
+                        size={{ xs: 12, sm: 6, md: "grow" }}
                         key={card.title}
                         sx={{
                             flexGrow: 1,
@@ -338,7 +335,7 @@ function HomePage() {
 
                             <Typography
                                 variant="h4"
-                                fontWeight={700}
+                                sx={{ fontWeight: 700 }}
                             >
 
                                 {card.value}
@@ -372,10 +369,7 @@ function HomePage() {
                 {cardsOperativas.map((card) => (
 
                     <Grid
-                        item
-                        xs={12}
-                        sm={6}
-                        md
+                        size={{ xs: 12, sm: 6, md: "grow" }}
                         key={card.title}
                         sx={{
                             flexGrow: 1,
@@ -406,7 +400,7 @@ function HomePage() {
 
                             <Typography
                                 variant="h5"
-                                fontWeight={700}
+                                sx={{ fontWeight: 700 }}
                             >
 
                                 {card.value}
@@ -678,7 +672,7 @@ function HomePage() {
 
                 <Typography
                     variant="h6"
-                    fontWeight={600}
+                    sx={{ fontWeight: 600 }}
                 >
 
                     Nivel de Trazabilidad
@@ -748,7 +742,7 @@ function HomePage() {
                 <Typography
                     variant="h6"
                     gutterBottom
-                    fontWeight={600}
+                    sx={{ fontWeight: 600 }}
                 >
 
                     Últimos Movimientos
@@ -779,8 +773,8 @@ function HomePage() {
                             <Box sx={{ width: "35%" }}>
 
                                 <Typography
-                                    fontWeight={700}
                                     variant="body1"
+                                    sx={{ fontWeight: 700 }}
                                 >
 
                                     {mov.rele}

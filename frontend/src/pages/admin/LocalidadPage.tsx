@@ -205,8 +205,7 @@ function LocalidadPage() {
 
             <Typography
                 variant="h3"
-                fontWeight={700}
-                mb={2}
+                sx={{ fontWeight: 700, mb: 2 }}
             >
                 Localidades
             </Typography>
@@ -214,7 +213,7 @@ function LocalidadPage() {
             <Typography
                 variant="h6"
                 color="text.secondary"
-                mb={5}
+                sx={{ mb: 5 }}
             >
                 Gestión de localidades
                 utilizadas en destinos

@@ -205,8 +205,7 @@ function DestinoPage() {
 
             <Typography
                 variant="h3"
-                fontWeight={700}
-                mb={2}
+                sx={{ fontWeight: 700, mb: 2 }}
             >
                 Destinos Operativos
             </Typography>
@@ -214,7 +213,7 @@ function DestinoPage() {
             <Typography
                 variant="h6"
                 color="text.secondary"
-                mb={5}
+                sx={{ mb: 5 }}
             >
                 Gestión de destinos y
                 ubicaciones operativas

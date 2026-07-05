@@ -218,8 +218,7 @@ function RemitoPage() {
 
             <Typography
                 variant="h3"
-                fontWeight={700}
-                mb={2}
+                sx={{ fontWeight: 700, mb: 2 }}
             >
                 Remitos
             </Typography>
@@ -227,7 +226,7 @@ function RemitoPage() {
             <Typography
                 variant="h6"
                 color="text.secondary"
-                mb={5}
+                sx={{ mb: 5 }}
             >
                 Gestión de remitos de
                 ingreso utilizados para
@@ -266,8 +265,8 @@ function RemitoPage() {
                         type="date"
                         fullWidth
                         label="Fecha"
-                        InputLabelProps={{
-                            shrink: true
+                        slotProps={{
+                            inputLabel: { shrink: true }
                         }}
                         value={fecha}
                         onChange={(e) =>
