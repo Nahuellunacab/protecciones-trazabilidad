@@ -662,13 +662,85 @@ PATCH /api/reles/{id}/baja
 
 ---
 
-# Ejecución Local
+# Ejecución con Docker (recomendado)
 
-## Levantar PostgreSQL
+Levanta los tres componentes (PostgreSQL, backend, frontend) con un solo comando. Cada uno
+corre en su propio contenedor, en una red que Docker Compose arma automáticamente.
+
+## Requisitos
+
+- Tener [Docker Desktop](https://www.docker.com/products/docker-desktop/) instalado y corriendo.
+- Clonar el repositorio.
+
+## Primera vez en esta máquina
+
+`docker/.env` tiene las credenciales de la base y está en `.gitignore` (no se sube al repo),
+así que hay que crearlo una vez por máquina a partir del ejemplo:
 
 ```bash
 cd docker
-docker compose up -d
+cp .env.example .env
+```
+
+Podés dejar los valores por defecto de `.env.example` para desarrollo local, o cambiar
+`DB_PASSWORD` si querés. Este paso solo hace falta la primera vez que clonás el proyecto
+en una PC nueva (no hay que repetirlo en cada `docker compose up`).
+
+## Levantar todo
+
+```bash
+cd docker
+docker compose up -d --build
+```
+
+- `--build` reconstruye las imágenes si cambiaste código de backend o frontend. Si solo
+  querés levantar lo ya construido, alcanza con `docker compose up -d`.
+- Las variables de entorno (usuario/password/nombre de la base) se leen de `docker/.env`,
+  el mismo archivo que ya se usaba para levantar solo Postgres.
+- El backend se conecta a Postgres usando el nombre del servicio (`postgres`) como host,
+  no `localhost` — así se resuelve dentro de la red interna de Docker Compose.
+- Los PDF que suben Remitos/Órdenes de Provisión se guardan en un volumen nombrado
+  (`uploads_data`), para que no se pierdan si se recrea el contenedor del backend.
+
+Para bajar todo:
+
+```bash
+docker compose down
+```
+
+Para bajar todo y además borrar los datos de Postgres (⚠️ pierde todo lo cargado en la base):
+
+```bash
+docker compose down -v
+```
+
+Ver logs de un servicio puntual (útil para debuggear el arranque):
+
+```bash
+docker compose logs backend -f
+docker compose logs frontend -f
+```
+
+## URLs
+
+```text
+Frontend: http://localhost:5173
+Backend:  http://localhost:8080/api
+Swagger:  http://localhost:8080/swagger-ui/index.html
+```
+
+---
+
+# Ejecución Local (sin Docker)
+
+Alternativa para desarrollar sin reconstruir imágenes cada vez (hot reload de Vite y
+devtools de Spring Boot). Requiere tener Java 21, Node y npm instalados en la máquina.
+
+## Levantar solo PostgreSQL
+
+```bash
+cd docker
+docker compose up -d postgres
 ```
 
 ## Ejecutar Backend
@@ -717,7 +789,7 @@ http://localhost:5173
 ## Swagger
 
 ```text
-http://localhost:8082/swagger-ui/index.html
+http://localhost:8080/swagger-ui/index.html
 ```
 
 ---

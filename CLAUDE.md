@@ -75,8 +75,12 @@ PostgreSQL (Docker, puerto host configurable, contenedor "protecciones-db")
 - ESLint + `typescript-eslint` — linting.
 
 ## Infraestructura
-- **Docker / Docker Compose** (`docker/docker-compose.yml`) — levanta únicamente PostgreSQL en contenedor (`postgres:16` por defecto). Backend y frontend se ejecutan localmente (no dockerizados todavía).
-- Variables de entorno para DB: `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_PORT` (compose) y `DB_URL`/`DB_USER`/`DB_PASSWORD`/`SERVER_PORT`/`DDL_AUTO`/`TIMEZONE`/`JPA_SHOW_SQL` (Spring, con defaults en `application.properties`).
+- **Docker / Docker Compose** (`docker/docker-compose.yml`) — levanta los tres componentes: PostgreSQL (`postgres:16`), backend y frontend, cada uno en su propio contenedor sobre la red que Compose arma automáticamente (los servicios se resuelven entre sí por nombre; el backend usa `postgres:5432` como host de base de datos, no `localhost`).
+  - `backend/Dockerfile`: build multi-stage (etapa `maven:3.9-eclipse-temurin-21` compila el jar, etapa `eclipse-temurin:21-jre-jammy` lo ejecuta). Expone 8080. La carpeta `uploads/` (PDFs de Remito/OrdenProvision, rutas relativas) se monta como volumen nombrado (`uploads_data`) para no perder archivos al recrear el contenedor.
+  - `frontend/Dockerfile`: build multi-stage (`node:22-alpine` corre `npm run build:docker`, que compila con `vite build --mode docker` usando `frontend/.env.docker` en vez de `frontend/.env.production`, que queda reservado para un deploy real futuro; `nginx:1.27-alpine` sirve el `dist/` resultante con `frontend/nginx.conf`, que agrega el fallback SPA `try_files ... /index.html` que necesita React Router).
+  - El frontend dockerizado se expone en el mismo puerto que `npm run dev` (`5173:80`), así no hace falta tocar `CorsConfig.java` (sigue restringido a `http://localhost:5173`) para que funcione en ambos entornos.
+  - `docker compose up -d --build` levanta todo. También sigue soportado levantar solo Postgres (`docker compose up -d postgres`) para desarrollar backend/frontend localmente con hot reload, como antes de dockerizar.
+- Variables de entorno para DB: `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_PORT` (compose) y `DB_URL`/`DB_USER`/`DB_PASSWORD`/`SERVER_PORT`/`DDL_AUTO`/`TIMEZONE`/`JPA_SHOW_SQL` (Spring, con defaults en `application.properties`). Dentro de la red de Docker Compose, `DB_URL` del backend apunta a `postgres:5432` (puerto interno del contenedor), no al `DB_PORT` expuesto al host (5433).
 
 ---
 
