@@ -1,0 +1,2 @@
+ALTER TABLE rele
+ADD COLUMN tipo_ingreso VARCHAR(20);

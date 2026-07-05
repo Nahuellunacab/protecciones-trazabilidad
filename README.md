@@ -673,8 +673,21 @@ docker compose up -d
 
 ## Ejecutar Backend
 
-```bash
+`spring.datasource.password` no tiene default: hay que setear `DB_PASSWORD` como variable
+de entorno (el mismo valor que `docker/.env`) antes de levantar el backend.
+
+PowerShell (carga las variables de `docker/.env` automáticamente):
+
+```powershell
 cd backend
+./run-dev.ps1
+```
+
+Manual:
+
+```powershell
+cd backend
+$env:DB_PASSWORD="9988776655"
 ./mvnw.cmd spring-boot:run
 ```
 
