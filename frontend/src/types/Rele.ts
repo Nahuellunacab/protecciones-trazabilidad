@@ -16,10 +16,6 @@ export interface Rele {
 
     marca: string;
 
-    tension: string;
-
-    tipo: string;
-
     estadoActual: string;
 
     posicionActual: string;

@@ -294,7 +294,7 @@ function MovimientoForm({
 
                             getOptionLabel={(option) =>
 
-                                `${option.numeroSerie} | ${option.marca} | ${option.modelo} | ${option.tension}`
+                                `${option.numeroSerie} | ${option.marca} | ${option.modelo}`
                             }
 
                             value={
@@ -341,7 +341,7 @@ function MovimientoForm({
                                         >
 
                                             {
-                                                `${option.marca} | ${option.modelo} | ${option.tension}`
+                                                `${option.marca} | ${option.modelo}`
                                             }
 
                                         </Typography>
@@ -444,18 +444,6 @@ function MovimientoForm({
                                             {" "}
                                             {
                                                 releSeleccionado.modelo
-                                            }
-
-                                        </Typography>
-
-                                        <Typography
-                                            variant="body2"
-                                        >
-
-                                            <strong>Tensión:</strong>
-                                            {" "}
-                                            {
-                                                releSeleccionado.tension
                                             }
 
                                         </Typography>

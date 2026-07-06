@@ -10,21 +10,17 @@ public class ReleOptionDTO {
 
     private String marca;
 
-    private String tension;
-
     public ReleOptionDTO(
             Long id,
             String numeroSerie,
             String modelo,
-            String marca,
-            String tension
+            String marca
     ) {
 
         this.id = id;
         this.numeroSerie = numeroSerie;
         this.modelo = modelo;
         this.marca = marca;
-        this.tension = tension;
     }
 
     public Long getId() {
@@ -41,9 +37,5 @@ public class ReleOptionDTO {
 
     public String getMarca() {
         return marca;
-    }
-
-    public String getTension() {
-        return tension;
     }
 }

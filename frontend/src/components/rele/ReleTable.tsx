@@ -33,10 +33,17 @@ import {
     CircularProgress,
     Box,
     Tooltip,
+    IconButton,
 } from "@mui/material";
 
 import PictureAsPdfIcon
 from "@mui/icons-material/PictureAsPdf";
+
+import ContentCopyIcon
+from "@mui/icons-material/ContentCopy";
+
+import CheckIcon
+from "@mui/icons-material/Check";
 
 interface Props {
 
@@ -90,7 +97,12 @@ function ReleTable({
         releHistorial,
         setReleHistorial
     ] = useState<Rele | null>(null);
-        
+
+    const [
+        copiedId,
+        setCopiedId
+    ] = useState<number | null>(null);
+
     const getEstadoColor = (estado: string) => {
 
         switch (estado?.toUpperCase()) {
@@ -120,9 +132,50 @@ function ReleTable({
                 return "default";
         }
     };
-        
-    
-    
+
+    const handleCopy = async (
+        texto: string | undefined,
+        id: number
+    ) => {
+
+        if (!texto) return;
+
+        try {
+
+            if (
+                navigator &&
+                navigator.clipboard &&
+                navigator.clipboard.writeText
+            ) {
+
+                await navigator.clipboard.writeText(texto);
+
+            } else {
+
+                const ta = document.createElement("textarea");
+                ta.value = texto;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand("copy");
+                document.body.removeChild(ta);
+            }
+
+            setCopiedId(id);
+
+            setTimeout(
+                () => setCopiedId(null),
+                1500
+            );
+
+        } catch (err) {
+
+            console.error(
+                "Error copying text",
+                err
+            );
+        }
+    };
+
     const handleVerHistorial =
     async (
         rele: Rele
@@ -242,10 +295,6 @@ function ReleTable({
                             </TableCell>
 
                             <TableCell>
-                                Tensión
-                            </TableCell>
-
-                            <TableCell>
                                 Estado
                             </TableCell>
 
@@ -307,10 +356,39 @@ function ReleTable({
 
                                         <TableCell>
 
-                                        {
-                                            rele.codigoConfiguracion
-                                                || "-"
-                                        }
+                                            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+
+                                                {
+                                                    rele.codigoConfiguracion
+                                                        ? (
+                                                            <>
+                                                                <Typography>
+                                                                    {rele.codigoConfiguracion}
+                                                                </Typography>
+
+                                                                <Tooltip title={copiedId === rele.id ? "Copiado" : "Copiar"}>
+                                                                    <IconButton
+                                                                        size="small"
+                                                                        onClick={() =>
+                                                                            handleCopy(
+                                                                                rele.codigoConfiguracion ?? undefined,
+                                                                                rele.id
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        {
+                                                                            copiedId === rele.id
+                                                                                ? <CheckIcon fontSize="small" color="success" />
+                                                                                : <ContentCopyIcon fontSize="small" />
+                                                                        }
+                                                                    </IconButton>
+                                                                </Tooltip>
+                                                            </>
+                                                        )
+                                                        : "-"
+                                                }
+
+                                            </Box>
 
                                         </TableCell>
 
@@ -320,15 +398,6 @@ function ReleTable({
 
                                         <TableCell>
                                             {rele.modelo}
-                                        </TableCell>
-
-                                        <TableCell>
-
-                                            {
-                                                rele.tension
-                                                || "-"
-                                            }
-
                                         </TableCell>
 
                                         <TableCell>
@@ -451,7 +520,7 @@ function ReleTable({
                                                                 startIcon={<PictureAsPdfIcon />}
                                                                 onClick={() =>
                                                                     window.open(
-                                                                        `http://localhost:8080/api/remitos/${rele.remitoId}/archivo`,
+                                                                        `/api/remitos/${rele.remitoId}/archivo`,
                                                                         "_blank"
                                                                     )
                                                                 }
@@ -475,7 +544,7 @@ function ReleTable({
                                                                 startIcon={<PictureAsPdfIcon />}
                                                                 onClick={() =>
                                                                     window.open(
-                                                                        `http://localhost:8080/api/ordenes-provision/${rele.ordenProvisionId}/archivo`,
+                                                                        `/api/ordenes-provision/${rele.ordenProvisionId}/archivo`,
                                                                         "_blank"
                                                                     )
                                                                 }

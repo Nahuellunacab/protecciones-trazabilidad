@@ -33,26 +33,6 @@ function ModeloTable({
     onEliminar
 }: Props) {
 
-    const obtenerTension = (
-        modelo: Modelo
-    ) => {
-
-        if (
-            !modelo.tensionDesde &&
-            !modelo.tensionHasta
-        ) {
-
-            return "-";
-        }
-
-        return `
-            ${modelo.tensionDesde}
-            -
-            ${modelo.tensionHasta}
-            ${modelo.tipoTension}
-        `;
-    };
-
     return (
 
         <TableContainer
@@ -73,19 +53,7 @@ function ModeloTable({
                         </TableCell>
 
                         <TableCell>
-                            <strong>Tensión</strong>
-                        </TableCell>
-
-                        <TableCell>
-                            <strong>Tipo</strong>
-                        </TableCell>
-
-                        <TableCell>
                             <strong>Marca</strong>
-                        </TableCell>
-
-                        <TableCell>
-                            <strong>Función</strong>
                         </TableCell>
 
                         <TableCell>
@@ -135,19 +103,7 @@ function ModeloTable({
                                 </TableCell>
 
                                 <TableCell>
-                                    {obtenerTension(modelo)}
-                                </TableCell>
-
-                                <TableCell>
-                                    {modelo.tipoTension}
-                                </TableCell>
-
-                                <TableCell>
                                     {modelo.marca}
-                                </TableCell>
-
-                                <TableCell>
-                                    {modelo.tipo}
                                 </TableCell>
 
                                 <TableCell>

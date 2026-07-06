@@ -408,61 +408,6 @@ public class ReleService {
         Modelo modelo =
                 rele.getModelo();
 
-        String tension = "";
-
-        if (modelo != null) {
-
-            Integer desde =
-                    modelo.getTensionDesde();
-
-            Integer hasta =
-                    modelo.getTensionHasta();
-
-            String tipo =
-                    modelo.getTipoTension();
-
-            if (
-                    desde != null
-                            &&
-                    hasta != null
-            ) {
-
-                tension =
-                        desde
-                                + " - "
-                                + hasta
-                                + " "
-                                + (
-                                tipo != null
-                                        ? tipo
-                                        : ""
-                        );
-
-            } else if (desde != null) {
-
-                tension =
-                        desde
-                                + " "
-                                + (
-                                tipo != null
-                                        ? tipo
-                                        : ""
-                        );
-
-            } else {
-
-                tension =
-                        tipo != null
-                                ? tipo
-                                : "";
-            }
-        
-        
-
-        }
-        
-        
-        
         Long modeloId =
                 modelo != null
                         ? modelo.getId()
@@ -564,12 +509,6 @@ public class ReleService {
                         &&
                         modelo.getMarca() != null
                         ? modelo.getMarca().getNombre()
-                        : null,
-
-                tension,
-
-                modelo != null
-                        ? modelo.getTipo().getNombre()
                         : null,
 
                 estadoActual,
@@ -779,10 +718,7 @@ public class ReleService {
 
                                 rele.getModelo()
                                         .getMarca()
-                                        .getNombre(),
-
-                                mapToResponseDTOCompleto(rele)
-                                        .getTension()
+                                        .getNombre()
                         )
                 )
                 .toList();
