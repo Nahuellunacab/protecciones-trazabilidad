@@ -69,10 +69,13 @@ interface Props {
     onCreate: (
         data: MovimientoRequest
     ) => Promise<void>;
+
+    releIdPreseleccionado?: number;
 }
 
 function MovimientoForm({
-    onCreate
+    onCreate,
+    releIdPreseleccionado
 }: Props) {
 
     const [loading, setLoading] =
@@ -210,6 +213,24 @@ function MovimientoForm({
             console.error(error);
         }
     };
+
+    useEffect(() => {
+
+        if (!releIdPreseleccionado) return;
+
+        if (formData.releId === releIdPreseleccionado) return;
+
+        const opcion =
+            reles.find(
+                (r) => r.id === releIdPreseleccionado
+            );
+
+        if (opcion) {
+
+            handleSeleccionRele(opcion);
+        }
+
+    }, [reles, releIdPreseleccionado]);
 
     const ejecutarMovimiento = async () => {
 

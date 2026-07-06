@@ -218,6 +218,9 @@ public class MovimientoService {
                 movimiento.getId(),
 
                 movimiento.getRele()
+                        .getId(),
+
+                movimiento.getRele()
                         .getNumeroSerie(),
 
                 movimiento.getRele()

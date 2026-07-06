@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 
+import { useSearchParams } from "react-router-dom";
+
 import {
     Box,
     Button,
@@ -35,6 +37,12 @@ import FileDownloadIcon
 from "@mui/icons-material/FileDownload";
 
 function MovimientoPage() {
+
+    const [searchParams] =
+        useSearchParams();
+
+    const releIdPreseleccionado =
+        searchParams.get("releId");
 
     const [movimientos, setMovimientos] =
         useState<Movimiento[]>([]);
@@ -247,6 +255,11 @@ function MovimientoPage() {
 
             <MovimientoForm
                 onCreate={handleCreate}
+                releIdPreseleccionado={
+                    releIdPreseleccionado
+                        ? Number(releIdPreseleccionado)
+                        : undefined
+                }
             />
 
             <Box
