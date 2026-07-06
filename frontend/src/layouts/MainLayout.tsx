@@ -22,6 +22,12 @@ from "@mui/icons-material/ArrowDropDown";
 import MenuIcon
 from "@mui/icons-material/Menu";
 
+import Brightness4Icon
+from "@mui/icons-material/Brightness4";
+
+import Brightness7Icon
+from "@mui/icons-material/Brightness7";
+
 import epecLogo
     from "../assets/epec-logo.png";
 
@@ -33,7 +39,13 @@ import {
     useLocation
 } from "react-router-dom";
 
+import { useColorMode }
+from "../theme/ColorModeContext";
+
 function MainLayout() {
+
+    const { mode, toggleColorMode } =
+        useColorMode();
 
     const location = useLocation();
 
@@ -81,7 +93,7 @@ function MainLayout() {
         <Box
             sx={{
                 minHeight: "100vh",
-                backgroundColor: "#F4F6F8"
+                backgroundColor: "background.default"
             }}
         >
 
@@ -364,6 +376,24 @@ function MainLayout() {
                         </Menu>
 
                     </Box>
+
+                    <IconButton
+                        color="inherit"
+                        onClick={toggleColorMode}
+                        aria-label={
+                            mode === "dark"
+                                ? "Cambiar a modo claro"
+                                : "Cambiar a modo oscuro"
+                        }
+                    >
+
+                        {
+                            mode === "dark"
+                                ? <Brightness7Icon />
+                                : <Brightness4Icon />
+                        }
+
+                    </IconButton>
 
                     <IconButton
                         color="inherit"
