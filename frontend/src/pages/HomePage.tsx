@@ -41,11 +41,14 @@ import {
 
     obtenerDashboardKpis,
     obtenerUltimosMovimientos,
-    obtenerRelesPorMarca
+    obtenerRelesPorMarca,
+    obtenerRelesPorModelo
 
 } from "../services/dashboardService";
 
 import type { MarcaCantidad } from "../types/MarcaCantidad";
+
+import type { ModeloCantidad } from "../types/ModeloCantidad";
 
 function HomePage() {
 
@@ -75,6 +78,12 @@ function HomePage() {
     ] =
         useState<MarcaCantidad[]>([]);
 
+    const [
+        modelosData,
+        setModelosData
+    ] =
+        useState<ModeloCantidad[]>([]);
+
     const cargarDashboard =
     async () => {
 
@@ -89,6 +98,9 @@ function HomePage() {
             const marcas =
                 await obtenerRelesPorMarca();
 
+            const modelos =
+                await obtenerRelesPorModelo();
+
             setKpis(
                 kpiData
             );
@@ -99,6 +111,10 @@ function HomePage() {
 
             setMarcasData(
                 marcas
+            );
+
+            setModelosData(
+                modelos
             );
 
         } catch (error) {
@@ -449,7 +465,7 @@ function HomePage() {
             <Grid container spacing={3} sx={{ mb: 4 }}>
             
                 {/*Grafico de estados de relés*/}
-                <Grid size={{ xs: 12, md: 6 }}>
+                <Grid size={{ xs: 12, md: 4 }}>
 
                     <Paper
                         sx={{
@@ -499,7 +515,7 @@ function HomePage() {
                 </Grid>
 
                 {/* Gráfico de cantidad de relés por marca*/}
-                <Grid size={{ xs: 12, md: 6 }}>
+                <Grid size={{ xs: 12, md: 4 }}>
 
                     <Paper
                         sx={{
@@ -543,7 +559,8 @@ function HomePage() {
                                 <YAxis
                                     type="category"
                                     dataKey="marca"
-                                    width={80}
+                                    width={160}
+                                    tick={{ fontSize: 12, fill: "#37474F" }}
                                 />
 
                                 <Tooltip />
@@ -551,6 +568,70 @@ function HomePage() {
                                 <Bar
                                     dataKey="cantidad"
                                     fill="#1976D2"
+                                />
+
+                            </BarChart>
+
+                        </ResponsiveContainer>
+
+                    </Paper>
+
+                </Grid>
+
+                {/* Gráfico de cantidad de relés por modelo*/}
+                <Grid size={{ xs: 12, md: 4 }}>
+
+                    <Paper
+                        sx={{
+                            p: 3,
+                            borderRadius: 4,
+                            height: 380
+                        }}
+                    >
+
+                        <Typography
+                            variant="h6"
+                            sx={{ mb: 3 }}
+                        >
+                            Distribución por Modelo
+                        </Typography>
+
+                        <ResponsiveContainer
+                            width="100%"
+                            height={280}
+                        >
+
+                            <BarChart
+                                data={modelosData}
+                                layout="vertical"
+                                margin={{
+                                    top: 5,
+                                    right: 20,
+                                    left: 20,
+                                    bottom: 5
+                                }}
+                            >
+
+                                <CartesianGrid
+                                    strokeDasharray="3 3"
+                                />
+
+                                <XAxis
+                                    type="number"
+                                />
+
+                                <YAxis
+                                    type="category"
+                                    dataKey="modelo"
+                                    width={160}
+                                    tick={{ fontSize: 12, fill: "#37474F" }}
+                                />
+
+                                <Tooltip />
+
+                                <Bar
+                                    dataKey="cantidad"
+                                    fill="#F57C00"
                                 />
 
                             </BarChart>

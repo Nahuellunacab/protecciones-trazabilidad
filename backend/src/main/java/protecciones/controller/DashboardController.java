@@ -5,6 +5,7 @@ import protecciones.dto.dashboard.DashboardKpiDTO;
 import protecciones.service.DashboardService;
 import java.util.List;
 import protecciones.dto.dashboard.MarcaCantidadDTO;
+import protecciones.dto.dashboard.ModeloCantidadDTO;
 
 @RestController
 @RequestMapping("/api/dashboard")
@@ -43,5 +44,13 @@ public class DashboardController {
 
         return dashboardService
                 .obtenerRelesPorMarca();
+        }
+
+    @GetMapping("/modelos")
+        public List<ModeloCantidadDTO>
+        obtenerRelesPorModelo() {
+
+        return dashboardService
+                .obtenerRelesPorModelo();
         }
 }

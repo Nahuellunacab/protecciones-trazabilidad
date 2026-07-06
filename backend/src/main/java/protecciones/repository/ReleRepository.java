@@ -4,6 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import protecciones.dto.dashboard.MarcaCantidadDTO;
+import protecciones.dto.dashboard.ModeloCantidadDTO;
 import protecciones.entity.Rele;
 
 import java.time.LocalDate;
@@ -134,6 +135,19 @@ public interface ReleRepository
             ORDER BY COUNT(r) DESC
             """)
     List<MarcaCantidadDTO> contarRelesPorMarca();
+
+    @Query("""
+            SELECT new protecciones.dto.dashboard.ModeloCantidadDTO(
+            m.nombre,
+            COUNT(r)
+            )
+            FROM Rele r
+            JOIN r.modelo m
+            WHERE r.activo = true
+            GROUP BY m.nombre
+            ORDER BY COUNT(r) DESC
+            """)
+    List<ModeloCantidadDTO> contarRelesPorModelo();
 
     @Query("""
                 SELECT COUNT(r)

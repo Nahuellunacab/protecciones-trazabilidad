@@ -10,6 +10,8 @@ import type {
 
 import type { MarcaCantidad } from "../types/MarcaCantidad";
 
+import type { ModeloCantidad } from "../types/ModeloCantidad";
+
 export async function
 obtenerDashboardKpis():
 Promise<DashboardKpi> {
@@ -40,6 +42,17 @@ export const obtenerRelesPorMarca =
         const response =
             await api.get(
                 "/dashboard/marcas"
+            );
+
+        return response.data;
+    };
+
+export const obtenerRelesPorModelo =
+    async (): Promise<ModeloCantidad[]> => {
+
+        const response =
+            await api.get(
+                "/dashboard/modelos"
             );
 
         return response.data;

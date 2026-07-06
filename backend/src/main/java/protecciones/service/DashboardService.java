@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import protecciones.dto.MovimientoResponseDTO;
 import protecciones.dto.dashboard.DashboardKpiDTO;
 import protecciones.dto.dashboard.MarcaCantidadDTO;
+import protecciones.dto.dashboard.ModeloCantidadDTO;
 
 import protecciones.repository.MovimientoRepository;
 import protecciones.repository.ReleRepository;
@@ -201,5 +202,12 @@ public class DashboardService {
 
         return releRepository
                 .contarRelesPorMarca();
+    }
+
+    public List<ModeloCantidadDTO>
+    obtenerRelesPorModelo() {
+
+        return releRepository
+                .contarRelesPorModelo();
     }
 }
