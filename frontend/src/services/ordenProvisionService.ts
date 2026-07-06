@@ -94,12 +94,6 @@ export async function subirArchivoOP(
 
     await api.post(
         `/ordenes-provision/${opId}/archivo`,
-        formData,
-        {
-            headers: {
-                "Content-Type":
-                    "multipart/form-data"
-            }
-        }
+        formData
     );
 }

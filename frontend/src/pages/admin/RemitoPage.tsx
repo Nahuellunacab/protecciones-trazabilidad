@@ -21,7 +21,9 @@ import {
     TableRow,
     TextField,
     Typography,
-    Chip
+    Chip,
+    Grid,
+    IconButton,
 
 } from "@mui/material";
 
@@ -42,13 +44,23 @@ import {
     obtenerRemitos,
     crearRemito,
     actualizarRemito,
-    eliminarRemito
+    eliminarRemito,
+    subirArchivoRemito
 
 } from "../../services/remitoService";
 
 import {
     obtenerProveedores
 } from "../../services/proveedorService";
+
+import PictureAsPdfIcon
+from "@mui/icons-material/PictureAsPdf";
+
+import EditIcon
+from "@mui/icons-material/Edit";
+
+import DeleteIcon
+from "@mui/icons-material/Delete";
 
 function RemitoPage() {
 
@@ -70,9 +82,34 @@ function RemitoPage() {
     const [editandoId, setEditandoId] =
         useState<number | null>(null);
 
-    const [errorMessage, setErrorMessage] =
+    const [archivo, setArchivo] =
+        useState<File | null>(null);
+
+    const [guardando, setGuardando] =
+        useState(false);
+
+    const [mensaje, setMensaje] =
         useState("");
-        
+
+    const [tipoMensaje, setTipoMensaje] =
+        useState<"success" | "error">(
+            "success"
+        );
+
+    const [openSnackbar, setOpenSnackbar] =
+        useState(false);
+
+    function mostrarMensaje(
+        texto: string,
+        tipo: "success" | "error"
+    ) {
+
+        setMensaje(texto);
+
+        setTipoMensaje(tipo);
+
+        setOpenSnackbar(true);
+    }
 
     async function cargarDatos() {
 
@@ -98,8 +135,9 @@ function RemitoPage() {
 
         } catch {
 
-            setErrorMessage(
-                "Error al cargar remitos"
+            mostrarMensaje(
+                "Error al cargar remitos",
+                "error"
             );
         }
     }
@@ -116,7 +154,17 @@ function RemitoPage() {
 
         e.preventDefault();
 
-        setErrorMessage("");
+        if (!proveedorId) {
+
+            mostrarMensaje(
+                "Seleccione un proveedor antes de guardar",
+                "error"
+            );
+
+            return;
+        }
+
+        setGuardando(true);
 
         try {
 
@@ -131,7 +179,7 @@ function RemitoPage() {
                     Number(proveedorId)
             };
 
-            if (editandoId) {
+            if (editandoId !== null) {
 
                 await actualizarRemito(
 
@@ -139,25 +187,56 @@ function RemitoPage() {
                     data
                 );
 
+                if (archivo) {
+
+                    await subirArchivoRemito(
+                        editandoId,
+                        archivo
+                    );
+                }
+
+                mostrarMensaje(
+                    "Remito actualizado correctamente",
+                    "success"
+                );
+
             } else {
 
-                await crearRemito(
-                    data
+                const nuevoRemito =
+                    await crearRemito(data);
+
+                if (archivo) {
+
+                    await subirArchivoRemito(
+                        nuevoRemito.id,
+                        archivo
+                    );
+                }
+
+                mostrarMensaje(
+                    "Remito creado correctamente",
+                    "success"
                 );
             }
 
             limpiarFormulario();
 
-            cargarDatos();
+            await cargarDatos();
 
         } catch (error: any) {
 
-            setErrorMessage(
+            mostrarMensaje(
 
                 error.response?.data?.message ||
 
-                "Ocurrió un error"
+                "Error al guardar remito",
+
+                "error"
             );
+
+        } finally {
+
+            setGuardando(false);
         }
     }
 
@@ -165,21 +244,21 @@ function RemitoPage() {
         id: number
     ) {
 
-        setErrorMessage("");
-
         try {
 
             await eliminarRemito(id);
 
-            cargarDatos();
+            await cargarDatos();
 
         } catch (error: any) {
 
-            setErrorMessage(
+            mostrarMensaje(
 
                 error.response?.data?.message ||
 
-                "Ocurrió un error"
+                "Ocurrió un error",
+
+                "error"
             );
         }
     }
@@ -199,6 +278,10 @@ function RemitoPage() {
         setFecha(
             remito.fecha
         );
+
+        setProveedorId(
+            remito.proveedorId.toString()
+        );
     }
 
     function limpiarFormulario() {
@@ -208,6 +291,8 @@ function RemitoPage() {
         setFecha("");
 
         setProveedorId("");
+
+        setArchivo(null);
 
         setEditandoId(null);
     }
@@ -244,80 +329,158 @@ function RemitoPage() {
                 <Box
                     component="form"
                     onSubmit={handleSubmit}
-                    sx={{
-                        display: "flex",
-                        gap: 2
-                    }}
                 >
 
-                    <TextField
-                        fullWidth
-                        label="Número Remito"
-                        value={numeroRemito}
-                        onChange={(e) =>
-                            setNumeroRemito(
-                                e.target.value
-                            )
-                        }
-                    />
-
-                    <TextField
-                        type="date"
-                        fullWidth
-                        label="Fecha"
-                        slotProps={{
-                            inputLabel: { shrink: true }
-                        }}
-                        value={fecha}
-                        onChange={(e) =>
-                            setFecha(
-                                e.target.value
-                            )
-                        }
-                    />
-
-                    <TextField
-                        select
-                        fullWidth
-                        label="Proveedor"
-                        value={proveedorId}
-                        onChange={(e) =>
-                            setProveedorId(
-                                e.target.value
-                            )
-                        }
+                    <Grid
+                        container
+                        spacing={2}
                     >
 
-                        {proveedores.map(
-                            (proveedor) => (
+                        <Grid size={{ xs: 12, md: 3 }}>
 
-                                <MenuItem
-                                    key={
-                                        proveedor.id
+                            <TextField
+                                fullWidth
+                                label="Número Remito"
+                                value={numeroRemito}
+                                onChange={(e) =>
+                                    setNumeroRemito(
+                                        e.target.value
+                                    )
+                                }
+                            />
+
+                        </Grid>
+
+                        <Grid size={{ xs: 12, md: 2 }}>
+
+                            <TextField
+                                type="date"
+                                fullWidth
+                                label="Fecha"
+                                slotProps={{
+                                    inputLabel: { shrink: true }
+                                }}
+                                value={fecha}
+                                onChange={(e) =>
+                                    setFecha(
+                                        e.target.value
+                                    )
+                                }
+                            />
+
+                        </Grid>
+
+                        <Grid size={{ xs: 12, md: 3 }}>
+
+                            <TextField
+                                select
+                                fullWidth
+                                label="Proveedor"
+                                value={proveedorId}
+                                onChange={(e) =>
+                                    setProveedorId(
+                                        e.target.value
+                                    )
+                                }
+                                error={!proveedorId}
+                                helperText={
+                                    !proveedorId
+                                        ? "Seleccione un proveedor"
+                                        : ""
+                                }
+                            >
+
+                                {proveedores.map(
+                                    (proveedor) => (
+
+                                        <MenuItem
+                                            key={
+                                                proveedor.id
+                                            }
+                                            value={
+                                                proveedor.id
+                                            }
+                                        >
+
+                                            {proveedor.nombre}
+
+                                        </MenuItem>
+                                    )
+                                )}
+
+                            </TextField>
+
+                        </Grid>
+
+                        <Grid size={{ xs: 12, md: 2 }}>
+
+                            <Button
+                                variant="outlined"
+                                component="label"
+                                fullWidth
+                                sx={{ height: 56 }}
+                            >
+
+                                {
+                                    archivo
+                                        ? "PDF OK"
+                                        : "SUBIR PDF"
+                                }
+
+                                <input
+                                    hidden
+                                    type="file"
+                                    accept="application/pdf"
+                                    onChange={(e) =>
+                                        setArchivo(
+                                            e.target.files?.[0]
+                                            || null
+                                        )
                                     }
-                                    value={
-                                        proveedor.id
-                                    }
-                                >
+                                />
 
-                                    {proveedor.nombre}
+                            </Button>
 
-                                </MenuItem>
-                            )
-                        )}
+                        </Grid>
 
-                    </TextField>
+                        <Grid size={{ xs: 12, md: 2 }}>
 
-                    <Button
-                        type="submit"
-                        variant="contained"
-                    >
+                            <Button
+                                fullWidth
+                                type="submit"
+                                disabled={guardando}
+                                variant="contained"
+                                sx={{ height: 56 }}
+                            >
 
-                        {editandoId
-                            ? "GUARDAR"
-                            : "CREAR"}
+                                {
+                                    guardando
+                                        ? "GUARDANDO..."
+                                        : editandoId
+                                            ? "GUARDAR"
+                                            : "CREAR"
+                                }
 
-                    </Button>
+                            </Button>
+
+                        </Grid>
+
+                    </Grid>
+
+                    {
+                        archivo && (
+
+                            <Typography
+                                variant="body2"
+                                color="text.secondary"
+                                sx={{ mt: 2 }}
+                            >
+
+                                Archivo: {archivo.name}
+
+                            </Typography>
+                        )
+                    }
 
                 </Box>
 
@@ -346,7 +509,7 @@ function RemitoPage() {
                             </TableCell>
 
                             <TableCell>
-                                Relés Asociados
+                                Documento
                             </TableCell>
 
                             <TableCell>
@@ -385,14 +548,31 @@ function RemitoPage() {
 
                                     <TableCell>
 
-                                        <Chip
-                                            label={
-                                                `${remito.cantidadReles} relés`
-                                            }
-                                            size="small"
-                                            color="primary"
-                                            variant="outlined"
-                                        />
+                                        {
+                                            remito.tieneArchivo ? (
+
+                                                <IconButton
+                                                    color="error"
+                                                    onClick={() =>
+                                                        window.open(
+                                                            `/api/remitos/${remito.id}/archivo`,
+                                                            "_blank"
+                                                        )
+                                                    }
+                                                >
+
+                                                    <PictureAsPdfIcon />
+
+                                                </IconButton>
+
+                                            ) : (
+
+                                                <Chip
+                                                    label="Sin PDF"
+                                                    size="small"
+                                                />
+                                            )
+                                        }
 
                                     </TableCell>
 
@@ -421,19 +601,20 @@ function RemitoPage() {
 
                                     <TableCell align="right">
 
-                                        <Button
-                                            size="small"
+                                        <IconButton
+                                            color="primary"
                                             onClick={() =>
                                                 handleEditar(
                                                     remito
                                                 )
                                             }
                                         >
-                                            EDITAR
-                                        </Button>
 
-                                        <Button
-                                            size="small"
+                                            <EditIcon />
+
+                                        </IconButton>
+
+                                        <IconButton
                                             color="error"
                                             onClick={() =>
                                                 handleEliminar(
@@ -441,8 +622,10 @@ function RemitoPage() {
                                                 )
                                             }
                                         >
-                                            ELIMINAR
-                                        </Button>
+
+                                            <DeleteIcon />
+
+                                        </IconButton>
 
                                     </TableCell>
 
@@ -457,18 +640,25 @@ function RemitoPage() {
             </TableContainer>
 
             <Snackbar
-                open={
-                    !!errorMessage
-                }
+                open={openSnackbar}
                 autoHideDuration={4000}
                 onClose={() =>
-                    setErrorMessage("")
+                    setOpenSnackbar(false)
                 }
+                anchorOrigin={{
+                    vertical: "bottom",
+                    horizontal: "right"
+                }}
             >
 
-                <Alert severity="error">
+                <Alert
+                    severity={tipoMensaje}
+                    onClose={() =>
+                        setOpenSnackbar(false)
+                    }
+                >
 
-                    {errorMessage}
+                    {mensaje}
 
                 </Alert>
 

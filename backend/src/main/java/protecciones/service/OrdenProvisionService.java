@@ -1,5 +1,6 @@
 package protecciones.service;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import protecciones.dto.OrdenProvisionRequestDTO;
@@ -16,9 +17,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import org.springframework.core.io.PathResource;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
-import java.net.MalformedURLException;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class OrdenProvisionService {
@@ -29,9 +31,12 @@ public class OrdenProvisionService {
     private final ReleRepository
             releRepository;
 
+    private final String uploadDir;
+
     public OrdenProvisionService(
             OrdenProvisionRepository ordenProvisionRepository,
-            ReleRepository releRepository
+            ReleRepository releRepository,
+            @Value("${file.upload-dir}") String uploadDir
     ) {
 
         this.ordenProvisionRepository =
@@ -39,6 +44,8 @@ public class OrdenProvisionService {
 
         this.releRepository =
                 releRepository;
+
+        this.uploadDir = uploadDir;
     }
 
     public List<OrdenProvisionResponseDTO>
@@ -89,6 +96,11 @@ public class OrdenProvisionService {
                 ordenProvisionRepository
                         .findById(id)
                         .orElseThrow();
+
+        validarDuplicado(
+                dto.getNumero(),
+                id
+        );
 
         orden.setNumero(
                 dto.getNumero().trim()
@@ -143,7 +155,8 @@ public class OrdenProvisionService {
 
             Path carpeta =
                     Paths.get(
-                            "uploads/ordenes-provision"
+                            uploadDir,
+                            "ordenes-provision"
                     );
 
             Files.createDirectories(
@@ -192,32 +205,38 @@ public class OrdenProvisionService {
             Long ordenProvisionId
     ) {
 
-        try {
+        OrdenProvision orden =
+                ordenProvisionRepository
+                        .findById(
+                                ordenProvisionId
+                        )
+                        .orElseThrow();
 
-            OrdenProvision orden =
-                    ordenProvisionRepository
-                            .findById(
-                                    ordenProvisionId
-                            )
-                            .orElseThrow();
+        if (orden.getRutaArchivo() == null) {
 
-            Path archivo =
-                    Paths.get(
-                            orden.getRutaArchivo()
-                    );
-
-            return new UrlResource(
-                    archivo.toUri()
-            );
-
-        } catch (
-                MalformedURLException ex
-        ) {
-
-            throw new RuntimeException(
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
                     "Archivo no encontrado"
             );
         }
+
+        Path archivo =
+                Paths.get(
+                        orden.getRutaArchivo()
+                );
+
+        if (
+                !Files.exists(archivo)
+                || !Files.isReadable(archivo)
+        ) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Archivo no encontrado"
+            );
+        }
+
+        return new PathResource(archivo);
     }
 
     public List<OrdenProvisionResponseDTO>
@@ -231,7 +250,8 @@ public class OrdenProvisionService {
         }
 
     private void validarDuplicado(
-            String numero
+            String numero,
+            Long currentId
     ) {
 
         List<OrdenProvision> ordenes =
@@ -241,6 +261,9 @@ public class OrdenProvisionService {
         boolean existe =
                 ordenes.stream()
                         .anyMatch(op ->
+                                !op.getId()
+                                        .equals(currentId)
+                                &&
                                 op.getNumero()
                                         .equalsIgnoreCase(
                                                 numero.trim()
@@ -253,6 +276,13 @@ public class OrdenProvisionService {
                     "La orden de provisión ya existe"
             );
         }
+    }
+
+    private void validarDuplicado(
+            String numero
+    ) {
+
+        validarDuplicado(numero, -1L);
     }
 
     private OrdenProvisionResponseDTO
@@ -274,7 +304,9 @@ public class OrdenProvisionService {
 
                 orden.getObservaciones(),
 
-                cantidadReles
+                cantidadReles,
+
+                orden.getNombreArchivo()
         );
     }
 }

@@ -1,4 +1,5 @@
 package protecciones.service;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import protecciones.dto.RemitoRequestDTO;
@@ -16,9 +17,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
+import org.springframework.core.io.PathResource;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
-import java.net.MalformedURLException;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class RemitoService {
@@ -31,13 +33,17 @@ public class RemitoService {
 
 private final ReleRepository releRepository;
 
+    private final String uploadDir;
+
     public RemitoService(
 
             RemitoRepository remitoRepository,
 
             ProveedorRepository proveedorRepository,
-            
-            ReleRepository releRepository
+
+            ReleRepository releRepository,
+
+            @Value("${file.upload-dir}") String uploadDir
     ) {
 
         this.remitoRepository =
@@ -45,8 +51,10 @@ private final ReleRepository releRepository;
 
         this.proveedorRepository =
                 proveedorRepository;
-        
+
         this.releRepository = releRepository;
+
+        this.uploadDir = uploadDir;
     }
 
     public List<RemitoResponseDTO>
@@ -191,7 +199,8 @@ private final ReleRepository releRepository;
 
                 Path carpeta =
                         Paths.get(
-                                "uploads/remitos"
+                                uploadDir,
+                                "remitos"
                         );
 
                 Files.createDirectories(
@@ -247,32 +256,38 @@ private final ReleRepository releRepository;
                 Long remitoId
         ) {
 
-        try {
+        Remito remito =
+                remitoRepository
+                        .findById(
+                                remitoId
+                        )
+                        .orElseThrow();
 
-                Remito remito =
-                        remitoRepository
-                                .findById(
-                                        remitoId
-                                )
-                                .orElseThrow();
+        if (remito.getRutaArchivo() == null) {
 
-                Path archivo =
-                        Paths.get(
-                                remito.getRutaArchivo()
-                        );
-
-                return new UrlResource(
-                        archivo.toUri()
-                );
-
-        } catch (
-                MalformedURLException ex
-        ) {
-
-                throw new RuntimeException(
+                throw new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
                         "Archivo no encontrado"
                 );
         }
+
+        Path archivo =
+                Paths.get(
+                        remito.getRutaArchivo()
+                );
+
+        if (
+                !Files.exists(archivo)
+                || !Files.isReadable(archivo)
+        ) {
+
+                throw new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Archivo no encontrado"
+                );
+        }
+
+        return new PathResource(archivo);
         }
 
         public List<RemitoResponseDTO>
@@ -312,6 +327,9 @@ private final ReleRepository releRepository;
                                 remito.getId()
                         );
 
+        boolean tieneArchivo =
+                remito.getRutaArchivo() != null;
+
         return new RemitoResponseDTO(
 
                 remito.getId(),
@@ -321,9 +339,14 @@ private final ReleRepository releRepository;
                 remito.getFecha(),
 
                 remito.getProveedor()
+                        .getId(),
+
+                remito.getProveedor()
                         .getNombre(),
 
-                cantidadReles
+                cantidadReles,
+
+                tieneArchivo
         );
         }
 }
