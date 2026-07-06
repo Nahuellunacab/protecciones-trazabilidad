@@ -42,7 +42,11 @@ from "../../types/Modelo";
 import type { Marca }
 from "../../types/Marca";
 
+import { useAuth } from "../../context/AuthContext";
+
 function ModeloPage() {
+
+    const { canWrite } = useAuth();
 
     const [modelos, setModelos] =
         useState<Modelo[]>([]);
@@ -193,17 +197,21 @@ function ModeloPage() {
                 subtitle="Gestión de modelos de relés."
             />
 
-            <ModeloForm
-                onSubmit={handleSubmit}
-                modeloEditando={modeloEditando}
-                marcas={marcas}
-                cancelarEdicion={() =>
-                    setModeloEditando(null)
-                }
-            />
+            {canWrite && (
+
+                <ModeloForm
+                    onSubmit={handleSubmit}
+                    modeloEditando={modeloEditando}
+                    marcas={marcas}
+                    cancelarEdicion={() =>
+                        setModeloEditando(null)
+                    }
+                />
+            )}
 
             <ModeloTable
                 modelos={modelos}
+                canWrite={canWrite}
                 onEditar={setModeloEditando}
                 onEliminar={abrirDialogEliminar}
             />

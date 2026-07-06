@@ -14,7 +14,7 @@ import protecciones.repository.MovimientoRepository;
 import protecciones.repository.PosicionRepository;
 import protecciones.repository.ReleRepository;
 import protecciones.repository.TransicionEstadoRepository;
-import protecciones.repository.UsuarioRepository;
+import protecciones.security.CurrentUserProvider;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -38,22 +38,21 @@ public class MovimientoService {
     private final PosicionRepository
             posicionRepository;
 
-    private final UsuarioRepository
-            usuarioRepository;
-
     private final TransicionEstadoRepository
             transicionEstadoRepository;
 
     private final ReleBajaService releBajaService;
+
+    private final CurrentUserProvider currentUserProvider;
 
     public MovimientoService(
             MovimientoRepository movimientoRepository,
             ReleRepository releRepository,
             EstadoRepository estadoRepository,
             PosicionRepository posicionRepository,
-            UsuarioRepository usuarioRepository,
             TransicionEstadoRepository transicionEstadoRepository,
-            ReleBajaService releBajaService
+            ReleBajaService releBajaService,
+            CurrentUserProvider currentUserProvider
     ) {
 
         this.movimientoRepository =
@@ -68,14 +67,14 @@ public class MovimientoService {
         this.posicionRepository =
                 posicionRepository;
 
-        this.usuarioRepository =
-                usuarioRepository;
-
         this.transicionEstadoRepository =
                 transicionEstadoRepository;
 
         this.releBajaService =
                 releBajaService;
+
+        this.currentUserProvider =
+                currentUserProvider;
     }
 
     public List<MovimientoResponseDTO>
@@ -117,8 +116,7 @@ public class MovimientoService {
                 ).orElseThrow();
 
         Usuario usuario =
-                usuarioRepository.findById(1L)
-                        .orElseThrow();
+                currentUserProvider.obtenerUsuarioActual();
 
         Optional<Movimiento> ultimoMovimiento =
                 movimientoRepository

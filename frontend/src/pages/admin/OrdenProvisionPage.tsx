@@ -53,7 +53,11 @@ import {
 
 } from "../../services/ordenProvisionService";
 
+import { useAuth } from "../../context/AuthContext";
+
 function OrdenProvisionPage() {
+
+    const { canWrite } = useAuth();
 
     const [ordenes, setOrdenes] =
         useState<OrdenProvision[]>([]);
@@ -342,6 +346,8 @@ function OrdenProvisionPage() {
                 asociadas a ingresos de relés.
             </Typography>
 
+            {canWrite && (
+
             <Paper
                 sx={{
                     p: 3,
@@ -504,6 +510,8 @@ function OrdenProvisionPage() {
 
             </Paper>
 
+            )}
+
             <Paper
                 sx={{
                     p: 3,
@@ -645,31 +653,37 @@ function OrdenProvisionPage() {
 
                                     <TableCell align="right">
 
-                                        <IconButton
-                                            color="primary"
-                                            onClick={() =>
-                                                handleEditar(
-                                                    orden
-                                                )
-                                            }
-                                        >
+                                        {canWrite && (
+                                            <>
 
-                                            <EditIcon />
+                                                <IconButton
+                                                    color="primary"
+                                                    onClick={() =>
+                                                        handleEditar(
+                                                            orden
+                                                        )
+                                                    }
+                                                >
 
-                                        </IconButton>
+                                                    <EditIcon />
 
-                                        <IconButton
-                                            color="error"
-                                            onClick={() =>
-                                                handleEliminar(
-                                                    orden.id
-                                                )
-                                            }
-                                        >
+                                                </IconButton>
 
-                                            <DeleteIcon />
+                                                <IconButton
+                                                    color="error"
+                                                    onClick={() =>
+                                                        handleEliminar(
+                                                            orden.id
+                                                        )
+                                                    }
+                                                >
 
-                                        </IconButton>
+                                                    <DeleteIcon />
+
+                                                </IconButton>
+
+                                            </>
+                                        )}
 
                                     </TableCell>
 

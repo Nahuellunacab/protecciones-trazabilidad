@@ -40,7 +40,11 @@ import {
 
 } from "../../services/provinciaService";
 
+import { useAuth } from "../../context/AuthContext";
+
 function ProvinciaPage() {
+
+    const { canWrite } = useAuth();
 
     const [provincias, setProvincias] =
         useState<Provincia[]>([]);
@@ -187,47 +191,50 @@ function ProvinciaPage() {
                 y destinos operativos.
             </Typography>
 
-            <Paper
-                sx={{
-                    p: 3,
-                    mb: 4
-                }}
-            >
+            {canWrite && (
 
-                <Box
-                    component="form"
-                    onSubmit={handleSubmit}
+                <Paper
                     sx={{
-                        display: "flex",
-                        gap: 2
+                        p: 3,
+                        mb: 4
                     }}
                 >
 
-                    <TextField
-                        fullWidth
-                        label="Nombre"
-                        value={nombre}
-                        onChange={(e) =>
-                            setNombre(
-                                e.target.value
-                            )
-                        }
-                    />
-
-                    <Button
-                        type="submit"
-                        variant="contained"
+                    <Box
+                        component="form"
+                        onSubmit={handleSubmit}
+                        sx={{
+                            display: "flex",
+                            gap: 2
+                        }}
                     >
 
-                        {editandoId
-                            ? "GUARDAR"
-                            : "CREAR"}
+                        <TextField
+                            fullWidth
+                            label="Nombre"
+                            value={nombre}
+                            onChange={(e) =>
+                                setNombre(
+                                    e.target.value
+                                )
+                            }
+                        />
 
-                    </Button>
+                        <Button
+                            type="submit"
+                            variant="contained"
+                        >
 
-                </Box>
+                            {editandoId
+                                ? "GUARDAR"
+                                : "CREAR"}
 
-            </Paper>
+                        </Button>
+
+                    </Box>
+
+                </Paper>
+            )}
 
             <TableContainer
                 component={Paper}
@@ -278,28 +285,34 @@ function ProvinciaPage() {
                                         align="right"
                                     >
 
-                                        <Button
-                                            size="small"
-                                            onClick={() =>
-                                                handleEditar(
-                                                    provincia
-                                                )
-                                            }
-                                        >
-                                            EDITAR
-                                        </Button>
+                                        {canWrite && (
+                                            <>
 
-                                        <Button
-                                            size="small"
-                                            color="error"
-                                            onClick={() =>
-                                                handleEliminar(
-                                                    provincia.id
-                                                )
-                                            }
-                                        >
-                                            ELIMINAR
-                                        </Button>
+                                                <Button
+                                                    size="small"
+                                                    onClick={() =>
+                                                        handleEditar(
+                                                            provincia
+                                                        )
+                                                    }
+                                                >
+                                                    EDITAR
+                                                </Button>
+
+                                                <Button
+                                                    size="small"
+                                                    color="error"
+                                                    onClick={() =>
+                                                        handleEliminar(
+                                                            provincia.id
+                                                        )
+                                                    }
+                                                >
+                                                    ELIMINAR
+                                                </Button>
+
+                                            </>
+                                        )}
 
                                     </TableCell>
 

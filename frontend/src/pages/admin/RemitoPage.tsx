@@ -62,7 +62,11 @@ from "@mui/icons-material/Edit";
 import DeleteIcon
 from "@mui/icons-material/Delete";
 
+import { useAuth } from "../../context/AuthContext";
+
 function RemitoPage() {
+
+    const { canWrite } = useAuth();
 
     const [remitos, setRemitos] =
         useState<Remito[]>([]);
@@ -319,6 +323,8 @@ function RemitoPage() {
                 y recepción de equipos.
             </Typography>
 
+            {canWrite && (
+
             <Paper
                 sx={{
                     p: 3,
@@ -486,6 +492,8 @@ function RemitoPage() {
 
             </Paper>
 
+            )}
+
             <TableContainer
                 component={Paper}
             >
@@ -601,31 +609,37 @@ function RemitoPage() {
 
                                     <TableCell align="right">
 
-                                        <IconButton
-                                            color="primary"
-                                            onClick={() =>
-                                                handleEditar(
-                                                    remito
-                                                )
-                                            }
-                                        >
+                                        {canWrite && (
+                                            <>
 
-                                            <EditIcon />
+                                                <IconButton
+                                                    color="primary"
+                                                    onClick={() =>
+                                                        handleEditar(
+                                                            remito
+                                                        )
+                                                    }
+                                                >
 
-                                        </IconButton>
+                                                    <EditIcon />
 
-                                        <IconButton
-                                            color="error"
-                                            onClick={() =>
-                                                handleEliminar(
-                                                    remito.id
-                                                )
-                                            }
-                                        >
+                                                </IconButton>
 
-                                            <DeleteIcon />
+                                                <IconButton
+                                                    color="error"
+                                                    onClick={() =>
+                                                        handleEliminar(
+                                                            remito.id
+                                                        )
+                                                    }
+                                                >
 
-                                        </IconButton>
+                                                    <DeleteIcon />
+
+                                                </IconButton>
+
+                                            </>
+                                        )}
 
                                     </TableCell>
 

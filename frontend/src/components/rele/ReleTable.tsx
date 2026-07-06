@@ -69,6 +69,8 @@ interface Props {
     onEditar: (
         rele: Rele
     ) => void;
+
+    canWrite: boolean;
 }
 
 function ReleTable({
@@ -76,7 +78,8 @@ function ReleTable({
     cargando,
     onEditar,
     filtroEstado,
-    setFiltroEstado
+    setFiltroEstado,
+    canWrite
 }: Props) {
 
     const navigate = useNavigate();
@@ -569,23 +572,26 @@ function ReleTable({
                                                 }}
                                             >
 
-                                                <Tooltip title="Editar">
+                                                {canWrite && (
 
-                                                    <IconButton
-                                                        size="small"
-                                                        color="primary"
-                                                        onClick={() =>
-                                                            onEditar(
-                                                                rele
-                                                            )
-                                                        }
-                                                    >
+                                                    <Tooltip title="Editar">
 
-                                                        <EditIcon fontSize="small" />
+                                                        <IconButton
+                                                            size="small"
+                                                            color="primary"
+                                                            onClick={() =>
+                                                                onEditar(
+                                                                    rele
+                                                                )
+                                                            }
+                                                        >
 
-                                                    </IconButton>
+                                                            <EditIcon fontSize="small" />
 
-                                                </Tooltip>
+                                                        </IconButton>
+
+                                                    </Tooltip>
+                                                )}
 
                                                 <Tooltip title="Ver detalle">
 

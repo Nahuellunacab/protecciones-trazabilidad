@@ -63,9 +63,13 @@ from "../components/rele/ReleTable";
 import PageHeader
 from "../components/common/PageHeader";
 
+import { useAuth } from "../context/AuthContext";
+
 // -----------------------------------Definición del componente-----------------------------------
 
 function RelePage() {
+
+    const { canWrite } = useAuth();
 
     const [searchParams, setSearchParams] =
         useSearchParams();
@@ -375,46 +379,53 @@ function RelePage() {
                 "
             />
 
-            <Button
-                variant="contained"
-                onClick={() =>
-                    setMostrarFormulario(
-                        !mostrarFormulario
-                    )
-                }
-                sx={{
-                    mb: 3
-                }}
-            >
+            {canWrite && (
 
-                {
-                    mostrarFormulario
-                        ? "▲ OCULTAR FORMULARIO"
-                        : "＋ NUEVO RELÉ"
-                }
+                <>
 
-            </Button>
-
-            {
-                mostrarFormulario && (
-
-                    <ReleForm
-                        onCreate={handleCreate}
-                        onUpdate={handleUpdate}
-                        releEditando={releEditando}
-                        onCancelEdit={
-                            handleCancelar
+                    <Button
+                        variant="contained"
+                        onClick={() =>
+                            setMostrarFormulario(
+                                !mostrarFormulario
+                            )
                         }
-                        onEditarDesdeLote={
-                            handleEditarDesdeLote
-                        }
-                        onTerminarEdicionDeLote={
-                            () => setReleEditando(null)
-                        }
-                    />
+                        sx={{
+                            mb: 3
+                        }}
+                    >
 
-                )
-            }
+                        {
+                            mostrarFormulario
+                                ? "▲ OCULTAR FORMULARIO"
+                                : "＋ NUEVO RELÉ"
+                        }
+
+                    </Button>
+
+                    {
+                        mostrarFormulario && (
+
+                            <ReleForm
+                                onCreate={handleCreate}
+                                onUpdate={handleUpdate}
+                                releEditando={releEditando}
+                                onCancelEdit={
+                                    handleCancelar
+                                }
+                                onEditarDesdeLote={
+                                    handleEditarDesdeLote
+                                }
+                                onTerminarEdicionDeLote={
+                                    () => setReleEditando(null)
+                                }
+                            />
+
+                        )
+                    }
+
+                </>
+            )}
 
             <TextField
                 label="Buscar por serie, marca o modelo"
@@ -667,6 +678,7 @@ function RelePage() {
 
                     setPage(0);
                 }}
+                canWrite={canWrite}
             />
 
             <TablePagination

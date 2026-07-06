@@ -11,6 +11,8 @@ import getTheme from "./theme/theme.ts";
 
 import { ColorModeContext } from "./theme/ColorModeContext.tsx";
 
+import { AuthProvider } from "./context/AuthContext.tsx";
+
 const STORAGE_KEY = "protecciones-color-mode";
 
 function obtenerModoInicial(): "light" | "dark" {
@@ -76,7 +78,11 @@ function Root() {
 
                 <CssBaseline />
 
-                <App />
+                <AuthProvider>
+
+                    <App />
+
+                </AuthProvider>
 
             </ThemeProvider>
 

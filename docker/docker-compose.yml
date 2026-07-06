@@ -30,6 +30,10 @@ services:
       DB_URL: jdbc:postgresql://postgres:5432/${DB_NAME}
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
+      # Secreto de firma de los JWT de login. Definir uno propio (largo y
+      # aleatorio) en el .env antes de un despliegue real.
+      JWT_SECRET: ${JWT_SECRET:-cambiar-este-secreto-en-produccion-por-uno-largo-y-aleatorio}
+      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-28800000}
     ports:
       - "8080:8080"
     volumes:

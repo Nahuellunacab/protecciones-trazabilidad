@@ -46,7 +46,7 @@ PostgreSQL (Docker, puerto host configurable, contenedor "protecciones-db")
 - El backend expone DTOs, nunca entidades JPA, en sus respuestas.
 - CORS permite cualquier puerto de `http://localhost` y `http://127.0.0.1` (`allowedOriginPatterns` + `allowCredentials(true)` en `CorsConfig.java`), para que funcione tanto `npm run dev` (5173) como el build dockerizado (5173 vía Nginx) sin tener que hardcodear un puerto.
 - El esquema de base de datos es propiedad exclusiva de **Flyway**: Hibernate corre en modo `validate` (`spring.jpa.hibernate.ddl-auto=validate`), es decir, **Hibernate no puede crear ni modificar tablas**, solo valida que las entidades coincidan con el esquema ya migrado.
-- No hay autenticación/autorización implementada todavía. Existe una entidad `Usuario`, pero las operaciones de escritura usan un **usuario "sistema" hardcodeado con `id = 1`** (`usuarioRepository.findById(1L)`), tanto en `ReleService` como en `MovimientoService`. No hay login, sesión ni JWT.
+- Autenticación con **JWT stateless** (`Authorization: Bearer <token>`, sin cookies ni sesión de servidor). Login por email o número de sobre (legajo) en `POST /api/auth/login`. Autorización centralizada en `SecurityConfig` (no `@PreAuthorize` disperso): cualquier `GET /api/**` requiere estar autenticado (rol `ADMIN`, `OPERADOR` o `AUDITOR`); escritura en `/api/usuarios/**` requiere rol `ADMIN`; escritura en el resto requiere `ADMIN` u `OPERADOR`; `PUT /api/auth/password` (autogestión de la propia contraseña) solo requiere estar autenticado, sin importar el rol. Las operaciones que antes usaban el usuario "sistema" hardcodeado (`id = 1`) ahora resuelven el usuario autenticado vía `CurrentUserProvider.obtenerUsuarioActual()`. Detalle completo, diagramas de flujo y credencial de bootstrap en `docs/autenticacion.md`.
 - Documentación de API autogenerada con springdoc-openapi (Swagger UI en `/swagger-ui/index.html`).
 
 ---
@@ -93,33 +93,38 @@ protecciones/
 ├── ProteccionesApplication.java     # entry point Spring Boot
 ├── config/                          # configuración transversal
 │   ├── CorsConfig.java              # política CORS
+│   ├── SecurityConfig.java          # filter chain, reglas de autorización por rol, handlers 401/403
 │   └── OpenApiConfig.java           # metadata de Swagger
-├── controller/                      # capa HTTP (@RestController), un archivo por recurso
-├── service/                         # lógica de negocio (@Service), un archivo por recurso
+├── security/                        # JwtService, JwtAuthenticationFilter, UserDetailsServiceImpl, CurrentUserProvider
+├── controller/                      # capa HTTP (@RestController), un archivo por recurso (incluye AuthController)
+├── service/                         # lógica de negocio (@Service), un archivo por recurso (incluye AuthService)
 ├── repository/                      # interfaces Spring Data JPA (@Repository implícito)
 ├── entity/                          # clases @Entity mapeadas 1:1 a tablas
 ├── dto/                             # *RequestDTO (entrada) y *ResponseDTO (salida)
+│   ├── auth/                        # LoginRequestDTO, LoginResponseDTO
 │   └── dashboard/                   # DTOs específicos del dashboard
 └── exception/                       # BusinessException, ErrorResponse, GlobalExceptionHandler
 ```
 
-Migraciones SQL versionadas en `backend/src/main/resources/db/migration/V{n}__descripcion.sql` (Flyway). Al momento de este análisis van de V1 a V23.
+Migraciones SQL versionadas en `backend/src/main/resources/db/migration/V{n}__descripcion.sql` (Flyway). Al momento de este análisis van de V1 a V27 (la V27 agrega autenticación a `usuario` — ver `docs/autenticacion.md`).
 
 ## Frontend (`frontend/src/`)
 
 ```
 src/
-├── api/axios.ts             # instancia única de Axios (baseURL configurable por env)
+├── api/axios.ts             # instancia única de Axios (baseURL configurable por env, interceptores de auth)
+├── context/AuthContext.tsx  # sesión (token/usuario), login()/logout(), isAdmin
+├── utils/authStorage.ts     # persistencia de token/usuario en localStorage (sin dependencias de React)
 ├── services/                # una función por endpoint, agrupadas por recurso (*Service.ts)
 ├── types/                   # interfaces TS: entidad (Rele.ts) y su *Request (ReleRequest.ts)
 ├── components/
-│   ├── admin/<recurso>/     # Form + Table por cada catálogo administrable
+│   ├── admin/<recurso>/     # Form + Table por cada catálogo administrable (incluye admin/usuario/)
 │   ├── movimiento/          # MovimientoForm, MovimientoTable
 │   ├── rele/                # ReleForm, ReleTable
 │   └── common/              # componentes genéricos reutilizables (EmptyState, PageHeader)
-├── pages/                   # una página por ruta; admin/ agrupa las páginas de catálogos
+├── pages/                   # una página por ruta; admin/ agrupa las páginas de catálogos; LoginPage.tsx
 ├── layouts/MainLayout.tsx   # layout con AppBar/navegación + <Outlet/>
-├── routes/AppRouter.tsx     # definición centralizada de rutas (BrowserRouter/Routes/Route)
+├── routes/                  # AppRouter.tsx (rutas) + ProtectedRoute.tsx (guard de sesión)
 └── theme/theme.ts           # theme de Material UI
 ```
 
@@ -156,7 +161,7 @@ src/
 - **OrdenProvision** — orden de compra/provisión; también admite PDF adjunto y flag `asociado`.
 
 ## Usuarios
-- **Usuario** — nombre, apellido, email. No hay autenticación; se usa como registro de "responsable" del movimiento. El id 1 es el usuario "sistema" usado por defecto en las operaciones automáticas.
+- **Usuario** — nombre, apellido, email, `numeroSobre` (legajo interno, `NOT NULL UNIQUE` como `Rele.numeroSerie`, alternativa de login al email), `passwordHash` (BCrypt, `NULL` para cuentas que no pueden loguearse), `rol` (`"ADMIN"` \| `"OPERADOR"` \| `"AUDITOR"`, string plano validado en `UsuarioService` + `CHECK` en BD, sin enum Java), `activo` (permite deshabilitar el login sin romper el historial de movimientos, mismo patrón de soft-delete que `Rele.activo`). Es también el registro de "responsable" de cada `Movimiento`. El id 1 (`sistema@local`) es una cuenta histórica sin `passwordHash` — no puede loguearse y ya no se usa como default de ninguna operación nueva (ver `docs/autenticacion.md`).
 
 ## Relaciones (resumen)
 ```
@@ -240,7 +245,7 @@ Estas reglas están implícitas en el código existente y deben respetarse en to
 8. **La baja de un relé es lógica (soft delete)**: se marca `activo = false` + `motivoBaja` + `fechaBaja`; jamás se borra el registro ni su historial.
 9. **Las transiciones de estado se validan siempre contra la tabla `transicion_estado`**, nunca hardcodeadas en Java. Si se necesita permitir/prohibir una transición, es un cambio de **datos** (migración Flyway), no de código.
 10. **Números de serie son únicos** y se normalizan (`trim().toUpperCase()`) antes de persistir; la unicidad se valida explícitamente en el Service antes de guardar/actualizar (no se delega solo a la constraint de BD).
-11. **No hay autenticación/autorización todavía.** No asumir que existe sesión de usuario real: las operaciones usan el usuario `id = 1` como "usuario sistema". Si se agrega auth en el futuro, hay que revisar todos los puntos que hacen `usuarioRepository.findById(1L)`.
+11. **Hay autenticación JWT y 3 roles (`ADMIN`, `OPERADOR`, `AUDITOR`).** `ADMIN` es el único que gestiona usuarios; `OPERADOR` tiene la misma escritura operativa que `ADMIN` pero sin acceso a `/api/usuarios`; `AUDITOR` es solo lectura. El usuario autenticado se obtiene siempre vía `CurrentUserProvider.obtenerUsuarioActual()` (nunca hardcodear un id de usuario ni volver al patrón `usuarioRepository.findById(1L)`). El id 1 ("sistema") es una cuenta histórica sin login. Ver `docs/autenticacion.md` para el detalle de roles y flujo.
 12. Errores de negocio se señalizan con `BusinessException` (→ HTTP 400 vía `GlobalExceptionHandler`), no con excepciones genéricas ni con `null` silencioso.
 13. Los recursos con archivos adjuntos (`Remito`, `OrdenProvision`) guardan el PDF en el filesystem local (`uploads/remitos`, `uploads/ordenes-provision`) con nombre prefijado por timestamp, y la ruta se persiste en la entidad — no se guarda el archivo en la base de datos.
 
@@ -287,7 +292,9 @@ Estas reglas están implícitas en el código existente y deben respetarse en to
 - **Antes de asumir qué estados existen o qué transiciones son válidas**, revisar el contenido actual de `estado`/`transicion_estado` (o la migración Flyway más reciente que las toque), no confiar en nombres vistos en migraciones antiguas ya superadas.
 - **Nuevas reglas de negocio** van en el Service correspondiente, señalizando error con `BusinessException` con mensaje claro en español — nunca en el Controller ni devolviendo `null`/silenciando el error.
 - **Si se toca `ReleService`, `MovimientoService`, `EstadoService` o `ReleBajaService`**, tener en cuenta que están acoplados entre sí (p. ej. `MovimientoService` invoca `ReleBajaService` cuando el destino es BAJA, `ReleService.darDeBaja` duplica parte de esa lógica) — revisar ambos caminos de baja para no dejarlos inconsistentes.
-- **Si se agrega autenticación**, buscar y reemplazar sistemáticamente los usos de `usuarioRepository.findById(1L)` por el usuario autenticado real; no dejar mezclado un flujo con auth y otro con el usuario "sistema" hardcodeado.
+- **Nuevo endpoint que necesita restringirse por rol**: no agregar `@PreAuthorize` disperso — la regla vive centralizada en `SecurityConfig.securityFilterChain` (hoy: `GET` abierto a los 3 roles autenticados, escritura en `/api/usuarios/**` solo `ADMIN`, escritura en el resto `ADMIN` u `OPERADOR`). Si se necesita un permiso más granular, extender esas mismas reglas por prefijo de ruta, no introducir un mecanismo paralelo (como `@PreAuthorize`).
+- **Nuevo rol**: agregar el valor a la `CHECK` constraint de `usuario.rol` (migración Flyway) y a `ROLES_VALIDOS` en `UsuarioService`; no hay enum Java que sincronizar (mismo patrón que `Rele.tipoIngreso`).
+- **Cualquier Service que necesite saber "quién hizo esto"** debe usar `CurrentUserProvider.obtenerUsuarioActual()` (paquete `protecciones.security`), nunca un id de usuario hardcodeado.
 - **Mantener el idioma español** en nombres de dominio (entidades, DTOs, servicios, variables de negocio) y el estilo de formato vertical existente, para no introducir inconsistencia dentro del mismo archivo/módulo.
 - **No agregar dependencias de UI ni de estado global** (Redux, Zustand, otra librería de componentes) sin verificar que no exista ya una forma de resolverlo con lo que usa el proyecto (estado local de componente + servicios + MUI).
 - **Los adjuntos de `Remito`/`OrdenProvision` se guardan en filesystem local** (`uploads/...`), no en la base ni en un bucket externo; si se necesita almacenamiento externo, es un cambio de infraestructura a discutir explícitamente, no algo para introducir de forma incidental en un fix menor.

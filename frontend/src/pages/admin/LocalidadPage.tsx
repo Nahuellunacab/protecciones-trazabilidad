@@ -49,7 +49,11 @@ import {
     obtenerProvincias
 } from "../../services/provinciaService";
 
+import { useAuth } from "../../context/AuthContext";
+
 function LocalidadPage() {
+
+    const { canWrite } = useAuth();
 
     const [localidades, setLocalidades] =
         useState<Localidad[]>([]);
@@ -220,79 +224,82 @@ function LocalidadPage() {
                 y trazabilidad operativa.
             </Typography>
 
-            <Paper
-                sx={{
-                    p: 3,
-                    mb: 4
-                }}
-            >
+            {canWrite && (
 
-                <Box
-                    component="form"
-                    onSubmit={handleSubmit}
+                <Paper
                     sx={{
-                        display: "flex",
-                        gap: 2
+                        p: 3,
+                        mb: 4
                     }}
                 >
 
-                    <TextField
-                        fullWidth
-                        label="Nombre"
-                        value={nombre}
-                        onChange={(e) =>
-                            setNombre(
-                                e.target.value
-                            )
-                        }
-                    />
-
-                    <TextField
-                        select
-                        fullWidth
-                        label="Provincia"
-                        value={provinciaId}
-                        onChange={(e) =>
-                            setProvinciaId(
-                                e.target.value
-                            )
-                        }
+                    <Box
+                        component="form"
+                        onSubmit={handleSubmit}
+                        sx={{
+                            display: "flex",
+                            gap: 2
+                        }}
                     >
 
-                        {provincias.map(
-                            (provincia) => (
+                        <TextField
+                            fullWidth
+                            label="Nombre"
+                            value={nombre}
+                            onChange={(e) =>
+                                setNombre(
+                                    e.target.value
+                                )
+                            }
+                        />
 
-                                <MenuItem
-                                    key={
-                                        provincia.id
-                                    }
-                                    value={
-                                        provincia.id
-                                    }
-                                >
+                        <TextField
+                            select
+                            fullWidth
+                            label="Provincia"
+                            value={provinciaId}
+                            onChange={(e) =>
+                                setProvinciaId(
+                                    e.target.value
+                                )
+                            }
+                        >
 
-                                    {provincia.nombre}
+                            {provincias.map(
+                                (provincia) => (
 
-                                </MenuItem>
-                            )
-                        )}
+                                    <MenuItem
+                                        key={
+                                            provincia.id
+                                        }
+                                        value={
+                                            provincia.id
+                                        }
+                                    >
 
-                    </TextField>
+                                        {provincia.nombre}
 
-                    <Button
-                        type="submit"
-                        variant="contained"
-                    >
+                                    </MenuItem>
+                                )
+                            )}
 
-                        {editandoId
-                            ? "GUARDAR"
-                            : "CREAR"}
+                        </TextField>
 
-                    </Button>
+                        <Button
+                            type="submit"
+                            variant="contained"
+                        >
 
-                </Box>
+                            {editandoId
+                                ? "GUARDAR"
+                                : "CREAR"}
 
-            </Paper>
+                        </Button>
+
+                    </Box>
+
+                </Paper>
+            )}
 
             <TableContainer
                 component={Paper}
@@ -351,28 +358,34 @@ function LocalidadPage() {
                                         align="right"
                                     >
 
-                                        <Button
-                                            size="small"
-                                            onClick={() =>
-                                                handleEditar(
-                                                    localidad
-                                                )
-                                            }
-                                        >
-                                            EDITAR
-                                        </Button>
+                                        {canWrite && (
+                                            <>
 
-                                        <Button
-                                            size="small"
-                                            color="error"
-                                            onClick={() =>
-                                                handleEliminar(
-                                                    localidad.id
-                                                )
-                                            }
-                                        >
-                                            ELIMINAR
-                                        </Button>
+                                                <Button
+                                                    size="small"
+                                                    onClick={() =>
+                                                        handleEditar(
+                                                            localidad
+                                                        )
+                                                    }
+                                                >
+                                                    EDITAR
+                                                </Button>
+
+                                                <Button
+                                                    size="small"
+                                                    color="error"
+                                                    onClick={() =>
+                                                        handleEliminar(
+                                                            localidad.id
+                                                        )
+                                                    }
+                                                >
+                                                    ELIMINAR
+                                                </Button>
+
+                                            </>
+                                        )}
 
                                     </TableCell>
 

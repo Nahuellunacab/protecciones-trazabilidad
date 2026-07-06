@@ -18,6 +18,8 @@ interface Props {
 
     modelos: Modelo[];
 
+    canWrite: boolean;
+
     onEditar: (
         modelo: Modelo
     ) => void;
@@ -29,6 +31,7 @@ interface Props {
 
 function ModeloTable({
     modelos,
+    canWrite,
     onEditar,
     onEliminar
 }: Props) {
@@ -144,35 +147,38 @@ function ModeloTable({
 
                                 <TableCell>
 
-                                    <Stack
-                                        direction="row"
-                                        spacing={1}
-                                    >
+                                    {canWrite && (
 
-                                        <Button
-                                            size="small"
-                                            variant="outlined"
-                                            onClick={() =>
-                                                onEditar(modelo)
-                                            }
+                                        <Stack
+                                            direction="row"
+                                            spacing={1}
                                         >
-                                            Editar
-                                        </Button>
 
-                                        <Button
-                                            size="small"
-                                            color="error"
-                                            variant="outlined"
-                                            onClick={() =>
-                                                onEliminar(
-                                                    modelo.id
-                                                )
-                                            }
-                                        >
-                                            Eliminar
-                                        </Button>
+                                            <Button
+                                                size="small"
+                                                variant="outlined"
+                                                onClick={() =>
+                                                    onEditar(modelo)
+                                                }
+                                            >
+                                                Editar
+                                            </Button>
 
-                                    </Stack>
+                                            <Button
+                                                size="small"
+                                                color="error"
+                                                variant="outlined"
+                                                onClick={() =>
+                                                    onEliminar(
+                                                        modelo.id
+                                                    )
+                                                }
+                                            >
+                                                Eliminar
+                                            </Button>
+
+                                        </Stack>
+                                    )}
 
                                 </TableCell>
 

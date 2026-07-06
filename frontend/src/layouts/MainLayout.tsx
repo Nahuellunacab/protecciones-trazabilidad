@@ -14,7 +14,25 @@ import {
     ListItemButton,
     ListItemText,
     ListSubheader,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    TextField,
+    Alert,
 } from "@mui/material";
+
+import LogoutIcon
+from "@mui/icons-material/Logout";
+
+import LockResetIcon
+from "@mui/icons-material/LockReset";
+
+import axios
+from "axios";
+
+import { cambiarPassword }
+from "../services/authService";
 
 import ArrowDropDownIcon
 from "@mui/icons-material/ArrowDropDown";
@@ -42,10 +60,125 @@ import {
 import { useColorMode }
 from "../theme/ColorModeContext";
 
+import { useAuth }
+from "../context/AuthContext";
+
+import { useNavigate }
+from "react-router-dom";
+
 function MainLayout() {
 
     const { mode, toggleColorMode } =
         useColorMode();
+
+    const { usuario, isAdmin, logout } =
+        useAuth();
+
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+
+        logout();
+
+        navigate("/login", { replace: true });
+    };
+
+    const [passwordDialogOpen, setPasswordDialogOpen] =
+        useState(false);
+
+    const [passwordActual, setPasswordActual] =
+        useState("");
+
+    const [passwordNueva, setPasswordNueva] =
+        useState("");
+
+    const [passwordConfirmar, setPasswordConfirmar] =
+        useState("");
+
+    const [passwordError, setPasswordError] =
+        useState("");
+
+    const [passwordExito, setPasswordExito] =
+        useState("");
+
+    const [passwordGuardando, setPasswordGuardando] =
+        useState(false);
+
+    const abrirDialogPassword = () => {
+
+        setPasswordActual("");
+        setPasswordNueva("");
+        setPasswordConfirmar("");
+        setPasswordError("");
+        setPasswordExito("");
+        setPasswordDialogOpen(true);
+    };
+
+    const cerrarDialogPassword = () => {
+
+        setPasswordDialogOpen(false);
+    };
+
+    const handleCambiarPassword = async () => {
+
+        setPasswordError("");
+
+        if (!passwordActual || !passwordNueva || !passwordConfirmar) {
+
+            setPasswordError(
+                "Completá los tres campos"
+            );
+
+            return;
+        }
+
+        if (passwordNueva !== passwordConfirmar) {
+
+            setPasswordError(
+                "La confirmación no coincide con la nueva contraseña"
+            );
+
+            return;
+        }
+
+        try {
+
+            setPasswordGuardando(true);
+
+            await cambiarPassword(
+                passwordActual,
+                passwordNueva
+            );
+
+            setPasswordExito(
+                "Contraseña actualizada correctamente"
+            );
+
+            setPasswordActual("");
+            setPasswordNueva("");
+            setPasswordConfirmar("");
+
+        } catch (err) {
+
+            if (axios.isAxiosError(err)) {
+
+                setPasswordError(
+                    err.response?.data?.message
+                    || "No se pudo cambiar la contraseña"
+                );
+
+            } else {
+
+                setPasswordError(
+                    "No se pudo cambiar la contraseña"
+                );
+            }
+
+        } finally {
+
+            setPasswordGuardando(false);
+        }
+    };
 
     const location = useLocation();
 
@@ -297,6 +430,17 @@ function MainLayout() {
                                 Proveedores
                             </MenuItem>
 
+                            {isAdmin && (
+
+                                <MenuItem
+                                    component={Link}
+                                    to="/admin/usuarios"
+                                    onClick={cerrarMenu}
+                                >
+                                    Usuarios
+                                </MenuItem>
+                            )}
+
                             <Divider />
 
                             <Typography
@@ -377,6 +521,33 @@ function MainLayout() {
 
                     </Box>
 
+                    {usuario && (
+
+                        <Box
+                            sx={{
+                                display: {
+                                    xs: "none",
+                                    md: "flex"
+                                },
+                                alignItems: "center",
+                                gap: 1
+                            }}
+                        >
+
+                            <Typography
+                                variant="body2"
+                                sx={{ opacity: 0.9 }}
+                            >
+                                {usuario.nombre}
+                                {" "}
+                                {usuario.apellido}
+                                {" · "}
+                                {usuario.rol}
+                            </Typography>
+
+                        </Box>
+                    )}
+
                     <IconButton
                         color="inherit"
                         onClick={toggleColorMode}
@@ -392,6 +563,26 @@ function MainLayout() {
                                 ? <Brightness7Icon />
                                 : <Brightness4Icon />
                         }
+
+                    </IconButton>
+
+                    <IconButton
+                        color="inherit"
+                        onClick={abrirDialogPassword}
+                        aria-label="Cambiar contraseña"
+                    >
+
+                        <LockResetIcon />
+
+                    </IconButton>
+
+                    <IconButton
+                        color="inherit"
+                        onClick={handleLogout}
+                        aria-label="Cerrar sesión"
+                    >
+
+                        <LogoutIcon />
 
                     </IconButton>
 
@@ -511,6 +702,21 @@ function MainLayout() {
 
                         </ListItemButton>
 
+                        {isAdmin && (
+
+                            <ListItemButton
+                                component={Link}
+                                to="/admin/usuarios"
+                                onClick={cerrarDrawer}
+                            >
+
+                                <ListItemText
+                                    primary="Usuarios"
+                                />
+
+                            </ListItemButton>
+                        )}
+
                         <Divider />
 
                         <ListSubheader>
@@ -612,6 +818,101 @@ function MainLayout() {
                 <Outlet />
 
             </Container>
+
+            <Dialog
+                open={passwordDialogOpen}
+                onClose={cerrarDialogPassword}
+                maxWidth="xs"
+                fullWidth
+            >
+
+                <DialogTitle>
+                    Cambiar contraseña
+                </DialogTitle>
+
+                <DialogContent>
+
+                    <Box
+                        sx={{
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: 2,
+                            mt: 1
+                        }}
+                    >
+
+                        <TextField
+                            label="Contraseña actual"
+                            type="password"
+                            value={passwordActual}
+                            onChange={(e) =>
+                                setPasswordActual(e.target.value)
+                            }
+                            fullWidth
+                        />
+
+                        <TextField
+                            label="Nueva contraseña"
+                            type="password"
+                            value={passwordNueva}
+                            onChange={(e) =>
+                                setPasswordNueva(e.target.value)
+                            }
+                            fullWidth
+                        />
+
+                        <TextField
+                            label="Confirmar nueva contraseña"
+                            type="password"
+                            value={passwordConfirmar}
+                            onChange={(e) =>
+                                setPasswordConfirmar(e.target.value)
+                            }
+                            fullWidth
+                        />
+
+                        {passwordError && (
+
+                            <Alert severity="error">
+                                {passwordError}
+                            </Alert>
+                        )}
+
+                        {passwordExito && (
+
+                            <Alert severity="success">
+                                {passwordExito}
+                            </Alert>
+                        )}
+
+                    </Box>
+
+                </DialogContent>
+
+                <DialogActions
+                    sx={{
+                        px: 3,
+                        pb: 2
+                    }}
+                >
+
+                    <Button
+                        onClick={cerrarDialogPassword}
+                    >
+                        Cerrar
+                    </Button>
+
+                    <Button
+                        variant="contained"
+                        disabled={passwordGuardando}
+                        onClick={handleCambiarPassword}
+                    >
+                        Guardar
+                    </Button>
+
+                </DialogActions>
+
+            </Dialog>
 
         </Box>
     );

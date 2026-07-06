@@ -36,7 +36,11 @@ from "../services/movimientoService";
 import FileDownloadIcon
 from "@mui/icons-material/FileDownload";
 
+import { useAuth } from "../context/AuthContext";
+
 function MovimientoPage() {
+
+    const { canWrite } = useAuth();
 
     const [searchParams] =
         useSearchParams();
@@ -253,14 +257,17 @@ function MovimientoPage() {
                 "
             />
 
-            <MovimientoForm
-                onCreate={handleCreate}
-                releIdPreseleccionado={
-                    releIdPreseleccionado
-                        ? Number(releIdPreseleccionado)
-                        : undefined
-                }
-            />
+            {canWrite && (
+
+                <MovimientoForm
+                    onCreate={handleCreate}
+                    releIdPreseleccionado={
+                        releIdPreseleccionado
+                            ? Number(releIdPreseleccionado)
+                            : undefined
+                    }
+                />
+            )}
 
             <Box
                 sx={{

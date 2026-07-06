@@ -54,6 +54,8 @@ from "../components/common/PageHeader";
 import EmptyState
 from "../components/common/EmptyState";
 
+import { useAuth } from "../context/AuthContext";
+
 function getEstadoColor(estado: string) {
 
     switch (estado?.toUpperCase()) {
@@ -97,6 +99,8 @@ function formatearFecha(fecha: string) {
 }
 
 function ReleDetailPage() {
+
+    const { canWrite } = useAuth();
 
     const { id } = useParams();
 
@@ -209,34 +213,37 @@ function ReleDetailPage() {
                     Volver a Relés
                 </Button>
 
-                <Box sx={{ display: "flex", gap: 1 }}>
+                {canWrite && (
 
-                    <Button
-                        variant="outlined"
-                        startIcon={<EditIcon />}
-                        onClick={() =>
-                            navigate(`/reles?editar=${rele.id}`)
+                    <Box sx={{ display: "flex", gap: 1 }}>
+
+                        <Button
+                            variant="outlined"
+                            startIcon={<EditIcon />}
+                            onClick={() =>
+                                navigate(`/reles?editar=${rele.id}`)
+                            }
+                        >
+                            Editar
+                        </Button>
+
+                        {
+                            rele.activo && (
+
+                                <Button
+                                    variant="contained"
+                                    startIcon={<SwapHorizIcon />}
+                                    onClick={() =>
+                                        navigate(`/movimientos?releId=${rele.id}`)
+                                    }
+                                >
+                                    Cargar Movimiento
+                                </Button>
+                            )
                         }
-                    >
-                        Editar
-                    </Button>
 
-                    {
-                        rele.activo && (
-
-                            <Button
-                                variant="contained"
-                                startIcon={<SwapHorizIcon />}
-                                onClick={() =>
-                                    navigate(`/movimientos?releId=${rele.id}`)
-                                }
-                            >
-                                Cargar Movimiento
-                            </Button>
-                        )
-                    }
-
-                </Box>
+                    </Box>
+                )}
 
             </Box>
 

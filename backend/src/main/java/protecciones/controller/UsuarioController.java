@@ -1,7 +1,15 @@
 package protecciones.controller;
 
+import jakarta.validation.Valid;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+
 import org.springframework.web.bind.annotation.*;
-import protecciones.entity.Usuario;
+
+import protecciones.dto.UsuarioRequestDTO;
+import protecciones.dto.UsuarioResponseDTO;
+
 import protecciones.service.UsuarioService;
 
 import java.util.List;
@@ -12,17 +20,48 @@ public class UsuarioController {
 
     private final UsuarioService usuarioService;
 
-    public UsuarioController(UsuarioService usuarioService) {
+    public UsuarioController(
+            UsuarioService usuarioService
+    ) {
+
         this.usuarioService = usuarioService;
     }
 
     @GetMapping
-    public List<Usuario> obtenerTodos() {
+    public List<UsuarioResponseDTO>
+    obtenerTodos() {
+
         return usuarioService.obtenerTodos();
     }
 
     @PostMapping
-    public Usuario guardar(@RequestBody Usuario usuario) {
-        return usuarioService.guardar(usuario);
+    public ResponseEntity<UsuarioResponseDTO>
+    guardar(
+            @Valid
+            @RequestBody
+            UsuarioRequestDTO dto
+    ) {
+
+        UsuarioResponseDTO response =
+                usuarioService.guardar(dto);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(response);
+    }
+
+    @PutMapping("/{id}")
+    public UsuarioResponseDTO actualizar(
+            @PathVariable Long id,
+
+            @Valid
+            @RequestBody
+            UsuarioRequestDTO dto
+    ) {
+
+        return usuarioService.actualizar(
+                id,
+                dto
+        );
     }
 }
