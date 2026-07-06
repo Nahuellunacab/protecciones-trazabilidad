@@ -13,6 +13,9 @@ from "../pages/HomePage";
 import RelePage
 from "../pages/RelePage";
 
+import ReleDetailPage
+from "../pages/ReleDetailPage";
+
 import MovimientoPage
 from "../pages/MovimientoPage";
 
@@ -64,6 +67,11 @@ function AppRouter() {
                     <Route
                         path="reles"
                         element={<RelePage />}
+                    />
+
+                    <Route
+                        path="reles/:id"
+                        element={<ReleDetailPage />}
                     />
 
                     <Route

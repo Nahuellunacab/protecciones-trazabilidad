@@ -610,7 +610,11 @@ public class ReleService {
             int size,
             String sort,
             String texto,
-            String filtroEstado
+            String filtroEstado,
+            Long marcaId,
+            Long modeloId,
+            String estadoNombre,
+            Long destinoId
     ) {
 
         String[] sortParams =
@@ -656,6 +660,10 @@ public class ReleService {
                 releRepository.buscarPaginado(
                         texto,
                         activo,
+                        marcaId,
+                        modeloId,
+                        estadoNombre,
+                        destinoId,
                         pageable
                 );
 
@@ -1002,6 +1010,9 @@ public class ReleService {
         return new MovimientoResponseDTO(
 
                 movimiento.getId(),
+
+                movimiento.getRele()
+                        .getId(),
 
                 movimiento.getRele()
                         .getNumeroSerie(),

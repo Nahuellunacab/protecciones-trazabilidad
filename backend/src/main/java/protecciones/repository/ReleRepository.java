@@ -116,10 +116,59 @@ public interface ReleRepository
                 OR LOWER(m.nombre) LIKE LOWER(CONCAT('%', :texto, '%'))
                 OR LOWER(ma.nombre) LIKE LOWER(CONCAT('%', :texto, '%'))
         )
+        AND (:marcaId IS NULL OR ma.id = :marcaId)
+        AND (:modeloId IS NULL OR m.id = :modeloId)
+        AND (
+                :estadoNombre IS NULL
+                OR :estadoNombre = ''
+                OR EXISTS (
+                        SELECT 1
+                        FROM Movimiento mv
+                        WHERE mv.rele.id = r.id
+                        AND LOWER(mv.estado.nombre) = LOWER(:estadoNombre)
+                        AND NOT EXISTS (
+                                SELECT 1
+                                FROM Movimiento mv2
+                                WHERE mv2.rele.id = mv.rele.id
+                                AND (
+                                        mv2.fechaMovimiento > mv.fechaMovimiento
+                                        OR (
+                                                mv2.fechaMovimiento = mv.fechaMovimiento
+                                                AND mv2.id > mv.id
+                                        )
+                                )
+                        )
+                )
+        )
+        AND (
+                :destinoId IS NULL
+                OR EXISTS (
+                        SELECT 1
+                        FROM Movimiento mv
+                        WHERE mv.rele.id = r.id
+                        AND mv.posicion.destino.id = :destinoId
+                        AND NOT EXISTS (
+                                SELECT 1
+                                FROM Movimiento mv2
+                                WHERE mv2.rele.id = mv.rele.id
+                                AND (
+                                        mv2.fechaMovimiento > mv.fechaMovimiento
+                                        OR (
+                                                mv2.fechaMovimiento = mv.fechaMovimiento
+                                                AND mv2.id > mv.id
+                                        )
+                                )
+                        )
+                )
+        )
         """)
     Page<Rele> buscarPaginado(
             @Param("texto") String texto,
             @Param("activo") Boolean activo,
+            @Param("marcaId") Long marcaId,
+            @Param("modeloId") Long modeloId,
+            @Param("estadoNombre") String estadoNombre,
+            @Param("destinoId") Long destinoId,
             Pageable pageable
     );
 

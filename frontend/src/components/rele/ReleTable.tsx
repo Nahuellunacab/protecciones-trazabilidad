@@ -1,16 +1,9 @@
 import { useState } from "react";
 
+import { useNavigate } from "react-router-dom";
+
 import type { Rele }
 from "../../types/Rele";
-
-import type { Movimiento }
-from "../../types/Movimiento";
-
-import {
-
-    obtenerHistorialPorRele
-
-} from "../../services/movimientoService";
 
 import {
     Paper,
@@ -24,13 +17,8 @@ import {
     Chip,
     Stack,
     Button,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
     ToggleButton,
     ToggleButtonGroup,
-    CircularProgress,
     Box,
     Tooltip,
     IconButton,
@@ -91,25 +79,7 @@ function ReleTable({
     setFiltroEstado
 }: Props) {
 
-    const [
-        historialOpen,
-        setHistorialOpen
-    ] = useState(false);
-
-    const [
-        historial,
-        setHistorial
-    ] = useState<Movimiento[]>([]);
-
-    const [
-        historialLoading,
-        setHistorialLoading
-    ] = useState(false);
-
-    const [
-        releHistorial,
-        setReleHistorial
-    ] = useState<Rele | null>(null);
+    const navigate = useNavigate();
 
     const [
         copiedId,
@@ -187,58 +157,6 @@ function ReleTable({
                 err
             );
         }
-    };
-
-    const handleVerHistorial =
-    async (
-        rele: Rele
-    ) => {
-
-        try {
-
-            setHistorialLoading(true);
-
-            setReleHistorial(rele);
-
-            const data =
-                await obtenerHistorialPorRele(
-                    rele.id
-                );
-
-            setHistorial(data);
-
-            setHistorialOpen(true);
-
-        } catch (error) {
-
-            console.error(error);
-
-        } finally {
-
-            setHistorialLoading(false);
-        }
-    };
-
-    const formatearFecha = (
-        fecha: string
-    ) => {
-
-        return new Date(fecha)
-            .toLocaleString(
-                "es-AR",
-                {
-
-                    day: "2-digit",
-
-                    month: "2-digit",
-
-                    year: "numeric",
-
-                    hour: "2-digit",
-
-                    minute: "2-digit"
-                }
-            );
     };
 
     return (
@@ -640,46 +558,52 @@ function ReleTable({
 
                                         </TableCell>
 
-                                        <TableCell>
+                                        <TableCell align="center">
 
                                             <Box
                                                 sx={{
                                                     display: "flex",
                                                     flexDirection: "row",
-                                                    gap: 1,
+                                                    gap: 0.5,
                                                     justifyContent: "center"
                                                 }}
                                             >
 
-                                                <Button
-                                                    size="small"
-                                                    variant="outlined"
-                                                    startIcon={<EditIcon />}
-                                                    onClick={() =>
-                                                        onEditar(
-                                                            rele
-                                                        )
-                                                    }
-                                                >
+                                                <Tooltip title="Editar">
 
-                                                    EDITAR
+                                                    <IconButton
+                                                        size="small"
+                                                        color="primary"
+                                                        onClick={() =>
+                                                            onEditar(
+                                                                rele
+                                                            )
+                                                        }
+                                                    >
 
-                                                </Button>
+                                                        <EditIcon fontSize="small" />
 
-                                                <Button
-                                                    size="small"
-                                                    variant="contained"
-                                                    startIcon={<HistoryIcon />}
-                                                    onClick={() =>
-                                                        handleVerHistorial(
-                                                            rele
-                                                        )
-                                                    }
-                                                >
+                                                    </IconButton>
 
-                                                    HISTORIAL
+                                                </Tooltip>
 
-                                                </Button>
+                                                <Tooltip title="Ver detalle">
+
+                                                    <IconButton
+                                                        size="small"
+                                                        color="primary"
+                                                        onClick={() =>
+                                                            navigate(
+                                                                `/reles/${rele.id}`
+                                                            )
+                                                        }
+                                                    >
+
+                                                        <HistoryIcon fontSize="small" />
+
+                                                    </IconButton>
+
+                                                </Tooltip>
 
                                             </Box>
 
@@ -695,190 +619,6 @@ function ReleTable({
                 </Table>
 
             </TableContainer>
-
-            <Dialog
-                open={historialOpen}
-                onClose={() =>
-                    setHistorialOpen(false)
-                }
-                maxWidth="md"
-                fullWidth
-            >
-
-                <DialogTitle>
-
-                    Historial de Movimientos
-
-                    {
-                        releHistorial && (
-                            <>
-                                {" - "}
-                                {
-                                    releHistorial.numeroSerie
-                                }
-                            </>
-                        )
-                    }
-
-                </DialogTitle>
-
-                <DialogContent dividers>
-
-                    {
-                        historialLoading ? (
-
-                            <Box
-                                sx={{
-                                    display: "flex",
-                                    flexDirection: "row",
-                                    gap: 1,
-                                    justifyContent: "center"
-                                }}
-                            >
-
-                                <CircularProgress />
-
-                            </Box>
-
-                        ) : historial.length === 0 ? (
-
-                            <Typography>
-
-                                No hay movimientos registrados.
-
-                            </Typography>
-
-                        ) : (
-
-                            <Table size="small">
-
-                                <TableHead>
-
-                                    <TableRow>
-
-                                        <TableCell>
-                                            Fecha
-                                        </TableCell>
-
-                                        <TableCell>
-                                            Estado
-                                        </TableCell>
-
-                                        <TableCell>
-                                            Ubicación
-                                        </TableCell>
-
-                                        <TableCell>
-                                            Posición
-                                        </TableCell>
-
-                                        <TableCell>
-                                            Responsable
-                                        </TableCell>
-
-                                        <TableCell>
-                                            Notas
-                                        </TableCell>
-
-                                    </TableRow>
-
-                                </TableHead>
-
-                                <TableBody>
-
-                                    {
-                                        historial.map(
-                                            (movimiento) => (
-
-                                            <TableRow
-                                                key={
-                                                    movimiento.id
-                                                }
-                                            >
-
-                                                <TableCell>
-
-                                                    {
-                                                        formatearFecha(
-                                                            movimiento.fechaMovimiento
-                                                        )
-                                                    }
-
-                                                </TableCell>
-
-                                                <TableCell>
-
-                                                    {
-                                                        movimiento.estado
-                                                    }
-
-                                                </TableCell>
-
-                                                <TableCell>
-
-                                                    {
-                                                        movimiento.localidad
-                                                        ||
-                                                        "-"
-                                                    }
-
-                                                </TableCell>
-
-                                                <TableCell>
-
-                                                    {
-                                                        movimiento.posicion
-                                                        ||
-                                                        "-"
-                                                    }
-
-                                                </TableCell>
-
-                                                <TableCell>
-
-                                                    {
-                                                        movimiento.responsable
-                                                    }
-
-                                                </TableCell>
-
-                                                <TableCell>
-
-                                                    {
-                                                        movimiento.notas
-                                                        ||
-                                                        "-"
-                                                    }
-
-                                                </TableCell>
-
-                                            </TableRow>
-                                        ))
-                                    }
-
-                                </TableBody>
-
-                            </Table>
-                        )
-                    }
-
-                </DialogContent>
-
-                <DialogActions>
-
-                    <Button
-                        onClick={() =>
-                            setHistorialOpen(false)
-                        }
-                    >
-
-                        CERRAR
-
-                    </Button>
-
-                </DialogActions>
-
-            </Dialog>
 
         </>
     );

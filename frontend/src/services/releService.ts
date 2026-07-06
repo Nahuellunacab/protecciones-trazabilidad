@@ -11,12 +11,24 @@ interface RelePageResponse {
     totalElements: number;
 }
 
+export interface FiltrosRele {
+
+    marcaId?: number;
+
+    modeloId?: number;
+
+    estadoNombre?: string;
+
+    destinoId?: number;
+}
+
 export const obtenerReles = async (
     page: number,
     size: number,
     texto: string,
     filtroEstado: "ACTIVOS" | "INACTIVOS" | "TODOS",
-    sort: string = "id,desc"
+    sort: string = "id,desc",
+    filtros: FiltrosRele = {}
 ): Promise<RelePageResponse> => {
 
     const response =
@@ -28,7 +40,11 @@ export const obtenerReles = async (
                     size,
                     texto,
                     filtroEstado,
-                    sort
+                    sort,
+                    marcaId: filtros.marcaId,
+                    modeloId: filtros.modeloId,
+                    estadoNombre: filtros.estadoNombre,
+                    destinoId: filtros.destinoId
                 }
             }
         );
