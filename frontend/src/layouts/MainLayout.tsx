@@ -8,10 +8,19 @@ import {
     Divider,
     Menu,
     MenuItem,
+    IconButton,
+    Drawer,
+    List,
+    ListItemButton,
+    ListItemText,
+    ListSubheader,
 } from "@mui/material";
 
 import ArrowDropDownIcon
 from "@mui/icons-material/ArrowDropDown";
+
+import MenuIcon
+from "@mui/icons-material/Menu";
 
 import epecLogo
     from "../assets/epec-logo.png";
@@ -54,6 +63,19 @@ function MainLayout() {
         );
     };
 
+    const [drawerOpen, setDrawerOpen] =
+        useState(false);
+
+    const abrirDrawer = () => {
+
+        setDrawerOpen(true);
+    };
+
+    const cerrarDrawer = () => {
+
+        setDrawerOpen(false);
+    };
+
     return (
 
         <Box
@@ -82,7 +104,8 @@ function MainLayout() {
                             display: "flex",
                             alignItems: "center",
                             gap: 2,
-                            flexGrow: 1
+                            flexGrow: 1,
+                            minWidth: 0
                         }}
                     >
 
@@ -91,14 +114,20 @@ function MainLayout() {
                             src={epecLogo}
                             alt="EPEC"
                             sx={{
-                                height: 48
+                                height: 48,
+                                flexShrink: 0
                             }}
                         />
 
-                        <Box>
+                        <Box
+                            sx={{
+                                minWidth: 0
+                            }}
+                        >
 
                             <Typography
                                 variant="h6"
+                                noWrap
                                 sx={{
                                     fontWeight: 700,
                                     lineHeight: 1.1
@@ -109,8 +138,13 @@ function MainLayout() {
 
                             <Typography
                                 variant="body2"
+                                noWrap
                                 sx={{
-                                    opacity: 0.9
+                                    opacity: 0.9,
+                                    display: {
+                                        xs: "none",
+                                        sm: "block"
+                                    }
                                 }}
                             >
                                 Depto. de
@@ -122,205 +156,420 @@ function MainLayout() {
 
                     </Box>
 
-                    <Button
-                        color="inherit"
-                        component={Link}
-                        to="/"
+                    <Box
                         sx={{
-                            fontWeight:
-                                isActive("/")
-                                    ? 700
-                                    : 400,
-
-                            borderBottom:
-                                isActive("/")
-                                    ? "2px solid white"
-                                    : "none"
+                            display: {
+                                xs: "none",
+                                md: "flex"
+                            },
+                            alignItems: "center",
+                            gap: 2
                         }}
                     >
-                        Dashboard
-                    </Button>
 
-                    <Button
-                        color="inherit"
-                        component={Link}
-                        to="/reles"
-                        sx={{
-                            fontWeight:
-                                isActive("/reles")
-                                    ? 700
-                                    : 400,
-
-                            borderBottom:
-                                isActive("/reles")
-                                    ? "2px solid white"
-                                    : "none"
-                        }}
-                    >
-                        Relés
-                    </Button>
-
-                    <Button
-                        color="inherit"
-                        component={Link}
-                        to="/movimientos"
-                        sx={{
-                            fontWeight:
-                                isActive("/movimientos")
-                                    ? 700
-                                    : 400,
-
-                            borderBottom:
-                                isActive("/movimientos")
-                                    ? "2px solid white"
-                                    : "none"
-                        }}
-                    >
-                        Movimientos
-                    </Button>
-
-                    <Divider
-                        orientation="vertical"
-                        flexItem
-                        sx={{
-                            borderColor:
-                                "rgba(255,255,255,0.3)"
-                        }}
-                    />
-
-                    <Button
-                        color="inherit"
-                        onClick={abrirAdminMenu}
-                        endIcon={
-                            <ArrowDropDownIcon />
-                        }
-                    >
-                        Administración
-                    </Button>
-
-                    <Menu
-                        anchorEl={anchorEl}
-                        open={Boolean(anchorEl)}
-                        onClose={cerrarMenu}
-                    >
-
-                        <Typography
+                        <Button
+                            color="inherit"
+                            component={Link}
+                            to="/"
                             sx={{
-                                px: 2,
-                                pt: 1,
-                                fontSize: "0.75rem",
-                                fontWeight: 700,
-                                color: "text.secondary"
+                                fontWeight:
+                                    isActive("/")
+                                        ? 700
+                                        : 400,
+
+                                borderBottom:
+                                    isActive("/")
+                                        ? "2px solid white"
+                                        : "none"
                             }}
                         >
-                            GESTIÓN
-                        </Typography>
+                            Dashboard
+                        </Button>
 
-                        <MenuItem
+                        <Button
+                            color="inherit"
                             component={Link}
-                            to="/admin/marcas"
-                            onClick={cerrarMenu}
-                        >
-                            Marcas
-                        </MenuItem>
-
-                        <MenuItem
-                            component={Link}
-                            to="/admin/modelos"
-                            onClick={cerrarMenu}
-                        >
-                            Modelos
-                        </MenuItem>
-
-                        <MenuItem
-                            component={Link}
-                            to="/admin/proveedores"
-                            onClick={cerrarMenu}
-                        >
-                            Proveedores
-                        </MenuItem>
-
-                        <Divider />
-
-                        <Typography
+                            to="/reles"
                             sx={{
-                                px: 2,
-                                pt: 1,
-                                fontSize: "0.75rem",
-                                fontWeight: 700,
-                                color: "text.secondary"
+                                fontWeight:
+                                    isActive("/reles")
+                                        ? 700
+                                        : 400,
+
+                                borderBottom:
+                                    isActive("/reles")
+                                        ? "2px solid white"
+                                        : "none"
                             }}
                         >
-                            UBICACIONES
-                        </Typography>
+                            Relés
+                        </Button>
 
-                        <MenuItem
+                        <Button
+                            color="inherit"
                             component={Link}
-                            to="/admin/destinos"
-                            onClick={cerrarMenu}
-                        >
-                            Destinos
-                        </MenuItem>
-
-                        <MenuItem
-                            component={Link}
-                            to="/admin/posiciones"
-                            onClick={cerrarMenu}
-                        >
-                            Posiciones
-                        </MenuItem>
-
-                        <MenuItem
-                            component={Link}
-                            to="/admin/provincias"
-                            onClick={cerrarMenu}
-                        >
-                            Provincias
-                        </MenuItem>
-
-                        <MenuItem
-                            component={Link}
-                            to="/admin/localidades"
-                            onClick={cerrarMenu}
-                        >
-                            Localidades
-                        </MenuItem>
-
-                        <Divider />
-
-                        <Typography
+                            to="/movimientos"
                             sx={{
-                                px: 2,
-                                pt: 1,
-                                fontSize: "0.75rem",
-                                fontWeight: 700,
-                                color: "text.secondary"
+                                fontWeight:
+                                    isActive("/movimientos")
+                                        ? 700
+                                        : 400,
+
+                                borderBottom:
+                                    isActive("/movimientos")
+                                        ? "2px solid white"
+                                        : "none"
                             }}
                         >
-                            DOCUMENTACIÓN
-                        </Typography>
+                            Movimientos
+                        </Button>
 
-                        <MenuItem
-                            component={Link}
-                            to="/admin/remitos"
-                            onClick={cerrarMenu}
+                        <Divider
+                            orientation="vertical"
+                            flexItem
+                            sx={{
+                                borderColor:
+                                    "rgba(255,255,255,0.3)"
+                            }}
+                        />
+
+                        <Button
+                            color="inherit"
+                            onClick={abrirAdminMenu}
+                            endIcon={
+                                <ArrowDropDownIcon />
+                            }
                         >
-                            Remitos
-                        </MenuItem>
+                            Administración
+                        </Button>
 
-                        <MenuItem
-                            component={Link}
-                            to="/admin/ordenes-provision"
-                            onClick={cerrarMenu}
+                        <Menu
+                            anchorEl={anchorEl}
+                            open={Boolean(anchorEl)}
+                            onClose={cerrarMenu}
                         >
-                            Órdenes
-                        </MenuItem>
 
-                    </Menu>
+                            <Typography
+                                sx={{
+                                    px: 2,
+                                    pt: 1,
+                                    fontSize: "0.75rem",
+                                    fontWeight: 700,
+                                    color: "text.secondary"
+                                }}
+                            >
+                                GESTIÓN
+                            </Typography>
+
+                            <MenuItem
+                                component={Link}
+                                to="/admin/marcas"
+                                onClick={cerrarMenu}
+                            >
+                                Marcas
+                            </MenuItem>
+
+                            <MenuItem
+                                component={Link}
+                                to="/admin/modelos"
+                                onClick={cerrarMenu}
+                            >
+                                Modelos
+                            </MenuItem>
+
+                            <MenuItem
+                                component={Link}
+                                to="/admin/proveedores"
+                                onClick={cerrarMenu}
+                            >
+                                Proveedores
+                            </MenuItem>
+
+                            <Divider />
+
+                            <Typography
+                                sx={{
+                                    px: 2,
+                                    pt: 1,
+                                    fontSize: "0.75rem",
+                                    fontWeight: 700,
+                                    color: "text.secondary"
+                                }}
+                            >
+                                UBICACIONES
+                            </Typography>
+
+                            <MenuItem
+                                component={Link}
+                                to="/admin/destinos"
+                                onClick={cerrarMenu}
+                            >
+                                Destinos
+                            </MenuItem>
+
+                            <MenuItem
+                                component={Link}
+                                to="/admin/posiciones"
+                                onClick={cerrarMenu}
+                            >
+                                Posiciones
+                            </MenuItem>
+
+                            <MenuItem
+                                component={Link}
+                                to="/admin/provincias"
+                                onClick={cerrarMenu}
+                            >
+                                Provincias
+                            </MenuItem>
+
+                            <MenuItem
+                                component={Link}
+                                to="/admin/localidades"
+                                onClick={cerrarMenu}
+                            >
+                                Localidades
+                            </MenuItem>
+
+                            <Divider />
+
+                            <Typography
+                                sx={{
+                                    px: 2,
+                                    pt: 1,
+                                    fontSize: "0.75rem",
+                                    fontWeight: 700,
+                                    color: "text.secondary"
+                                }}
+                            >
+                                DOCUMENTACIÓN
+                            </Typography>
+
+                            <MenuItem
+                                component={Link}
+                                to="/admin/remitos"
+                                onClick={cerrarMenu}
+                            >
+                                Remitos
+                            </MenuItem>
+
+                            <MenuItem
+                                component={Link}
+                                to="/admin/ordenes-provision"
+                                onClick={cerrarMenu}
+                            >
+                                Órdenes
+                            </MenuItem>
+
+                        </Menu>
+
+                    </Box>
+
+                    <IconButton
+                        color="inherit"
+                        onClick={abrirDrawer}
+                        aria-label="Abrir menú"
+                        sx={{
+                            display: {
+                                xs: "flex",
+                                md: "none"
+                            }
+                        }}
+                    >
+
+                        <MenuIcon />
+
+                    </IconButton>
 
                 </Toolbar>
 
             </AppBar>
+
+            <Drawer
+                anchor="right"
+                open={drawerOpen}
+                onClose={cerrarDrawer}
+            >
+
+                <Box
+                    sx={{
+                        width: 280
+                    }}
+                    role="presentation"
+                >
+
+                    <List>
+
+                        <ListItemButton
+                            component={Link}
+                            to="/"
+                            selected={isActive("/")}
+                            onClick={cerrarDrawer}
+                        >
+
+                            <ListItemText
+                                primary="Dashboard"
+                            />
+
+                        </ListItemButton>
+
+                        <ListItemButton
+                            component={Link}
+                            to="/reles"
+                            selected={isActive("/reles")}
+                            onClick={cerrarDrawer}
+                        >
+
+                            <ListItemText
+                                primary="Relés"
+                            />
+
+                        </ListItemButton>
+
+                        <ListItemButton
+                            component={Link}
+                            to="/movimientos"
+                            selected={isActive("/movimientos")}
+                            onClick={cerrarDrawer}
+                        >
+
+                            <ListItemText
+                                primary="Movimientos"
+                            />
+
+                        </ListItemButton>
+
+                        <Divider />
+
+                        <ListSubheader>
+                            GESTIÓN
+                        </ListSubheader>
+
+                        <ListItemButton
+                            component={Link}
+                            to="/admin/marcas"
+                            onClick={cerrarDrawer}
+                        >
+
+                            <ListItemText
+                                primary="Marcas"
+                            />
+
+                        </ListItemButton>
+
+                        <ListItemButton
+                            component={Link}
+                            to="/admin/modelos"
+                            onClick={cerrarDrawer}
+                        >
+
+                            <ListItemText
+                                primary="Modelos"
+                            />
+
+                        </ListItemButton>
+
+                        <ListItemButton
+                            component={Link}
+                            to="/admin/proveedores"
+                            onClick={cerrarDrawer}
+                        >
+
+                            <ListItemText
+                                primary="Proveedores"
+                            />
+
+                        </ListItemButton>
+
+                        <Divider />
+
+                        <ListSubheader>
+                            UBICACIONES
+                        </ListSubheader>
+
+                        <ListItemButton
+                            component={Link}
+                            to="/admin/destinos"
+                            onClick={cerrarDrawer}
+                        >
+
+                            <ListItemText
+                                primary="Destinos"
+                            />
+
+                        </ListItemButton>
+
+                        <ListItemButton
+                            component={Link}
+                            to="/admin/posiciones"
+                            onClick={cerrarDrawer}
+                        >
+
+                            <ListItemText
+                                primary="Posiciones"
+                            />
+
+                        </ListItemButton>
+
+                        <ListItemButton
+                            component={Link}
+                            to="/admin/provincias"
+                            onClick={cerrarDrawer}
+                        >
+
+                            <ListItemText
+                                primary="Provincias"
+                            />
+
+                        </ListItemButton>
+
+                        <ListItemButton
+                            component={Link}
+                            to="/admin/localidades"
+                            onClick={cerrarDrawer}
+                        >
+
+                            <ListItemText
+                                primary="Localidades"
+                            />
+
+                        </ListItemButton>
+
+                        <Divider />
+
+                        <ListSubheader>
+                            DOCUMENTACIÓN
+                        </ListSubheader>
+
+                        <ListItemButton
+                            component={Link}
+                            to="/admin/remitos"
+                            onClick={cerrarDrawer}
+                        >
+
+                            <ListItemText
+                                primary="Remitos"
+                            />
+
+                        </ListItemButton>
+
+                        <ListItemButton
+                            component={Link}
+                            to="/admin/ordenes-provision"
+                            onClick={cerrarDrawer}
+                        >
+
+                            <ListItemText
+                                primary="Órdenes de Provisión"
+                            />
+
+                        </ListItemButton>
+
+                    </List>
+
+                </Box>
+
+            </Drawer>
 
             <Container
                 maxWidth="xl"
