@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import protecciones.dto.dashboard.MarcaCantidadDTO;
 import protecciones.dto.dashboard.ModeloCantidadDTO;
+import protecciones.dto.dashboard.ProveedorCantidadDTO;
 import protecciones.entity.Rele;
 
 import java.time.LocalDate;
@@ -70,6 +71,10 @@ public interface ReleRepository
             LocalDate fecha
     );
 
+    long countByActivoTrueAndFinGarantiaBefore(
+            LocalDate fecha
+    );
+
     long countByRemitoId(
             Long remitoId
     );
@@ -86,6 +91,17 @@ public interface ReleRepository
             AND r.activo = true
             """)
     long countSinDocumentacion();
+
+    @Query("""
+            SELECT COUNT(r)
+            FROM Rele r
+            WHERE r.activo = true
+            AND (
+                    (r.remito IS NOT NULL AND (r.remito.rutaArchivo IS NULL OR r.remito.rutaArchivo = ''))
+                    OR (r.ordenProvision IS NOT NULL AND (r.ordenProvision.rutaArchivo IS NULL OR r.ordenProvision.rutaArchivo = ''))
+            )
+            """)
+    long countDocumentacionSinArchivo();
 
     @Query("""
         SELECT r
@@ -197,6 +213,19 @@ public interface ReleRepository
             ORDER BY COUNT(r) DESC
             """)
     List<ModeloCantidadDTO> contarRelesPorModelo();
+
+    @Query("""
+            SELECT new protecciones.dto.dashboard.ProveedorCantidadDTO(
+            rm.proveedor.nombre,
+            COUNT(r)
+            )
+            FROM Rele r
+            JOIN r.remito rm
+            WHERE r.activo = true
+            GROUP BY rm.proveedor.nombre
+            ORDER BY COUNT(r) DESC
+            """)
+    List<ProveedorCantidadDTO> contarRelesPorProveedor();
 
     @Query("""
                 SELECT COUNT(r)

@@ -1,6 +1,8 @@
 package protecciones.repository;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import protecciones.dto.dashboard.UsuarioCantidadDTO;
 import protecciones.entity.Movimiento;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -89,27 +91,6 @@ public interface MovimientoRepository
             @Param("estadoNombre") String estadoNombre
     );
 
-    @Query("""
-
-        SELECT m.estado.nombre, COUNT(m)
-        FROM Movimiento m
-        WHERE NOT EXISTS (
-            SELECT 1
-            FROM Movimiento m2
-            WHERE m2.rele.id = m.rele.id
-            AND (
-                m2.fechaMovimiento > m.fechaMovimiento
-                OR (
-                    m2.fechaMovimiento = m.fechaMovimiento
-                    AND m2.id > m.id
-                )
-            )
-        )
-        GROUP BY m.estado.nombre
-
-    """)
-    List<Object[]> countUltimosMovimientosPorEstado();
-
     List<Movimiento>
     findByFechaMovimientoBetweenOrderByFechaMovimientoDesc(
 
@@ -120,4 +101,32 @@ public interface MovimientoRepository
 
     List<Movimiento>
     findAllByOrderByFechaMovimientoDesc();
+
+    @Query("""
+
+        SELECT m
+        FROM Movimiento m
+        WHERE (CAST(:desde AS timestamp) IS NULL OR m.fechaMovimiento >= :desde)
+        AND (CAST(:hasta AS timestamp) IS NULL OR m.fechaMovimiento <= :hasta)
+        ORDER BY m.fechaMovimiento DESC, m.id DESC
+
+    """)
+    List<Movimiento> buscarUltimosMovimientos(
+            @Param("desde") LocalDateTime desde,
+            @Param("hasta") LocalDateTime hasta,
+            Pageable pageable
+    );
+
+    @Query("""
+
+        SELECT new protecciones.dto.dashboard.UsuarioCantidadDTO(
+            CONCAT(m.usuario.nombre, ' ', m.usuario.apellido),
+            COUNT(m)
+        )
+        FROM Movimiento m
+        GROUP BY m.usuario.nombre, m.usuario.apellido
+        ORDER BY COUNT(m) DESC
+
+    """)
+    List<UsuarioCantidadDTO> contarMovimientosPorUsuario();
 }
