@@ -1,25 +1,47 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import {
+    Accordion,
+    AccordionSummary,
+    AccordionDetails,
     Alert,
     Box,
     Button,
+    Chip,
     Dialog,
     DialogTitle,
     DialogContent,
+    Divider,
     FormControl,
     Grid,
     InputLabel,
     MenuItem,
     Paper,
     Select,
+    Snackbar,
+    Stack,
     TextField,
+    Tooltip,
     Typography,
     ToggleButtonGroup,
     ToggleButton,
     Checkbox,
     FormControlLabel,
 } from "@mui/material";
+
+import { alpha } from "@mui/material/styles";
+
+import ExpandMoreIcon
+from "@mui/icons-material/ExpandMore";
+
+import PlaylistAddCheckIcon
+from "@mui/icons-material/PlaylistAddCheck";
+
+import DescriptionIcon
+from "@mui/icons-material/Description";
+
+import LocalShippingIcon
+from "@mui/icons-material/LocalShipping";
 
 import type { Modelo }
 from "../../types/Modelo";
@@ -41,6 +63,10 @@ import {
     crearMarca,
     obtenerMarcas
 } from "../../services/marcaService";
+
+import {
+    obtenerReles
+} from "../../services/releService";
 
 import {
     crearModelo,
@@ -116,7 +142,7 @@ interface Props {
 
     onCreate: (
         data: ReleRequest
-    ) => Promise<void>;
+    ) => Promise<Rele>;
 
     onUpdate: (
         id: number,
@@ -126,13 +152,21 @@ interface Props {
     releEditando: Rele | null;
 
     onCancelEdit: () => void;
+
+    onEditarDesdeLote: (
+        id: number
+    ) => void;
+
+    onTerminarEdicionDeLote: () => void;
 }
 
 function ReleForm({
     onCreate,
     onUpdate,
     releEditando,
-    onCancelEdit
+    onCancelEdit,
+    onEditarDesdeLote,
+    onTerminarEdicionDeLote
 }: Props) {
 
     const [marcas, setMarcas] =
@@ -153,6 +187,39 @@ function ReleForm({
 
     const [error, setError] =
         useState("");
+
+    const [successMsg, setSuccessMsg] =
+        useState("");
+
+    const numeroSerieInputRef =
+        useRef<HTMLInputElement>(null);
+
+    const [garantiaAbierta, setGarantiaAbierta] =
+        useState(false);
+
+    const [documentacionAbierta, setDocumentacionAbierta] =
+        useState(false);
+
+    type ReleDelLote = {
+        id: number;
+        modelo: string;
+        numeroSerie: string;
+    };
+
+    const [relesDelLote, setRelesDelLote] =
+        useState<ReleDelLote[]>([]);
+
+    const [editandoDesdeLote, setEditandoDesdeLote] =
+        useState(false);
+
+    const [duplicadoDetectado, setDuplicadoDetectado] =
+        useState<Rele | null>(null);
+
+    const [verificandoSerie, setVerificandoSerie] =
+        useState(false);
+
+    const serieCheckTimeoutRef =
+        useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const [
         openMarcaDialog,
@@ -319,6 +386,18 @@ function ReleForm({
             releEditando.inicioGarantia ?? null
     });
 
+        setGarantiaAbierta(
+            Boolean(releEditando.garantiaMeses)
+        );
+
+        setDocumentacionAbierta(
+            Boolean(
+                releEditando.remitoId
+                ||
+                releEditando.ordenProvisionId
+            )
+        );
+
         const modelo =
             modelos.find(
                 (m) =>
@@ -336,6 +415,91 @@ function ReleForm({
     }, [
         releEditando,
         modelos
+    ]);
+
+    useEffect(() => {
+
+        const valor =
+            formData.numeroSerie.trim();
+
+        if (serieCheckTimeoutRef.current) {
+
+            clearTimeout(
+                serieCheckTimeoutRef.current
+            );
+        }
+
+        if (valor.length < 3) {
+
+            setDuplicadoDetectado(null);
+
+            setVerificandoSerie(false);
+
+            return;
+        }
+
+        setVerificandoSerie(true);
+
+        serieCheckTimeoutRef.current = setTimeout(
+
+            async () => {
+
+                try {
+
+                    const resultado =
+                        await obtenerReles(
+                            0,
+                            5,
+                            valor,
+                            "TODOS"
+                        );
+
+                    const encontrado =
+                        resultado.content.find(
+                            (r) =>
+                                r.numeroSerie.toUpperCase()
+                                ===
+                                valor.toUpperCase()
+                        );
+
+                    const esElMismoQueEdito =
+                        releEditando
+                        &&
+                        encontrado
+                        &&
+                        encontrado.id === releEditando.id;
+
+                    setDuplicadoDetectado(
+                        encontrado && !esElMismoQueEdito
+                            ? encontrado
+                            : null
+                    );
+
+                } catch {
+
+                    setDuplicadoDetectado(null);
+
+                } finally {
+
+                    setVerificandoSerie(false);
+                }
+            },
+            400
+        );
+
+        return () => {
+
+            if (serieCheckTimeoutRef.current) {
+
+                clearTimeout(
+                    serieCheckTimeoutRef.current
+                );
+            }
+        };
+
+    }, [
+        formData.numeroSerie,
+        releEditando
     ]);
 
     const remitoSeleccionado =
@@ -717,7 +881,22 @@ function ReleForm({
 
         setError("");
 
-        onCancelEdit();
+        setGarantiaAbierta(false);
+
+        setDocumentacionAbierta(false);
+
+        if (editandoDesdeLote) {
+
+            setEditandoDesdeLote(false);
+
+            onTerminarEdicionDeLote();
+
+        } else {
+
+            setRelesDelLote([]);
+
+            onCancelEdit();
+        }
     };
 
     const handleChange = (
@@ -818,14 +997,51 @@ function ReleForm({
                     releData
                 );
 
+                limpiarFormulario();
+
             } else {
 
-                await onCreate(
-                    releData
-                );
-            }
+                const releCreado =
+                    await onCreate(
+                        releData
+                    );
 
-            limpiarFormulario();
+                setSuccessMsg(
+                    `Relé ${formData.numeroSerie} creado. Continúe con el siguiente.`
+                );
+
+                setRelesDelLote((prev) => [
+
+                    ...prev,
+
+                    {
+                        id:
+                            releCreado.id,
+
+                        numeroSerie:
+                            formData.numeroSerie,
+
+                        modelo:
+                            modelos.find(
+                                (m) =>
+                                    m.id === formData.modeloId
+                            )?.nombre
+                            ??
+                            ""
+                    }
+                ]);
+
+                setFormData((prev) => ({
+
+                    ...prev,
+
+                    numeroSerie: "",
+
+                    codigoConfiguracion: ""
+                }));
+
+                numeroSerieInputRef.current?.focus();
+            }
 
         } catch (err: any) {
 
@@ -880,6 +1096,149 @@ function ReleForm({
                 )
             }
 
+            {
+                !releEditando
+                &&
+                relesDelLote.length > 0 && (
+
+                    <Paper
+                        variant="outlined"
+                        sx={(theme) => ({
+                            p: 2,
+                            mb: 3,
+                            borderRadius: 3,
+                            borderColor: "success.main",
+                            backgroundColor:
+                                alpha(theme.palette.success.main, 0.08)
+                        })}
+                    >
+
+                        <Box
+                            sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 1,
+                                mb: 1
+                            }}
+                        >
+
+                            <PlaylistAddCheckIcon
+                                color="success"
+                                fontSize="small"
+                            />
+
+                            <Typography
+                                sx={{ fontWeight: 600 }}
+                            >
+
+                                Lote actual
+                                {" — "}
+                                {relesDelLote.length}
+                                {" "}
+                                {
+                                    relesDelLote.length === 1
+                                        ? "relé cargado"
+                                        : "relés cargados"
+                                }
+
+                            </Typography>
+
+                        </Box>
+
+                        {
+                            (remitoSeleccionado || opSeleccionada) && (
+
+                                <Stack
+                                    direction="row"
+                                    spacing={1}
+                                    sx={{ mb: 1.5, flexWrap: "wrap" }}
+                                    useFlexGap
+                                >
+
+                                    {
+                                        remitoSeleccionado && (
+
+                                            <Chip
+                                                icon={<LocalShippingIcon />}
+                                                label={
+                                                    `Remito: ${remitoSeleccionado.numeroRemito}`
+                                                }
+                                                size="small"
+                                                color="info"
+                                                variant="outlined"
+                                            />
+                                        )
+                                    }
+
+                                    {
+                                        opSeleccionada && (
+
+                                            <Chip
+                                                icon={<DescriptionIcon />}
+                                                label={
+                                                    `OP: ${opSeleccionada.numero}`
+                                                }
+                                                size="small"
+                                                color="info"
+                                                variant="outlined"
+                                            />
+                                        )
+                                    }
+
+                                </Stack>
+                            )
+                        }
+
+                        <Divider sx={{ mb: 1.5 }} />
+
+                        <Stack
+                            direction="row"
+                            spacing={1}
+                            useFlexGap
+                            sx={{ flexWrap: "wrap" }}
+                        >
+
+                            {
+                                relesDelLote.map(
+                                    (rele) => (
+
+                                        <Tooltip
+                                            key={rele.id}
+                                            title="Editar este relé"
+                                        >
+
+                                            <Chip
+                                                label={
+                                                    rele.modelo
+                                                        ? `${rele.modelo} · ${rele.numeroSerie}`
+                                                        : rele.numeroSerie
+                                                }
+                                                size="small"
+                                                color="success"
+                                                variant="outlined"
+                                                onClick={() => {
+
+                                                    setEditandoDesdeLote(
+                                                        true
+                                                    );
+
+                                                    onEditarDesdeLote(
+                                                        rele.id
+                                                    );
+                                                }}
+                                            />
+
+                                        </Tooltip>
+                                    )
+                                )
+                            }
+
+                        </Stack>
+
+                    </Paper>
+                )
+            }
+
             <form
                 onSubmit={handleSubmit}
             >
@@ -888,6 +1247,18 @@ function ReleForm({
                     container
                     spacing={2}
                 >
+
+                    <Grid size={12}>
+
+                        <Typography
+                            variant="overline"
+                            color="text.secondary"
+                        >
+                            Datos del Relé
+                        </Typography>
+
+                    </Grid>
+
                     <Grid size={12}>
 
                         <FormControl fullWidth>
@@ -935,11 +1306,14 @@ function ReleForm({
                             fullWidth
                         >
 
-                            <InputLabel>
+                            <InputLabel
+                                id="marca-select-label"
+                            >
                                 Marca
                             </InputLabel>
 
                             <Select
+                                labelId="marca-select-label"
                                 value={marcaId}
                                 label="Marca"
                                 onChange={(e) => {
@@ -1001,11 +1375,14 @@ function ReleForm({
                             fullWidth
                         >
 
-                            <InputLabel>
+                            <InputLabel
+                                id="modelo-select-label"
+                            >
                                 Modelo
                             </InputLabel>
 
                             <Select
+                                labelId="modelo-select-label"
                                 name="modeloId"
                                 value={
                                     formData.modeloId
@@ -1048,9 +1425,22 @@ function ReleForm({
                             onChange={
                                 handleChange
                             }
+                            inputRef={
+                                numeroSerieInputRef
+                            }
                             autoComplete="off"
                             fullWidth
                             required
+                            error={
+                                Boolean(duplicadoDetectado)
+                            }
+                            helperText={
+                                duplicadoDetectado
+                                    ? `Ya existe un relé con esta serie: ${duplicadoDetectado.modelo} — estado ${duplicadoDetectado.estadoActual}${duplicadoDetectado.activo ? "" : " (dado de baja)"}.`
+                                    : verificandoSerie
+                                        ? "Verificando disponibilidad..."
+                                        : " "
+                            }
                         />
 
                     </Grid>
@@ -1074,119 +1464,181 @@ function ReleForm({
 
                     <Grid size={12}>
 
-                        <FormControlLabel
-                            control={
-
-                                <Checkbox
-                                    checked={formData.cargarGarantia}
-                                    onChange={(e) =>
-                                        setFormData((prev) => ({
-                                            ...prev,
-                                            cargarGarantia:
-                                                e.target.checked
-                                        }))
-                                    }
-                                />
+                        <Accordion
+                            expanded={garantiaAbierta}
+                            onChange={(_, expandida) =>
+                                setGarantiaAbierta(expandida)
                             }
-                            label="Cargar garantía"
-                        />
+                        >
 
-                    </Grid>
+                            <AccordionSummary
+                                expandIcon={<ExpandMoreIcon />}
+                            >
 
-                    {
-                        formData.cargarGarantia && (
+                                <Box
+                                    sx={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: 2,
+                                        width: "100%"
+                                    }}
+                                >
 
-                            <>
+                                    <Typography
+                                        sx={{ fontWeight: 600 }}
+                                    >
+                                        Garantía
+                                    </Typography>
 
-                                <Grid size={6}>
-
-                                    <TextField
-                                        type="number"
-                                        label="Meses Garantía"
-                                        value={
-                                            formData.garantiaMeses || ""
-                                        }
-                                        onChange={(e) =>
-                                            setFormData((prev) => ({
-                                                ...prev,
-                                                garantiaMeses:
-                                                    Number(
-                                                        e.target.value
-                                                    )
-                                            }))
-                                        }
-                                        fullWidth
-                                    />
-
-                                </Grid>
-
-                                <Grid size={6}>
-
-                                    <ToggleButtonGroup
-                                        exclusive
-                                        value={
-                                            formData.usarFechaActual
-                                                ? "AUTO"
-                                                : "MANUAL"
-                                        }
-                                        onChange={(_, value) => {
-
-                                            if (!value) return;
-
-                                            setFormData((prev) => ({
-                                                ...prev,
-                                                usarFechaActual:
-                                                    value === "AUTO"
-                                            }));
-                                        }}
-                                        fullWidth
+                                    <Typography
+                                        variant="body2"
+                                        color="text.secondary"
                                     >
 
-                                        <ToggleButton value="AUTO">
-                                            Fecha actual
-                                        </ToggleButton>
+                                        {
+                                            formData.cargarGarantia
+                                            &&
+                                            formData.garantiaMeses
+                                                ? `${formData.garantiaMeses} meses`
+                                                : "Sin garantía cargada"
+                                        }
 
-                                        <ToggleButton value="MANUAL">
-                                            Fecha manual
-                                        </ToggleButton>
+                                    </Typography>
 
-                                    </ToggleButtonGroup>
+                                </Box>
+
+                            </AccordionSummary>
+
+                            <AccordionDetails>
+
+                                <Grid
+                                    container
+                                    spacing={2}
+                                >
+
+                                    <Grid size={12}>
+
+                                        <FormControlLabel
+                                            control={
+
+                                                <Checkbox
+                                                    checked={formData.cargarGarantia}
+                                                    onChange={(e) =>
+                                                        setFormData((prev) => ({
+                                                            ...prev,
+                                                            cargarGarantia:
+                                                                e.target.checked
+                                                        }))
+                                                    }
+                                                />
+                                            }
+                                            label="Cargar garantía"
+                                        />
+
+                                    </Grid>
+
+                                    {
+                                        formData.cargarGarantia && (
+
+                                            <>
+
+                                                <Grid size={6}>
+
+                                                    <TextField
+                                                        type="number"
+                                                        label="Meses Garantía"
+                                                        value={
+                                                            formData.garantiaMeses || ""
+                                                        }
+                                                        onChange={(e) =>
+                                                            setFormData((prev) => ({
+                                                                ...prev,
+                                                                garantiaMeses:
+                                                                    Number(
+                                                                        e.target.value
+                                                                    )
+                                                            }))
+                                                        }
+                                                        fullWidth
+                                                    />
+
+                                                </Grid>
+
+                                                <Grid size={6}>
+
+                                                    <ToggleButtonGroup
+                                                        exclusive
+                                                        value={
+                                                            formData.usarFechaActual
+                                                                ? "AUTO"
+                                                                : "MANUAL"
+                                                        }
+                                                        onChange={(_, value) => {
+
+                                                            if (!value) return;
+
+                                                            setFormData((prev) => ({
+                                                                ...prev,
+                                                                usarFechaActual:
+                                                                    value === "AUTO"
+                                                            }));
+                                                        }}
+                                                        fullWidth
+                                                    >
+
+                                                        <ToggleButton value="AUTO">
+                                                            Fecha actual
+                                                        </ToggleButton>
+
+                                                        <ToggleButton value="MANUAL">
+                                                            Fecha manual
+                                                        </ToggleButton>
+
+                                                    </ToggleButtonGroup>
+
+                                                </Grid>
+
+                                                {
+                                                    !formData.usarFechaActual && (
+
+                                                        <Grid size={12}>
+
+                                                            <TextField
+                                                                type="date"
+                                                                fullWidth
+                                                                label="Inicio Garantía"
+                                                                value={
+                                                                    formData.inicioGarantia || ""
+                                                                }
+                                                                slotProps={{
+                                                                    inputLabel: {
+                                                                        shrink: true
+                                                                    }
+                                                                }}
+                                                                onChange={(e) =>
+                                                                    setFormData((prev) => ({
+                                                                        ...prev,
+                                                                        inicioGarantia:
+                                                                            e.target.value
+                                                                    }))
+                                                                }
+                                                            />
+
+                                                        </Grid>
+                                                    )
+                                                }
+
+                                            </>
+                                        )
+                                    }
 
                                 </Grid>
 
-                                {
-                                    !formData.usarFechaActual && (
+                            </AccordionDetails>
 
-                                        <Grid size={12}>
+                        </Accordion>
 
-                                            <TextField
-                                                type="date"
-                                                fullWidth
-                                                label="Inicio Garantía"
-                                                value={
-                                                    formData.inicioGarantia || ""
-                                                }
-                                                slotProps={{
-                                                    inputLabel: {
-                                                        shrink: true
-                                                    }
-                                                }}
-                                                onChange={(e) =>
-                                                    setFormData((prev) => ({
-                                                        ...prev,
-                                                        inicioGarantia:
-                                                            e.target.value
-                                                    }))
-                                                }
-                                            />
-
-                                        </Grid>
-                                    )
-                                }
-
-                            </>
-                        )
-                    }
+                    </Grid>
 
                         {
                         !releEditando && (
@@ -1195,11 +1647,14 @@ function ReleForm({
 
                                 <FormControl fullWidth>
 
-                                    <InputLabel>
+                                    <InputLabel
+                                        id="posicion-inicial-select-label"
+                                    >
                                         Posición Inicial
                                     </InputLabel>
 
                                     <Select
+                                        labelId="posicion-inicial-select-label"
                                         value={
                                             formData.posicionInicialId
                                             ?? ""
@@ -1249,18 +1704,78 @@ function ReleForm({
                         formData.tipoIngreso ===
                         "NUEVO" && (
 
-                            <>
-                                <Grid size={12}>
+                            <Grid size={12}>
 
-                                    <Alert severity="info">
+                                <Accordion
+                                    expanded={documentacionAbierta}
+                                    onChange={(_, expandida) =>
+                                        setDocumentacionAbierta(expandida)
+                                    }
+                                >
 
-                                        La documentación inicial es opcional. Puede asociarse
-                                        un remito, una orden de provisión, ambos o ninguno.
+                                    <AccordionSummary
+                                        expandIcon={<ExpandMoreIcon />}
+                                    >
 
-                                    </Alert>
+                                        <Box
+                                            sx={{
+                                                display: "flex",
+                                                alignItems: "center",
+                                                gap: 2,
+                                                width: "100%"
+                                            }}
+                                        >
 
-                                </Grid>
-                                <Grid size={6}>
+                                            <Typography
+                                                sx={{ fontWeight: 600 }}
+                                            >
+                                                Documentación (Remito / Orden de Provisión)
+                                            </Typography>
+
+                                            <Typography
+                                                variant="body2"
+                                                color="text.secondary"
+                                            >
+
+                                                {
+                                                    [
+                                                        remitoSeleccionado
+                                                            ? `Remito ${remitoSeleccionado.numeroRemito}`
+                                                            : null,
+                                                        opSeleccionada
+                                                            ? `OP ${opSeleccionada.numero}`
+                                                            : null
+                                                    ].filter(
+                                                        (v): v is string => v !== null
+                                                    ).join(" · ")
+                                                    ||
+                                                    "Opcional - sin documentación asociada"
+                                                }
+
+                                            </Typography>
+
+                                        </Box>
+
+                                    </AccordionSummary>
+
+                                    <AccordionDetails>
+
+                                        <Grid
+                                            container
+                                            spacing={2}
+                                        >
+
+                                            <Grid size={12}>
+
+                                                <Alert severity="info">
+
+                                                    La documentación inicial es opcional. Puede asociarse
+                                                    un remito, una orden de provisión, ambos o ninguno.
+
+                                                </Alert>
+
+                                            </Grid>
+                                            <Grid size={6}>
 
                                     {
                                         opSeleccionada && (
@@ -1739,7 +2254,13 @@ function ReleForm({
 
                                 </Grid>
 
-                            </>
+                                        </Grid>
+
+                                    </AccordionDetails>
+
+                                </Accordion>
+
+                            </Grid>
                         )
                     }
 
@@ -1752,7 +2273,11 @@ function ReleForm({
                             <Button
                                 variant="contained"
                                 type="submit"
-                                disabled={loading}
+                                disabled={
+                                    loading
+                                    ||
+                                    Boolean(duplicadoDetectado)
+                                }
                                 fullWidth
                             >
 
@@ -1776,6 +2301,23 @@ function ReleForm({
                                     >
 
                                         CANCELAR
+
+                                    </Button>
+                                )
+                            }
+
+                            {
+                                !releEditando && (
+
+                                    <Button
+                                        variant="outlined"
+                                        color="inherit"
+                                        onClick={
+                                            limpiarFormulario
+                                        }
+                                    >
+
+                                        TERMINAR CARGA
 
                                     </Button>
                                 )
@@ -1857,6 +2399,26 @@ function ReleForm({
                 </DialogContent>
 
             </Dialog>
+
+            <Snackbar
+                open={Boolean(successMsg)}
+                autoHideDuration={2500}
+                onClose={() =>
+                    setSuccessMsg("")
+                }
+                anchorOrigin={{
+                    vertical: "top",
+                    horizontal: "center"
+                }}
+            >
+
+                <Alert severity="success">
+
+                    {successMsg}
+
+                </Alert>
+
+            </Snackbar>
 
         </Paper>
     );

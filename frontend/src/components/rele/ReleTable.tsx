@@ -34,10 +34,14 @@ import {
     Box,
     Tooltip,
     IconButton,
+    Skeleton,
 } from "@mui/material";
 
 import PictureAsPdfIcon
 from "@mui/icons-material/PictureAsPdf";
+
+import EmptyState
+from "../common/EmptyState";
 
 import ContentCopyIcon
 from "@mui/icons-material/ContentCopy";
@@ -45,9 +49,17 @@ from "@mui/icons-material/ContentCopy";
 import CheckIcon
 from "@mui/icons-material/Check";
 
+import EditIcon
+from "@mui/icons-material/Edit";
+
+import HistoryIcon
+from "@mui/icons-material/History";
+
 interface Props {
 
     reles: Rele[];
+
+    cargando: boolean;
 
     filtroEstado:
         "ACTIVOS"
@@ -73,6 +85,7 @@ interface Props {
 
 function ReleTable({
     reles,
+    cargando,
     onEditar,
     filtroEstado,
     setFiltroEstado
@@ -327,6 +340,67 @@ function ReleTable({
                     <TableBody>
 
                         {
+                            cargando && (
+
+                                Array.from(
+                                    { length: 5 }
+                                ).map(
+                                    (_, indice) => (
+
+                                        <TableRow
+                                            key={
+                                                `skeleton-${indice}`
+                                            }
+                                        >
+
+                                            {
+                                                Array.from(
+                                                    { length: 10 }
+                                                ).map(
+                                                    (_, columna) => (
+
+                                                        <TableCell
+                                                            key={columna}
+                                                        >
+
+                                                            <Skeleton
+                                                                variant="text"
+                                                            />
+
+                                                        </TableCell>
+                                                    )
+                                                )
+                                            }
+
+                                        </TableRow>
+                                    )
+                                )
+                            )
+                        }
+
+                        {
+                            !cargando
+                            &&
+                            reles.length === 0 && (
+
+                                <TableRow>
+
+                                    <TableCell colSpan={10}>
+
+                                        <EmptyState
+                                            titulo="No se encontraron relés"
+                                            subtitulo="Probá ajustar la búsqueda o el filtro de estado."
+                                        />
+
+                                    </TableCell>
+
+                                </TableRow>
+                            )
+                        }
+
+                        {
+                            !cargando
+                            &&
                             reles.map(
                                 (rele) => (
 
@@ -580,6 +654,7 @@ function ReleTable({
                                                 <Button
                                                     size="small"
                                                     variant="outlined"
+                                                    startIcon={<EditIcon />}
                                                     onClick={() =>
                                                         onEditar(
                                                             rele
@@ -594,6 +669,7 @@ function ReleTable({
                                                 <Button
                                                     size="small"
                                                     variant="contained"
+                                                    startIcon={<HistoryIcon />}
                                                     onClick={() =>
                                                         handleVerHistorial(
                                                             rele

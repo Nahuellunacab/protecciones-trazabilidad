@@ -13,6 +13,7 @@ import {
     obtenerReles,
     crearRele,
     actualizar,
+    obtenerRelePorId,
 
 } from "../services/releService";
 
@@ -45,7 +46,14 @@ function RelePage() {
 
     const [textoBusqueda, setTextoBusqueda] =
         useState("");
-    
+
+    const [textoBusquedaDebounced,
+        setTextoBusquedaDebounced] =
+        useState("");
+
+    const [cargando, setCargando] =
+        useState(false);
+
     const [page, setPage] =
         useState(0);
     
@@ -69,22 +77,48 @@ function RelePage() {
 
     const cargarReles = async () => {
 
-        const data =
-            await obtenerReles(
-                page,
-                rowsPerPage,
-                textoBusqueda,
-                filtroEstado
+        setCargando(true);
+
+        try {
+
+            const data =
+                await obtenerReles(
+                    page,
+                    rowsPerPage,
+                    textoBusquedaDebounced,
+                    filtroEstado
+                );
+
+            setReles(
+                data.content
             );
 
-        setReles(
-            data.content
-        );
+            setTotalReles(
+                data.totalElements
+            );
 
-        setTotalReles(
-            data.totalElements
-        );
+        } finally {
+
+            setCargando(false);
+        }
     };
+
+    useEffect(() => {
+
+        const timeoutId = setTimeout(() => {
+
+            setTextoBusquedaDebounced(
+                textoBusqueda
+            );
+
+            setPage(0);
+
+        }, 350);
+
+        return () =>
+            clearTimeout(timeoutId);
+
+    }, [textoBusqueda]);
 
     useEffect(() => {
 
@@ -92,21 +126,35 @@ function RelePage() {
 
     }, [
         page,
-        textoBusqueda,
+        textoBusquedaDebounced,
         filtroEstado
     ]);
 
     const handleCreate = async (
         data: ReleRequest
-    ) => {
+    ): Promise<Rele> => {
 
-        await crearRele(data);
-
-        setMostrarFormulario(
-            false
-        );
+        const releCreado =
+            await crearRele(data);
 
         await cargarReles();
+
+        return releCreado;
+    };
+
+    const handleEditarDesdeLote = async (
+        id: number
+    ) => {
+
+        const rele =
+            await obtenerRelePorId(id);
+
+        setReleEditando(rele);
+
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
     };
 
     const handleUpdate = async (
@@ -201,6 +249,12 @@ function RelePage() {
                         onCancelEdit={
                             handleCancelar
                         }
+                        onEditarDesdeLote={
+                            handleEditarDesdeLote
+                        }
+                        onTerminarEdicionDeLote={
+                            () => setReleEditando(null)
+                        }
                     />
 
                 )
@@ -234,6 +288,7 @@ function RelePage() {
 
             <ReleTable
                 reles={reles}
+                cargando={cargando}
                 onEditar={handleEditar}
                 filtroEstado={filtroEstado}
                 setFiltroEstado={(value) => {

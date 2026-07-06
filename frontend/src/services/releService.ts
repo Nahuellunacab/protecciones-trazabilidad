@@ -15,7 +15,8 @@ export const obtenerReles = async (
     page: number,
     size: number,
     texto: string,
-    filtroEstado: "ACTIVOS" | "INACTIVOS" | "TODOS"
+    filtroEstado: "ACTIVOS" | "INACTIVOS" | "TODOS",
+    sort: string = "id,desc"
 ): Promise<RelePageResponse> => {
 
     const response =
@@ -26,7 +27,8 @@ export const obtenerReles = async (
                     page,
                     size,
                     texto,
-                    filtroEstado
+                    filtroEstado,
+                    sort
                 }
             }
         );
@@ -36,9 +38,15 @@ export const obtenerReles = async (
 
 export const crearRele = async (
     rele: ReleRequest
-): Promise<void> => {
+): Promise<Rele> => {
 
-    await api.post("/reles", rele);
+    const response =
+        await api.post(
+            "/reles",
+            rele
+        );
+
+    return response.data;
 };
 
 export async function actualizar(
