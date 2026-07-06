@@ -44,7 +44,7 @@ PostgreSQL (Docker, puerto host configurable, contenedor "protecciones-db")
 
 - El frontend **no accede nunca directamente a la base de datos**; solo consume la API REST vía el cliente Axios centralizado (`frontend/src/api/axios.ts`).
 - El backend expone DTOs, nunca entidades JPA, en sus respuestas.
-- CORS está restringido explícitamente a `http://localhost:5173` (`CorsConfig.java`) — si se cambia el puerto/host del frontend, hay que actualizar esta config.
+- CORS permite cualquier puerto de `http://localhost` y `http://127.0.0.1` (`allowedOriginPatterns` + `allowCredentials(true)` en `CorsConfig.java`), para que funcione tanto `npm run dev` (5173) como el build dockerizado (5173 vía Nginx) sin tener que hardcodear un puerto.
 - El esquema de base de datos es propiedad exclusiva de **Flyway**: Hibernate corre en modo `validate` (`spring.jpa.hibernate.ddl-auto=validate`), es decir, **Hibernate no puede crear ni modificar tablas**, solo valida que las entidades coincidan con el esquema ya migrado.
 - No hay autenticación/autorización implementada todavía. Existe una entidad `Usuario`, pero las operaciones de escritura usan un **usuario "sistema" hardcodeado con `id = 1`** (`usuarioRepository.findById(1L)`), tanto en `ReleService` como en `MovimientoService`. No hay login, sesión ni JWT.
 - Documentación de API autogenerada con springdoc-openapi (Swagger UI en `/swagger-ui/index.html`).
@@ -128,14 +128,13 @@ src/
 # Modelo de datos
 
 ## Catálogos base (sin dependencias, o dependencias mínimas)
-- **Tipo** — tipo técnico de relé.
 - **Marca** — fabricante.
 - **Estado** — estado operativo posible (`nombre`, `descripcion`).
 - **Provincia** → **Localidad** (N:1) — jerarquía geográfica.
 - **Proveedor** — proveedor logístico.
 
 ## Dominio principal
-- **Modelo** (`tipo_id`, `marca_id`) — catálogo técnico: nombre, rango de tensión (`tensionDesde`, `tensionHasta`, `tipoTension`).
+- **Modelo** (`marca_id`) — catálogo técnico: nombre y marca. (Hasta la migración V25 tenía también `tipo_id` y un rango de tensión propios — se eliminaron por decisión de negocio; no reintroducir estos campos sin una migración Flyway explícita).
 - **Rele** (`modelo_id`, `remito_id?`, `orden_provision_id?`) — la unidad física. Campos clave:
   - `numeroSerie` (único, obligatorio, se normaliza a MAYÚSCULAS + trim al guardar).
   - `codigoConfiguracion` (opcional, normalizado a MAYÚSCULAS + trim).
@@ -161,12 +160,11 @@ src/
 
 ## Relaciones (resumen)
 ```
-Tipo ──┐
-       ├─< Modelo >─┐
-Marca ─┘            ├─< Rele >─┐
-                     │          ├─< Movimiento >── Estado
-              Remito ┘          │        │
-     OrdenProvision ────────────┘        └── Posicion ── Destino ── Localidad ── Provincia
+Marca ──< Modelo >─┐
+                    ├─< Rele >─┐
+                    │          ├─< Movimiento >── Estado
+             Remito ┘          │        │
+    OrdenProvision ────────────┘        └── Posicion ── Destino ── Localidad ── Provincia
                                                                         Usuario ─< Movimiento
 Estado ──< TransicionEstado >── Estado   (auto-relación: define transiciones válidas)
 Proveedor ──< Remito
