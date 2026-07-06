@@ -294,6 +294,15 @@ public class ReleService {
                                 )
                         );
 
+        if (
+                dto.getPosicionInicialId() == null
+        ) {
+
+            throw new BusinessException(
+                    "Debe seleccionar una posición inicial para el relé"
+            );
+        }
+
         Posicion posicionInicial =
                 posicionRepository.findById(
                         dto.getPosicionInicialId()
