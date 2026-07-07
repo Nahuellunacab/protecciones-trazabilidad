@@ -27,3 +27,6 @@ build/
 
 # PDFs de remitos y ordenes de provisión
 backend/uploads/**
+
+# Base de datos Access original (datos reales, no versionar)
+*.accdb
