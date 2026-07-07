@@ -467,7 +467,7 @@ function RelePage() {
                                 Marca
                             </InputLabel>
 
-                            <Select
+                            <Select<number | "">
                                 labelId="filtro-marca-label"
                                 label="Marca"
                                 value={marcaId}
@@ -515,7 +515,7 @@ function RelePage() {
                                 Modelo
                             </InputLabel>
 
-                            <Select
+                            <Select<number | "">
                                 labelId="filtro-modelo-label"
                                 label="Modelo"
                                 value={modeloId}
@@ -605,7 +605,7 @@ function RelePage() {
                                 Destino
                             </InputLabel>
 
-                            <Select
+                            <Select<number | "">
                                 labelId="filtro-destino-label"
                                 label="Destino"
                                 value={destinoId}
