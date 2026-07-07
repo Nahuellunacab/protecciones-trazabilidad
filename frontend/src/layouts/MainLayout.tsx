@@ -20,6 +20,8 @@ import {
     DialogActions,
     TextField,
     Alert,
+    Avatar,
+    Chip,
 } from "@mui/material";
 
 import LogoutIcon
@@ -208,6 +210,31 @@ function MainLayout() {
         );
     };
 
+    const [accountMenuAnchor, setAccountMenuAnchor] =
+        useState<null | HTMLElement>(
+            null
+        );
+
+    const abrirAccountMenu = (
+        event: React.MouseEvent<HTMLElement>
+    ) => {
+
+        setAccountMenuAnchor(
+            event.currentTarget
+        );
+    };
+
+    const cerrarAccountMenu = () => {
+
+        setAccountMenuAnchor(
+            null
+        );
+    };
+
+    const iniciales = usuario
+        ? `${usuario.nombre.charAt(0)}${usuario.apellido.charAt(0)}`.toUpperCase()
+        : "";
+
     const [drawerOpen, setDrawerOpen] =
         useState(false);
 
@@ -234,6 +261,10 @@ function MainLayout() {
                 position="static"
                 color="primary"
                 elevation={2}
+                sx={{
+                    background:
+                        "linear-gradient(90deg, #00695C 0%, #004D40 100%)"
+                }}
             >
 
                 <Toolbar
@@ -320,12 +351,20 @@ function MainLayout() {
                                 fontWeight:
                                     isActive("/")
                                         ? 700
-                                        : 400,
+                                        : 500,
 
-                                borderBottom:
+                                borderRadius: 2,
+                                px: 1.5,
+
+                                backgroundColor:
                                     isActive("/")
-                                        ? "2px solid white"
-                                        : "none"
+                                        ? "rgba(255,255,255,0.18)"
+                                        : "transparent",
+
+                                "&:hover": {
+                                    backgroundColor:
+                                        "rgba(255,255,255,0.12)"
+                                }
                             }}
                         >
                             Dashboard
@@ -339,12 +378,20 @@ function MainLayout() {
                                 fontWeight:
                                     isActive("/reles")
                                         ? 700
-                                        : 400,
+                                        : 500,
 
-                                borderBottom:
+                                borderRadius: 2,
+                                px: 1.5,
+
+                                backgroundColor:
                                     isActive("/reles")
-                                        ? "2px solid white"
-                                        : "none"
+                                        ? "rgba(255,255,255,0.18)"
+                                        : "transparent",
+
+                                "&:hover": {
+                                    backgroundColor:
+                                        "rgba(255,255,255,0.12)"
+                                }
                             }}
                         >
                             Relés
@@ -358,12 +405,20 @@ function MainLayout() {
                                 fontWeight:
                                     isActive("/movimientos")
                                         ? 700
-                                        : 400,
+                                        : 500,
 
-                                borderBottom:
+                                borderRadius: 2,
+                                px: 1.5,
+
+                                backgroundColor:
                                     isActive("/movimientos")
-                                        ? "2px solid white"
-                                        : "none"
+                                        ? "rgba(255,255,255,0.18)"
+                                        : "transparent",
+
+                                "&:hover": {
+                                    backgroundColor:
+                                        "rgba(255,255,255,0.12)"
+                                }
                             }}
                         >
                             Movimientos
@@ -374,7 +429,8 @@ function MainLayout() {
                             flexItem
                             sx={{
                                 borderColor:
-                                    "rgba(255,255,255,0.3)"
+                                    "rgba(255,255,255,0.3)",
+                                my: 1.5
                             }}
                         />
 
@@ -384,6 +440,21 @@ function MainLayout() {
                             endIcon={
                                 <ArrowDropDownIcon />
                             }
+                            sx={{
+                                borderRadius: 2,
+                                px: 1.5,
+                                fontWeight: 500,
+
+                                backgroundColor:
+                                    Boolean(anchorEl)
+                                        ? "rgba(255,255,255,0.18)"
+                                        : "transparent",
+
+                                "&:hover": {
+                                    backgroundColor:
+                                        "rgba(255,255,255,0.12)"
+                                }
+                            }}
                         >
                             Administración
                         </Button>
@@ -521,33 +592,6 @@ function MainLayout() {
 
                     </Box>
 
-                    {usuario && (
-
-                        <Box
-                            sx={{
-                                display: {
-                                    xs: "none",
-                                    md: "flex"
-                                },
-                                alignItems: "center",
-                                gap: 1
-                            }}
-                        >
-
-                            <Typography
-                                variant="body2"
-                                sx={{ opacity: 0.9 }}
-                            >
-                                {usuario.nombre}
-                                {" "}
-                                {usuario.apellido}
-                                {" · "}
-                                {usuario.rol}
-                            </Typography>
-
-                        </Box>
-                    )}
-
                     <IconButton
                         color="inherit"
                         onClick={toggleColorMode}
@@ -566,25 +610,171 @@ function MainLayout() {
 
                     </IconButton>
 
-                    <IconButton
-                        color="inherit"
-                        onClick={abrirDialogPassword}
-                        aria-label="Cambiar contraseña"
-                    >
+                    {usuario && (
 
-                        <LockResetIcon />
+                        <>
 
-                    </IconButton>
+                            <IconButton
+                                onClick={abrirAccountMenu}
+                                size="small"
+                                aria-label="Cuenta"
+                                aria-controls={
+                                    accountMenuAnchor
+                                        ? "account-menu"
+                                        : undefined
+                                }
+                                aria-haspopup="true"
+                                sx={{ ml: 0.5 }}
+                            >
 
-                    <IconButton
-                        color="inherit"
-                        onClick={handleLogout}
-                        aria-label="Cerrar sesión"
-                    >
+                                <Avatar
+                                    sx={{
+                                        width: 36,
+                                        height: 36,
+                                        bgcolor: "rgba(255,255,255,0.25)",
+                                        color: "#fff",
+                                        fontSize: "0.9rem",
+                                        fontWeight: 700
+                                    }}
+                                >
+                                    {iniciales}
+                                </Avatar>
 
-                        <LogoutIcon />
+                            </IconButton>
 
-                    </IconButton>
+                            <Menu
+                                id="account-menu"
+                                anchorEl={accountMenuAnchor}
+                                open={Boolean(accountMenuAnchor)}
+                                onClose={cerrarAccountMenu}
+                                anchorOrigin={{
+                                    vertical: "bottom",
+                                    horizontal: "right"
+                                }}
+                                transformOrigin={{
+                                    vertical: "top",
+                                    horizontal: "right"
+                                }}
+                                slotProps={{
+                                    paper: {
+                                        sx: { minWidth: 260, mt: 1 }
+                                    }
+                                }}
+                            >
+
+                                <Box
+                                    sx={{
+                                        px: 2,
+                                        py: 1.5,
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: 1.5
+                                    }}
+                                >
+
+                                    <Avatar
+                                        sx={{
+                                            width: 44,
+                                            height: 44,
+                                            bgcolor: "primary.main",
+                                            fontWeight: 700
+                                        }}
+                                    >
+                                        {iniciales}
+                                    </Avatar>
+
+                                    <Box sx={{ minWidth: 0 }}>
+
+                                        <Typography
+                                            variant="subtitle2"
+                                            noWrap
+                                            sx={{ fontWeight: 700 }}
+                                        >
+                                            {usuario.nombre}
+                                            {" "}
+                                            {usuario.apellido}
+                                        </Typography>
+
+                                        <Typography
+                                            variant="caption"
+                                            color="text.secondary"
+                                            noWrap
+                                            sx={{ display: "block" }}
+                                        >
+                                            {usuario.email}
+                                        </Typography>
+
+                                        <Box
+                                            sx={{
+                                                display: "flex",
+                                                alignItems: "center",
+                                                gap: 0.75,
+                                                mt: 0.5
+                                            }}
+                                        >
+
+                                            <Typography
+                                                variant="caption"
+                                                color="text.secondary"
+                                            >
+                                                N° Sobre: {usuario.numeroSobre}
+                                            </Typography>
+
+                                            <Chip
+                                                label={usuario.rol}
+                                                size="small"
+                                                color="primary"
+                                                variant="outlined"
+                                                sx={{
+                                                    height: 20,
+                                                    fontSize: "0.65rem"
+                                                }}
+                                            />
+
+                                        </Box>
+
+                                    </Box>
+
+                                </Box>
+
+                                <Divider />
+
+                                <MenuItem
+                                    onClick={() => {
+
+                                        cerrarAccountMenu();
+                                        abrirDialogPassword();
+                                    }}
+                                >
+
+                                    <LockResetIcon
+                                        fontSize="small"
+                                        sx={{ mr: 1.5 }}
+                                    />
+                                    Cambiar contraseña
+
+                                </MenuItem>
+
+                                <MenuItem
+                                    onClick={() => {
+
+                                        cerrarAccountMenu();
+                                        handleLogout();
+                                    }}
+                                >
+
+                                    <LogoutIcon
+                                        fontSize="small"
+                                        sx={{ mr: 1.5 }}
+                                    />
+                                    Cerrar sesión
+
+                                </MenuItem>
+
+                            </Menu>
+
+                        </>
+                    )}
 
                     <IconButton
                         color="inherit"
