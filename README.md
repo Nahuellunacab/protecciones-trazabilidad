@@ -622,8 +622,10 @@ PATCH /api/reles/{id}/baja
 
 - KPIs visuales
 - cards operativas
+- gráficos de distribución (estado, marca, modelo, destino, proveedor)
 - tabla de últimos movimientos
 - métricas en tiempo real
+- resumen ejecutivo generado por IA (Gemini API, opcional — requiere `GEMINI_API_KEY`)
 
 ---
 

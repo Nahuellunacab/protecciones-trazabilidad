@@ -20,6 +20,8 @@ import type { ProveedorCantidad } from "../types/ProveedorCantidad";
 
 import type { UsuarioCantidad } from "../types/UsuarioCantidad";
 
+import type { ResumenIA } from "../types/ResumenIA";
+
 export async function
 obtenerDashboardKpis():
 Promise<DashboardKpi> {
@@ -27,6 +29,18 @@ Promise<DashboardKpi> {
     const response =
         await api.get(
             "/dashboard/kpis"
+        );
+
+    return response.data;
+}
+
+export async function
+obtenerResumenIA():
+Promise<ResumenIA> {
+
+    const response =
+        await api.get(
+            "/dashboard/resumen-ia"
         );
 
     return response.data;

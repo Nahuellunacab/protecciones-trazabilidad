@@ -13,6 +13,8 @@ import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -24,6 +26,7 @@ import protecciones.dto.dashboard.EstadoCantidadDTO;
 import protecciones.dto.dashboard.MarcaCantidadDTO;
 import protecciones.dto.dashboard.ModeloCantidadDTO;
 import protecciones.dto.dashboard.ProveedorCantidadDTO;
+import protecciones.dto.dashboard.ResumenIADTO;
 import protecciones.dto.dashboard.UsuarioCantidadDTO;
 
 import protecciones.repository.MovimientoRepository;
@@ -45,6 +48,43 @@ public class DashboardService {
 
     private static final int LIMITE_MOVIMIENTOS_MAXIMO = 200;
 
+    // El resumen ejecutivo se recalcula solo si cambio algun KPI o si pasaron
+    // mas de 30 minutos: evita pegarle a la API de Gemini en cada carga
+    // del dashboard cuando los datos no se movieron.
+    private static final long RESUMEN_IA_TTL_MS = 30 * 60 * 1000;
+
+    // Cuantos items de cada distribucion (marca/destino/proveedor) se le
+    // pasan a la IA como contexto. No hace falta la lista completa (puede
+    // tener decenas de modelos) para que el resumen sea representativo.
+    private static final int TOP_N_DISTRIBUCION = 5;
+
+    private static final String PROMPT_SISTEMA_RESUMEN =
+            """
+            Sos un asistente que redacta resumenes ejecutivos para el \
+            dashboard de un sistema de trazabilidad de reles de proteccion de \
+            EPEC Transmision. Se te va a dar informacion operativa en texto \
+            plano: KPIs generales y distribucion del stock por estado, \
+            marca, destino y proveedor.
+
+            Devolves la respuesta exactamente en este formato, sin texto \
+            adicional antes ni despues:
+            - Primer linea: una sola oracion (maximo 22 palabras) con la \
+            situacion general del stock.
+            - Despues, entre 3 y 5 lineas, cada una empezando con "- ", con \
+            hallazgos concretos y numericos (no genericos): estado \
+            predominante del stock, marca o destino mas representado, y \
+            cualquier alerta operativa (garantias vencidas, documentacion \
+            pendiente, remitos u ordenes sin asociar) si el numero es mayor \
+            a cero.
+
+            Reglas: usa exclusivamente los numeros provistos, no inventes \
+            datos, no agregues recomendaciones genericas, no uses \
+            encabezados ni markdown (nada de **, #, etc.), español \
+            rioplatense, tono profesional y directo.""";
+
+    private static final Logger
+            log = LoggerFactory.getLogger(DashboardService.class);
+
     private final ReleRepository
             releRepository;
 
@@ -63,13 +103,26 @@ public class DashboardService {
     private final UltimoMovimientoRepository
             ultimoMovimientoRepository;
 
+    private final GeminiService
+            geminiService;
+
+    private volatile String
+            resumenIACacheado;
+
+    private volatile String
+            resumenIAFirmaCacheada;
+
+    private volatile long
+            resumenIACacheadoEn;
+
     public DashboardService(
             ReleRepository releRepository,
             MovimientoRepository movimientoRepository,
             MovimientoService movimientoService,
             RemitoRepository remitoRepository,
             OrdenProvisionRepository ordenProvisionRepository,
-            UltimoMovimientoRepository ultimoMovimientoRepository
+            UltimoMovimientoRepository ultimoMovimientoRepository,
+            GeminiService geminiService
     ) {
 
         this.releRepository =
@@ -89,6 +142,9 @@ public class DashboardService {
 
         this.ultimoMovimientoRepository =
                 ultimoMovimientoRepository;
+
+        this.geminiService =
+                geminiService;
     }
 
     public DashboardKpiDTO
@@ -154,6 +210,190 @@ public class DashboardService {
 
                 relesSinHistorial
         );
+    }
+
+    public ResumenIADTO
+    obtenerResumenIA() {
+
+        if (!geminiService.estaDisponible()) {
+
+            return new ResumenIADTO(null);
+        }
+
+        DashboardKpiDTO kpis =
+                obtenerKpis();
+
+        List<EstadoCantidadDTO> porEstado =
+                obtenerRelesPorEstado();
+
+        List<MarcaCantidadDTO> porMarca =
+                obtenerRelesPorMarca();
+
+        List<DestinoCantidadDTO> porDestino =
+                obtenerRelesPorDestino();
+
+        List<ProveedorCantidadDTO> porProveedor =
+                obtenerRelesPorProveedor();
+
+        String firmaActual =
+                construirFirmaKpis(kpis, porEstado, porMarca, porDestino, porProveedor);
+
+        boolean cacheVigente =
+
+                resumenIACacheado != null
+
+                && firmaActual.equals(resumenIAFirmaCacheada)
+
+                && (System.currentTimeMillis() - resumenIACacheadoEn) < RESUMEN_IA_TTL_MS;
+
+        if (cacheVigente) {
+
+            return new ResumenIADTO(resumenIACacheado);
+        }
+
+        try {
+
+            String resumen =
+                    geminiService.generarTexto(
+                            PROMPT_SISTEMA_RESUMEN,
+                            construirPromptResumen(kpis, porEstado, porMarca, porDestino, porProveedor),
+                            600
+                    );
+
+            resumenIACacheado =
+                    resumen;
+
+            resumenIAFirmaCacheada =
+                    firmaActual;
+
+            resumenIACacheadoEn =
+                    System.currentTimeMillis();
+
+            return new ResumenIADTO(resumen);
+
+        } catch (Exception e) {
+
+            // Es una funcionalidad informativa, no operativa: si Gemini
+            // no responde (timeout, 429, etc.) el dashboard sigue andando
+            // sin el resumen en vez de romper la carga de KPIs.
+            log.warn(
+                    "No se pudo generar el resumen ejecutivo con IA: {}",
+                    e.getMessage()
+            );
+
+            return new ResumenIADTO(null);
+        }
+    }
+
+    private String construirFirmaKpis(
+            DashboardKpiDTO kpis,
+            List<EstadoCantidadDTO> porEstado,
+            List<MarcaCantidadDTO> porMarca,
+            List<DestinoCantidadDTO> porDestino,
+            List<ProveedorCantidadDTO> porProveedor
+    ) {
+
+        return kpis.getTotalReles()
+                + "|" + kpis.getRelesActivos()
+                + "|" + kpis.getRelesBaja()
+                + "|" + kpis.getGarantiasVencidas()
+                + "|" + kpis.getRelesSinDocumentacion()
+                + "|" + kpis.getRelesDocumentacionSinArchivo()
+                + "|" + kpis.getRemitosPendientes()
+                + "|" + kpis.getOrdenesPendientes()
+                + "|" + kpis.getRelesSinHistorial()
+                + "|" + firmaDistribucion(porEstado, EstadoCantidadDTO::getEstado, EstadoCantidadDTO::getCantidad)
+                + "|" + firmaDistribucion(porMarca, MarcaCantidadDTO::getMarca, MarcaCantidadDTO::getCantidad)
+                + "|" + firmaDistribucion(porDestino, DestinoCantidadDTO::getDestino, DestinoCantidadDTO::getCantidad)
+                + "|" + firmaDistribucion(porProveedor, ProveedorCantidadDTO::getProveedor, ProveedorCantidadDTO::getCantidad);
+    }
+
+    private <T> String firmaDistribucion(
+            List<T> items,
+            java.util.function.Function<T, String> etiqueta,
+            java.util.function.Function<T, Long> cantidad
+    ) {
+
+        return items.stream()
+                .map(item -> etiqueta.apply(item) + ":" + cantidad.apply(item))
+                .reduce("", (a, b) -> a + "," + b);
+    }
+
+    private String construirPromptResumen(
+            DashboardKpiDTO kpis,
+            List<EstadoCantidadDTO> porEstado,
+            List<MarcaCantidadDTO> porMarca,
+            List<DestinoCantidadDTO> porDestino,
+            List<ProveedorCantidadDTO> porProveedor
+    ) {
+
+        StringBuilder prompt =
+                new StringBuilder();
+
+        prompt.append(
+                """
+                KPIs generales:
+                Total de reles: %d
+                Reles activos: %d
+                Reles dados de baja: %d
+                Garantias vencidas: %d
+                Reles sin documentacion vinculada: %d
+                Documentacion vinculada sin archivo adjunto: %d
+                Remitos sin asociar: %d
+                Ordenes de provision sin asociar: %d
+                Reles sin historial de movimientos: %d
+
+                """.formatted(
+                        kpis.getTotalReles(),
+                        kpis.getRelesActivos(),
+                        kpis.getRelesBaja(),
+                        kpis.getGarantiasVencidas(),
+                        kpis.getRelesSinDocumentacion(),
+                        kpis.getRelesDocumentacionSinArchivo(),
+                        kpis.getRemitosPendientes(),
+                        kpis.getOrdenesPendientes(),
+                        kpis.getRelesSinHistorial()
+                )
+        );
+
+        agregarDistribucion(prompt, "Distribucion por estado operativo", porEstado, EstadoCantidadDTO::getEstado, EstadoCantidadDTO::getCantidad);
+
+        agregarDistribucion(prompt, "Marcas mas representadas", porMarca, MarcaCantidadDTO::getMarca, MarcaCantidadDTO::getCantidad);
+
+        agregarDistribucion(prompt, "Destinos con mas reles", porDestino, DestinoCantidadDTO::getDestino, DestinoCantidadDTO::getCantidad);
+
+        agregarDistribucion(prompt, "Proveedores", porProveedor, ProveedorCantidadDTO::getProveedor, ProveedorCantidadDTO::getCantidad);
+
+        return prompt.toString();
+    }
+
+    private <T> void agregarDistribucion(
+            StringBuilder prompt,
+            String titulo,
+            List<T> items,
+            java.util.function.Function<T, String> etiqueta,
+            java.util.function.Function<T, Long> cantidad
+    ) {
+
+        if (items.isEmpty()) {
+
+            return;
+        }
+
+        prompt.append(titulo)
+                .append(":\n");
+
+        items.stream()
+                .limit(TOP_N_DISTRIBUCION)
+                .forEach(item -> prompt
+                        .append("- ")
+                        .append(etiqueta.apply(item))
+                        .append(": ")
+                        .append(cantidad.apply(item))
+                        .append("\n")
+                );
+
+        prompt.append("\n");
     }
 
     public List<MovimientoResponseDTO>

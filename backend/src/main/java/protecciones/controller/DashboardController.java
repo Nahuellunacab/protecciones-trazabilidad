@@ -13,6 +13,7 @@ import protecciones.dto.dashboard.EstadoCantidadDTO;
 import protecciones.dto.dashboard.MarcaCantidadDTO;
 import protecciones.dto.dashboard.ModeloCantidadDTO;
 import protecciones.dto.dashboard.ProveedorCantidadDTO;
+import protecciones.dto.dashboard.ResumenIADTO;
 import protecciones.dto.dashboard.UsuarioCantidadDTO;
 
 @RestController
@@ -36,6 +37,14 @@ public class DashboardController {
 
         return dashboardService
                 .obtenerKpis();
+    }
+
+    @GetMapping("/resumen-ia")
+    public ResumenIADTO
+    obtenerResumenIA() {
+
+        return dashboardService
+                .obtenerResumenIA();
     }
 
     @GetMapping("/movimientos")
