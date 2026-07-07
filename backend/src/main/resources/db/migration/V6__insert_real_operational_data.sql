@@ -46,6 +46,26 @@ VALUES
 ('SCHNEIDER')
 ON CONFLICT DO NOTHING;
 
+INSERT INTO marca (nombre)
+VALUES
+('ALSTOM')
+ON CONFLICT DO NOTHING;
+
+INSERT INTO marca (nombre)
+VALUES
+('BECKWITH')
+ON CONFLICT DO NOTHING;
+
+INSERT INTO marca (nombre)
+VALUES
+('EPEC')
+ON CONFLICT DO NOTHING;
+
+INSERT INTO marca (nombre)
+VALUES
+('REYROLLE')
+ON CONFLICT DO NOTHING;
+
 -- =====================================================
 -- DESTINOS
 -- =====================================================
