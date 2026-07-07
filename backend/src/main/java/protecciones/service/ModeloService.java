@@ -80,7 +80,6 @@ public class ModeloService {
                         dto.getMarcaId()
                 ).orElseThrow();
 
-
         Modelo modelo = new Modelo();
 
         modelo.setNombre(

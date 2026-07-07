@@ -18,8 +18,8 @@ import protecciones.repository.ReleRepository;
 import protecciones.repository.RemitoRepository;
 import protecciones.repository.EstadoRepository;
 import protecciones.repository.PosicionRepository;
-import protecciones.repository.UsuarioRepository;
 import protecciones.repository.TransicionEstadoRepository;
+import protecciones.security.CurrentUserProvider;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -52,12 +52,12 @@ public class ReleService {
 
     private final PosicionRepository posicionRepository;
 
-    private final UsuarioRepository usuarioRepository;
-
     private final ReleBajaService releBajaService;
 
     private final TransicionEstadoRepository
             transicionEstadoRepository;
+
+    private final CurrentUserProvider currentUserProvider;
 
     public ReleService(
             ReleRepository releRepository,
@@ -66,10 +66,10 @@ public class ReleService {
             MovimientoRepository movimientoRepository,
             EstadoRepository estadoRepository,
             PosicionRepository posicionRepository,
-            UsuarioRepository usuarioRepository,
             OrdenProvisionRepository ordenProvisionRepository,
             ReleBajaService releBajaService,
-            TransicionEstadoRepository transicionEstadoRepository
+            TransicionEstadoRepository transicionEstadoRepository,
+            CurrentUserProvider currentUserProvider
     ) {
 
         this.releRepository =
@@ -90,9 +90,6 @@ public class ReleService {
         this.posicionRepository =
                 posicionRepository;
 
-        this.usuarioRepository =
-                usuarioRepository;
-
         this.ordenProvisionRepository =
                 ordenProvisionRepository;
 
@@ -101,6 +98,9 @@ public class ReleService {
 
         this.transicionEstadoRepository =
                 transicionEstadoRepository;
+
+        this.currentUserProvider =
+                currentUserProvider;
     }
 
     public List<ReleResponseDTO>
@@ -294,6 +294,15 @@ public class ReleService {
                                 )
                         );
 
+        if (
+                dto.getPosicionInicialId() == null
+        ) {
+
+            throw new BusinessException(
+                    "Debe seleccionar una posición inicial para el relé"
+            );
+        }
+
         Posicion posicionInicial =
                 posicionRepository.findById(
                         dto.getPosicionInicialId()
@@ -304,13 +313,8 @@ public class ReleService {
                         )
                 );
 
-        Usuario usuarioSistema =
-                usuarioRepository.findById(1L)
-                        .orElseThrow(() ->
-                                new BusinessException(
-                                        "Usuario sistema no encontrado"
-                                )
-                        );
+        Usuario usuarioActual =
+                currentUserProvider.obtenerUsuarioActual();
 
         Movimiento movimientoInicial =
                 new Movimiento();
@@ -328,7 +332,7 @@ public class ReleService {
         );
 
         movimientoInicial.setUsuario(
-                usuarioSistema
+                usuarioActual
         );
 
         movimientoInicial.setFechaMovimiento(
@@ -407,7 +411,7 @@ public class ReleService {
 
         Modelo modelo =
                 rele.getModelo();
-        
+
         Long modeloId =
                 modelo != null
                         ? modelo.getId()
@@ -601,7 +605,11 @@ public class ReleService {
             int size,
             String sort,
             String texto,
-            String filtroEstado
+            String filtroEstado,
+            Long marcaId,
+            Long modeloId,
+            String estadoNombre,
+            Long destinoId
     ) {
 
         String[] sortParams =
@@ -647,6 +655,10 @@ public class ReleService {
                 releRepository.buscarPaginado(
                         texto,
                         activo,
+                        marcaId,
+                        modeloId,
+                        estadoNombre,
+                        destinoId,
                         pageable
                 );
 
@@ -700,7 +712,7 @@ public class ReleService {
         }
 
     public List<ReleOptionDTO>
-        obtenerOpciones() {
+    obtenerOpciones() {
 
         return releRepository
                 .findByActivoTrue()
@@ -722,7 +734,7 @@ public class ReleService {
                         )
                 )
                 .toList();
-        }
+    }
 
     public ReleResponseDTO actualizar(
             Long id,
@@ -938,13 +950,8 @@ public class ReleService {
             );
         }
 
-        Usuario usuarioSistema =
-                usuarioRepository.findById(1L)
-                        .orElseThrow(() ->
-                                new BusinessException(
-                                        "Usuario sistema no encontrado"
-                                )
-                        );
+        Usuario usuarioActual =
+                currentUserProvider.obtenerUsuarioActual();
 
         Movimiento movimientoBaja =
                 new Movimiento();
@@ -962,7 +969,7 @@ public class ReleService {
         );
 
         movimientoBaja.setUsuario(
-                usuarioSistema
+                usuarioActual
         );
 
         movimientoBaja.setFechaMovimiento(
@@ -993,6 +1000,9 @@ public class ReleService {
         return new MovimientoResponseDTO(
 
                 movimiento.getId(),
+
+                movimiento.getRele()
+                        .getId(),
 
                 movimiento.getRele()
                         .getNumeroSerie(),

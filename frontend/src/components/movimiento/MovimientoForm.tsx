@@ -21,6 +21,7 @@ import type {
 } from "../../types/ReleOption";
 
 import {
+
     obtenerEstadosPermitidos
 
 } from "../../services/estadoService";
@@ -45,6 +46,11 @@ import {
     Button,
     Chip,
     CircularProgress,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogContentText,
+    DialogTitle,
     Divider,
     FormControl,
     InputLabel,
@@ -63,10 +69,13 @@ interface Props {
     onCreate: (
         data: MovimientoRequest
     ) => Promise<void>;
+
+    releIdPreseleccionado?: number;
 }
 
 function MovimientoForm({
-    onCreate
+    onCreate,
+    releIdPreseleccionado
 }: Props) {
 
     const [loading, setLoading] =
@@ -100,6 +109,19 @@ function MovimientoForm({
             posicionId: 0,
             notas: ""
         });
+
+    const [confirmBajaOpen, setConfirmBajaOpen] =
+        useState(false);
+
+    const estadoSeleccionado =
+        estados.find(
+            (estado) =>
+                estado.id === formData.estadoId
+        );
+
+    const esBaja =
+        estadoSeleccionado?.nombre
+            ?.toUpperCase() === "BAJA";
 
     useEffect(() => {
 
@@ -192,11 +214,25 @@ function MovimientoForm({
         }
     };
 
-    const handleSubmit = async (
-        e: React.FormEvent
-    ) => {
+    useEffect(() => {
 
-        e.preventDefault();
+        if (!releIdPreseleccionado) return;
+
+        if (formData.releId === releIdPreseleccionado) return;
+
+        const opcion =
+            reles.find(
+                (r) => r.id === releIdPreseleccionado
+            );
+
+        if (opcion) {
+
+            handleSeleccionRele(opcion);
+        }
+
+    }, [reles, releIdPreseleccionado]);
+
+    const ejecutarMovimiento = async () => {
 
         try {
 
@@ -227,6 +263,29 @@ function MovimientoForm({
 
             setLoading(false);
         }
+    };
+
+    const handleSubmit = (
+        e: React.FormEvent
+    ) => {
+
+        e.preventDefault();
+
+        if (esBaja) {
+
+            setConfirmBajaOpen(true);
+
+            return;
+        }
+
+        ejecutarMovimiento();
+    };
+
+    const handleConfirmarBaja = () => {
+
+        setConfirmBajaOpen(false);
+
+        ejecutarMovimiento();
     };
 
     return (
@@ -327,7 +386,7 @@ function MovimientoForm({
                                     <Stack>
 
                                         <Typography
-                                            fontWeight={600}
+                                            sx={{ fontWeight: 600 }}
                                         >
 
                                             {option.numeroSerie}
@@ -365,8 +424,8 @@ function MovimientoForm({
 
                                     <Typography
                                         variant="subtitle1"
-                                        fontWeight={600}
                                         gutterBottom
+                                        sx={{ fontWeight: 600 }}
                                     >
                                         Estado Operacional Actual
                                     </Typography>
@@ -378,8 +437,8 @@ function MovimientoForm({
                                     <Stack
                                         direction="row"
                                         spacing={1}
-                                        flexWrap="wrap"
                                         useFlexGap
+                                        sx={{ flexWrap: "wrap" }}
                                     >
 
                                         <Chip
@@ -473,6 +532,12 @@ function MovimientoForm({
                                     <MenuItem
                                         key={estado.id}
                                         value={estado.id}
+                                        sx={{
+                                            color:
+                                                estado.nombre.toUpperCase() === "BAJA"
+                                                    ? "error.main"
+                                                    : undefined
+                                        }}
                                     >
 
                                         {
@@ -559,6 +624,62 @@ function MovimientoForm({
                 </Box>
 
             </Paper>
+
+            <Dialog
+                open={confirmBajaOpen}
+                onClose={() =>
+                    setConfirmBajaOpen(false)
+                }
+            >
+
+                <DialogTitle>
+
+                    Confirmar baja de relé
+
+                </DialogTitle>
+
+                <DialogContent>
+
+                    <DialogContentText>
+
+                        Está a punto de dar de baja al relé
+                        {" "}
+                        <strong>
+                            {releSeleccionado?.numeroSerie}
+                        </strong>
+                        . Esta acción es terminal: el relé
+                        quedará inactivo y no podrá registrar
+                        más movimientos. ¿Confirma la baja?
+
+                    </DialogContentText>
+
+                </DialogContent>
+
+                <DialogActions>
+
+                    <Button
+                        onClick={() =>
+                            setConfirmBajaOpen(false)
+                        }
+                    >
+
+                        CANCELAR
+
+                    </Button>
+
+                    <Button
+                        variant="contained"
+                        color="error"
+                        onClick={handleConfirmarBaja}
+                    >
+
+                        SÍ, DAR DE BAJA
+
+                    </Button>
+
+                </DialogActions>
+
+            </Dialog>
 
         </>
     );

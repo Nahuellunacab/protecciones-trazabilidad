@@ -18,6 +18,8 @@ interface Props {
 
     marcas: Marca[];
 
+    canWrite: boolean;
+
     onEditar: (
         marca: Marca
     ) => void;
@@ -29,6 +31,7 @@ interface Props {
 
 function MarcaTable({
     marcas,
+    canWrite,
     onEditar,
     onEliminar
 }: Props) {
@@ -105,35 +108,38 @@ function MarcaTable({
 
                                 <TableCell>
 
-                                    <Stack
-                                        direction="row"
-                                        spacing={1}
-                                    >
+                                    {canWrite && (
 
-                                        <Button
-                                            size="small"
-                                            variant="outlined"
-                                            onClick={() =>
-                                                onEditar(marca)
-                                            }
+                                        <Stack
+                                            direction="row"
+                                            spacing={1}
                                         >
-                                            Editar
-                                        </Button>
 
-                                        <Button
-                                            size="small"
-                                            color="error"
-                                            variant="outlined"
-                                            onClick={() =>
-                                                onEliminar(
-                                                    marca.id
-                                                )
-                                            }
-                                        >
-                                            Eliminar
-                                        </Button>
+                                            <Button
+                                                size="small"
+                                                variant="outlined"
+                                                onClick={() =>
+                                                    onEditar(marca)
+                                                }
+                                            >
+                                                Editar
+                                            </Button>
 
-                                    </Stack>
+                                            <Button
+                                                size="small"
+                                                color="error"
+                                                variant="outlined"
+                                                onClick={() =>
+                                                    onEliminar(
+                                                        marca.id
+                                                    )
+                                                }
+                                            >
+                                                Eliminar
+                                            </Button>
+
+                                        </Stack>
+                                    )}
 
                                 </TableCell>
 

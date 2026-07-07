@@ -49,7 +49,11 @@ import {
     obtenerLocalidades
 } from "../../services/localidadService";
 
+import { useAuth } from "../../context/AuthContext";
+
 function DestinoPage() {
+
+    const { canWrite } = useAuth();
 
     const [destinos, setDestinos] =
         useState<Destino[]>([]);
@@ -205,8 +209,7 @@ function DestinoPage() {
 
             <Typography
                 variant="h3"
-                fontWeight={700}
-                mb={2}
+                sx={{ fontWeight: 700, mb: 2 }}
             >
                 Destinos Operativos
             </Typography>
@@ -214,7 +217,7 @@ function DestinoPage() {
             <Typography
                 variant="h6"
                 color="text.secondary"
-                mb={5}
+                sx={{ mb: 5 }}
             >
                 Gestión de destinos y
                 ubicaciones operativas
@@ -222,81 +225,84 @@ function DestinoPage() {
                 y trazabilidad.
             </Typography>
 
-            <Paper
-                sx={{
-                    p: 3,
-                    mb: 4
-                }}
-            >
+            {canWrite && (
 
-                <Box
-                    component="form"
-                    onSubmit={handleSubmit}
+                <Paper
                     sx={{
-                        display: "flex",
-                        gap: 2
+                        p: 3,
+                        mb: 4
                     }}
                 >
 
-                    <TextField
-                        fullWidth
-                        label="Nombre"
-                        value={nombre}
-                        onChange={(e) =>
-                            setNombre(
-                                e.target.value
-                            )
-                        }
-                    />
-
-                    <TextField
-                        select
-                        fullWidth
-                        label="Localidad"
-                        value={localidadId}
-                        onChange={(e) =>
-                            setLocalidadId(
-                                e.target.value
-                            )
-                        }
+                    <Box
+                        component="form"
+                        onSubmit={handleSubmit}
+                        sx={{
+                            display: "flex",
+                            gap: 2
+                        }}
                     >
 
-                        {localidades.map(
-                            (localidad) => (
+                        <TextField
+                            fullWidth
+                            label="Nombre"
+                            value={nombre}
+                            onChange={(e) =>
+                                setNombre(
+                                    e.target.value
+                                )
+                            }
+                        />
 
-                                <MenuItem
-                                    key={
-                                        localidad.id
-                                    }
-                                    value={
-                                        localidad.id
-                                    }
-                                >
+                        <TextField
+                            select
+                            fullWidth
+                            label="Localidad"
+                            value={localidadId}
+                            onChange={(e) =>
+                                setLocalidadId(
+                                    e.target.value
+                                )
+                            }
+                        >
 
-                                    {localidad.nombre}
-                                    {" - "}
-                                    {localidad.provincia}
+                            {localidades.map(
+                                (localidad) => (
 
-                                </MenuItem>
-                            )
-                        )}
+                                    <MenuItem
+                                        key={
+                                            localidad.id
+                                        }
+                                        value={
+                                            localidad.id
+                                        }
+                                    >
 
-                    </TextField>
+                                        {localidad.nombre}
+                                        {" - "}
+                                        {localidad.provincia}
 
-                    <Button
-                        type="submit"
-                        variant="contained"
-                    >
+                                    </MenuItem>
+                                )
+                            )}
 
-                        {editandoId
-                            ? "GUARDAR"
-                            : "CREAR"}
+                        </TextField>
 
-                    </Button>
+                        <Button
+                            type="submit"
+                            variant="contained"
+                        >
 
-                </Box>
+                            {editandoId
+                                ? "GUARDAR"
+                                : "CREAR"}
 
-            </Paper>
+                        </Button>
+
+                    </Box>
+
+                </Paper>
+            )}
 
             <TableContainer
                 component={Paper}
@@ -363,28 +369,34 @@ function DestinoPage() {
                                         align="right"
                                     >
 
-                                        <Button
-                                            size="small"
-                                            onClick={() =>
-                                                handleEditar(
-                                                    destino
-                                                )
-                                            }
-                                        >
-                                            EDITAR
-                                        </Button>
+                                        {canWrite && (
+                                            <>
 
-                                        <Button
-                                            size="small"
-                                            color="error"
-                                            onClick={() =>
-                                                handleEliminar(
-                                                    destino.id
-                                                )
-                                            }
-                                        >
-                                            ELIMINAR
-                                        </Button>
+                                                <Button
+                                                    size="small"
+                                                    onClick={() =>
+                                                        handleEditar(
+                                                            destino
+                                                        )
+                                                    }
+                                                >
+                                                    EDITAR
+                                                </Button>
+
+                                                <Button
+                                                    size="small"
+                                                    color="error"
+                                                    onClick={() =>
+                                                        handleEliminar(
+                                                            destino.id
+                                                        )
+                                                    }
+                                                >
+                                                    ELIMINAR
+                                                </Button>
+
+                                            </>
+                                        )}
 
                                     </TableCell>
 

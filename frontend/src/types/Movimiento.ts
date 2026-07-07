@@ -2,6 +2,8 @@ export interface Movimiento {
 
     id: number;
 
+    releId: number;
+
     rele: string;
 
     modelo: string;

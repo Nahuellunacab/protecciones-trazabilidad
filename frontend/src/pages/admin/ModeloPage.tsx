@@ -36,29 +36,23 @@ import {
     obtenerMarcas
 } from "../../services/marcaService";
 
-import {
-    obtenerTipos
-} from "../../services/tipoService";
-
 import type { Modelo }
 from "../../types/Modelo";
 
 import type { Marca }
 from "../../types/Marca";
 
-import type { Tipo }
-from "../../types/Tipo";
+import { useAuth } from "../../context/AuthContext";
 
 function ModeloPage() {
+
+    const { canWrite } = useAuth();
 
     const [modelos, setModelos] =
         useState<Modelo[]>([]);
 
     const [marcas, setMarcas] =
         useState<Marca[]>([]);
-
-    const [tipos, setTipos] =
-        useState<Tipo[]>([]);
 
     const [modeloEditando,
         setModeloEditando] =
@@ -88,32 +82,23 @@ function ModeloPage() {
 
         const [
             modelosData,
-            marcasData,
-            tiposData
+            marcasData
         ] = await Promise.all([
 
             obtenerModelos(),
 
-            obtenerMarcas(),
-
-            obtenerTipos()
+            obtenerMarcas()
         ]);
 
         setModelos(modelosData);
 
         setMarcas(marcasData);
-
-        setTipos(tiposData);
     };
 
     const handleSubmit =
         async (data: {
             nombre: string;
-            tensionDesde: number;
-            tensionHasta: number;
-            tipoTension: string;
             marcaId: number;
-            tipoId: number;
         }) => {
 
         try {
@@ -209,21 +194,24 @@ function ModeloPage() {
 
             <PageHeader
                 title="Administración de Modelos"
-                subtitle="Gestión de modelos de relés, tensiones y tipos."
+                subtitle="Gestión de modelos de relés."
             />
 
-            <ModeloForm
-                onSubmit={handleSubmit}
-                modeloEditando={modeloEditando}
-                marcas={marcas}
-                tipos={tipos}
-                cancelarEdicion={() =>
-                    setModeloEditando(null)
-                }
-            />
+            {canWrite && (
+
+                <ModeloForm
+                    onSubmit={handleSubmit}
+                    modeloEditando={modeloEditando}
+                    marcas={marcas}
+                    cancelarEdicion={() =>
+                        setModeloEditando(null)
+                    }
+                />
+            )}
 
             <ModeloTable
                 modelos={modelos}
+                canWrite={canWrite}
                 onEditar={setModeloEditando}
                 onEliminar={abrirDialogEliminar}
             />

@@ -49,7 +49,11 @@ import {
     obtenerDestinos
 } from "../../services/destinoService";
 
+import { useAuth } from "../../context/AuthContext";
+
 function PosicionPage() {
+
+    const { canWrite } = useAuth();
 
     const [posiciones, setPosiciones] =
         useState<Posicion[]>([]);
@@ -205,8 +209,7 @@ function PosicionPage() {
 
             <Typography
                 variant="h3"
-                fontWeight={700}
-                mb={2}
+                sx={{ fontWeight: 700, mb: 2 }}
             >
                 Posiciones Operativas
             </Typography>
@@ -214,7 +217,7 @@ function PosicionPage() {
             <Typography
                 variant="h6"
                 color="text.secondary"
-                mb={5}
+                sx={{ mb: 5 }}
             >
                 Gestión de posiciones
                 físicas utilizadas
@@ -222,79 +225,82 @@ function PosicionPage() {
                 y trazabilidad.
             </Typography>
 
-            <Paper
-                sx={{
-                    p: 3,
-                    mb: 4
-                }}
-            >
+            {canWrite && (
 
-                <Box
-                    component="form"
-                    onSubmit={handleSubmit}
+                <Paper
                     sx={{
-                        display: "flex",
-                        gap: 2
+                        p: 3,
+                        mb: 4
                     }}
                 >
 
-                    <TextField
-                        fullWidth
-                        label="Nombre"
-                        value={nombre}
-                        onChange={(e) =>
-                            setNombre(
-                                e.target.value
-                            )
-                        }
-                    />
-
-                    <TextField
-                        select
-                        fullWidth
-                        label="Destino"
-                        value={destinoId}
-                        onChange={(e) =>
-                            setDestinoId(
-                                e.target.value
-                            )
-                        }
+                    <Box
+                        component="form"
+                        onSubmit={handleSubmit}
+                        sx={{
+                            display: "flex",
+                            gap: 2
+                        }}
                     >
 
-                        {destinos.map(
-                            (destino) => (
+                        <TextField
+                            fullWidth
+                            label="Nombre"
+                            value={nombre}
+                            onChange={(e) =>
+                                setNombre(
+                                    e.target.value
+                                )
+                            }
+                        />
 
-                                <MenuItem
-                                    key={
-                                        destino.id
-                                    }
-                                    value={
-                                        destino.id
-                                    }
-                                >
+                        <TextField
+                            select
+                            fullWidth
+                            label="Destino"
+                            value={destinoId}
+                            onChange={(e) =>
+                                setDestinoId(
+                                    e.target.value
+                                )
+                            }
+                        >
 
-                                    {destino.nombre}
+                            {destinos.map(
+                                (destino) => (
 
-                                </MenuItem>
-                            )
-                        )}
+                                    <MenuItem
+                                        key={
+                                            destino.id
+                                        }
+                                        value={
+                                            destino.id
+                                        }
+                                    >
 
-                    </TextField>
+                                        {destino.nombre}
 
-                    <Button
-                        type="submit"
-                        variant="contained"
-                    >
+                                    </MenuItem>
+                                )
+                            )}
 
-                        {editandoId
-                            ? "GUARDAR"
-                            : "CREAR"}
+                        </TextField>
 
-                    </Button>
+                        <Button
+                            type="submit"
+                            variant="contained"
+                        >
 
-                </Box>
+                            {editandoId
+                                ? "GUARDAR"
+                                : "CREAR"}
 
-            </Paper>
+                        </Button>
+
+                    </Box>
+
+                </Paper>
+            )}
 
             <TableContainer
                 component={Paper}
@@ -353,28 +359,34 @@ function PosicionPage() {
                                         align="right"
                                     >
 
-                                        <Button
-                                            size="small"
-                                            onClick={() =>
-                                                handleEditar(
-                                                    posicion
-                                                )
-                                            }
-                                        >
-                                            EDITAR
-                                        </Button>
+                                        {canWrite && (
+                                            <>
 
-                                        <Button
-                                            size="small"
-                                            color="error"
-                                            onClick={() =>
-                                                handleEliminar(
-                                                    posicion.id
-                                                )
-                                            }
-                                        >
-                                            ELIMINAR
-                                        </Button>
+                                                <Button
+                                                    size="small"
+                                                    onClick={() =>
+                                                        handleEditar(
+                                                            posicion
+                                                        )
+                                                    }
+                                                >
+                                                    EDITAR
+                                                </Button>
+
+                                                <Button
+                                                    size="small"
+                                                    color="error"
+                                                    onClick={() =>
+                                                        handleEliminar(
+                                                            posicion.id
+                                                        )
+                                                    }
+                                                >
+                                                    ELIMINAR
+                                                </Button>
+
+                                            </>
+                                        )}
 
                                     </TableCell>
 

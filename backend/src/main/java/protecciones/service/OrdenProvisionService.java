@@ -21,220 +21,292 @@ import org.springframework.core.io.PathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
-import java.net.MalformedURLException;
 
 @Service
 public class OrdenProvisionService {
 
-        private final OrdenProvisionRepository ordenProvisionRepository;
+    private final OrdenProvisionRepository
+            ordenProvisionRepository;
 
-        private final ReleRepository releRepository;
+    private final ReleRepository
+            releRepository;
 
-        private final String uploadDir;
+    private final String uploadDir;
 
-        public OrdenProvisionService(
-                        OrdenProvisionRepository ordenProvisionRepository,
-                        ReleRepository releRepository,
-                        @Value("${file.upload-dir}") String uploadDir) {
+    public OrdenProvisionService(
+            OrdenProvisionRepository ordenProvisionRepository,
+            ReleRepository releRepository,
+            @Value("${file.upload-dir}") String uploadDir
+    ) {
 
-                this.ordenProvisionRepository = ordenProvisionRepository;
+        this.ordenProvisionRepository =
+                ordenProvisionRepository;
 
-                this.releRepository = releRepository;
+        this.releRepository =
+                releRepository;
 
-                this.uploadDir = uploadDir;
+        this.uploadDir = uploadDir;
+    }
+
+    public List<OrdenProvisionResponseDTO>
+    obtenerTodos() {
+
+        return ordenProvisionRepository
+                .findAll()
+                .stream()
+                .map(this::mapToDTO)
+                .toList();
+    }
+
+    public OrdenProvisionResponseDTO guardar(
+            OrdenProvisionRequestDTO dto
+    ) {
+
+        validarDuplicado(
+                dto.getNumero()
+        );
+
+        OrdenProvision orden =
+                new OrdenProvision();
+
+        orden.setNumero(
+                dto.getNumero().trim()
+        );
+
+        orden.setObservaciones(
+                dto.getObservaciones()
+        );
+
+        OrdenProvision guardada =
+                ordenProvisionRepository.save(
+                        orden
+                );
+
+        return mapToDTO(
+                guardada
+        );
+    }
+
+    public OrdenProvisionResponseDTO actualizar(
+            Long id,
+            OrdenProvisionRequestDTO dto
+    ) {
+
+        OrdenProvision orden =
+                ordenProvisionRepository
+                        .findById(id)
+                        .orElseThrow();
+
+        validarDuplicado(
+                dto.getNumero(),
+                id
+        );
+
+        orden.setNumero(
+                dto.getNumero().trim()
+        );
+
+        orden.setObservaciones(
+                dto.getObservaciones()
+        );
+
+        OrdenProvision actualizada =
+                ordenProvisionRepository.save(
+                        orden
+                );
+
+        return mapToDTO(
+                actualizada
+        );
+    }
+
+    public void eliminar(
+            Long id
+    ) {
+
+        try {
+
+            ordenProvisionRepository
+                    .deleteById(id);
+
+        } catch (
+                DataIntegrityViolationException ex
+        ) {
+
+            throw new BusinessException(
+                    "No se puede eliminar la orden porque tiene relés asociados"
+            );
+        }
+    }
+
+    public void subirArchivo(
+            Long ordenProvisionId,
+            MultipartFile archivo
+    ) {
+
+        try {
+
+            OrdenProvision orden =
+                    ordenProvisionRepository
+                            .findById(
+                                    ordenProvisionId
+                            )
+                            .orElseThrow();
+
+            Path carpeta =
+                    Paths.get(
+                            uploadDir,
+                            "ordenes-provision"
+                    );
+
+            Files.createDirectories(
+                    carpeta
+            );
+
+            String nombreArchivo =
+                    System.currentTimeMillis()
+                    + "_"
+                    + archivo.getOriginalFilename();
+
+            Path destino =
+                    carpeta.resolve(
+                            nombreArchivo
+                    );
+
+            Files.copy(
+                    archivo.getInputStream(),
+                    destino,
+                    StandardCopyOption.REPLACE_EXISTING
+            );
+
+            orden.setNombreArchivo(
+                    archivo.getOriginalFilename()
+            );
+
+            orden.setRutaArchivo(
+                    destino.toString()
+            );
+
+            ordenProvisionRepository.save(
+                    orden
+            );
+
+        } catch (
+                IOException ex
+        ) {
+
+            throw new RuntimeException(
+                    "Error al guardar archivo"
+            );
+        }
+    }
+
+    public Resource obtenerArchivo(
+            Long ordenProvisionId
+    ) {
+
+        OrdenProvision orden =
+                ordenProvisionRepository
+                        .findById(
+                                ordenProvisionId
+                        )
+                        .orElseThrow();
+
+        if (orden.getRutaArchivo() == null) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Archivo no encontrado"
+            );
         }
 
-        public List<OrdenProvisionResponseDTO> obtenerTodos() {
+        Path archivo =
+                Paths.get(
+                        orden.getRutaArchivo()
+                );
 
-                return ordenProvisionRepository
-                                .findAll()
-                                .stream()
-                                .map(this::mapToDTO)
-                                .toList();
+        if (
+                !Files.exists(archivo)
+                || !Files.isReadable(archivo)
+        ) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Archivo no encontrado"
+            );
         }
 
-        public OrdenProvisionResponseDTO guardar(
-                        OrdenProvisionRequestDTO dto) {
+        return new PathResource(archivo);
+    }
 
-                validarDuplicado(
-                                dto.getNumero());
+    public List<OrdenProvisionResponseDTO>
+    obtenerDisponibles() {
 
-                OrdenProvision orden = new OrdenProvision();
-
-                orden.setNumero(
-                                dto.getNumero().trim());
-
-                orden.setObservaciones(
-                                dto.getObservaciones());
-
-                OrdenProvision guardada = ordenProvisionRepository.save(
-                                orden);
-
-                return mapToDTO(
-                                guardada);
+        return ordenProvisionRepository
+            .findAll()
+            .stream()
+            .map(this::mapToDTO)
+            .toList();
         }
 
-        public OrdenProvisionResponseDTO actualizar(
-                        Long id,
-                        OrdenProvisionRequestDTO dto) {
+    private void validarDuplicado(
+            String numero,
+            Long currentId
+    ) {
 
-                OrdenProvision orden = ordenProvisionRepository
-                                .findById(id)
-                                .orElseThrow();
+        List<OrdenProvision> ordenes =
+                ordenProvisionRepository
+                        .findAll();
 
-                validarDuplicado(
-                                dto.getNumero(),
-                                id);
+        boolean existe =
+                ordenes.stream()
+                        .anyMatch(op ->
+                                !op.getId()
+                                        .equals(currentId)
+                                &&
+                                op.getNumero()
+                                        .equalsIgnoreCase(
+                                                numero.trim()
+                                        )
+                        );
 
-                orden.setNumero(
-                                dto.getNumero().trim());
+        if (existe) {
 
-                orden.setObservaciones(
-                                dto.getObservaciones());
-
-                OrdenProvision actualizada = ordenProvisionRepository.save(
-                                orden);
-
-                return mapToDTO(
-                                actualizada);
+            throw new BusinessException(
+                    "La orden de provisión ya existe"
+            );
         }
+    }
 
-        public void eliminar(
-                        Long id) {
+    private void validarDuplicado(
+            String numero
+    ) {
 
-                try {
+        validarDuplicado(numero, -1L);
+    }
 
-                        ordenProvisionRepository
-                                        .deleteById(id);
+    private OrdenProvisionResponseDTO
+    mapToDTO(
+            OrdenProvision orden
+    ) {
 
-                } catch (DataIntegrityViolationException ex) {
+        long cantidadReles =
+                releRepository
+                        .countByOrdenProvisionId(
+                                orden.getId()
+                        );
 
-                        throw new BusinessException(
-                                        "No se puede eliminar la orden porque tiene relés asociados");
-                }
-        }
+        return new OrdenProvisionResponseDTO(
 
-        public void subirArchivo(
-                        Long ordenProvisionId,
-                        MultipartFile archivo) {
+                orden.getId(),
 
-                try {
+                orden.getNumero(),
 
-                        OrdenProvision orden = ordenProvisionRepository
-                                        .findById(
-                                                        ordenProvisionId)
-                                        .orElseThrow();
+                orden.getObservaciones(),
 
-                        Path carpeta = Paths.get(
-                                        uploadDir,
-                                        "ordenes-provision");
+                cantidadReles,
 
-                        Files.createDirectories(
-                                        carpeta);
-
-                        String nombreArchivo = System.currentTimeMillis()
-                                        + "_"
-                                        + archivo.getOriginalFilename();
-
-                        Path destino = carpeta.resolve(
-                                        nombreArchivo);
-
-                        Files.copy(
-                                        archivo.getInputStream(),
-                                        destino,
-                                        StandardCopyOption.REPLACE_EXISTING);
-
-                        orden.setNombreArchivo(
-                                        archivo.getOriginalFilename());
-
-                        orden.setRutaArchivo(
-                                        destino.toString());
-
-                        ordenProvisionRepository.save(
-                                        orden);
-
-                } catch (IOException ex) {
-
-                        throw new RuntimeException(
-                                        "Error al guardar archivo");
-                }
-        }
-
-        public Resource obtenerArchivo(
-                        Long ordenProvisionId) {
-
-                OrdenProvision orden = ordenProvisionRepository
-                                .findById(
-                                                ordenProvisionId)
-                                .orElseThrow();
-
-                if (orden.getRutaArchivo() == null) {
-                        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Archivo no encontrado");
-                }
-
-                Path archivo = Paths.get(orden.getRutaArchivo());
-
-                if (!Files.exists(archivo) || !Files.isReadable(archivo)) {
-                        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Archivo no encontrado");
-                }
-
-                return new PathResource(archivo);
-        }
-
-        public List<OrdenProvisionResponseDTO> obtenerDisponibles() {
-
-                return ordenProvisionRepository
-                                .findAll()
-                                .stream()
-                                .map(this::mapToDTO)
-                                .toList();
-        }
-
-        private void validarDuplicado(
-                        String numero,
-                        Long currentId) {
-
-                List<OrdenProvision> ordenes = ordenProvisionRepository
-                                .findAll();
-
-                boolean existe = ordenes.stream()
-                                .anyMatch(op -> !op.getId()
-                                                .equals(currentId)
-                                                && op.getNumero()
-                                                                .equalsIgnoreCase(
-                                                                                numero.trim()));
-
-                if (existe) {
-
-                        throw new BusinessException(
-                                        "La orden de provisión ya existe");
-                }
-        }
-
-        private void validarDuplicado(
-                        String numero) {
-                validarDuplicado(numero, -1L);
-        }
-
-        private OrdenProvisionResponseDTO mapToDTO(
-                        OrdenProvision orden) {
-
-                long cantidadReles =
-
-                                releRepository
-                                                .countByOrdenProvisionId(
-                                                                orden.getId());
-
-                return new OrdenProvisionResponseDTO(
-
-                                orden.getId(),
-
-                                orden.getNumero(),
-
-                                orden.getObservaciones(),
-
-                                cantidadReles,
-
-                                orden.getNombreArchivo());
-        }
+                orden.getNombreArchivo()
+        );
+    }
 }

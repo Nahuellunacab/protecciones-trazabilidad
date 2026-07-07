@@ -16,6 +16,16 @@ public class Usuario {
 
     private String email;
 
+    @Column(name = "password_hash")
+    private String passwordHash;
+
+    private String rol;
+
+    private Boolean activo;
+
+    @Column(name = "numero_sobre")
+    private String numeroSobre;
+
     public Usuario() {
     }
 
@@ -42,6 +52,22 @@ public class Usuario {
         return email;
     }
 
+    public String getPasswordHash() {
+        return passwordHash;
+    }
+
+    public String getRol() {
+        return rol;
+    }
+
+    public Boolean getActivo() {
+        return activo;
+    }
+
+    public String getNumeroSobre() {
+        return numeroSobre;
+    }
+
     public void setId(Long id) {
         this.id = id;
     }
@@ -56,5 +82,21 @@ public class Usuario {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
+    }
+
+    public void setRol(String rol) {
+        this.rol = rol;
+    }
+
+    public void setActivo(Boolean activo) {
+        this.activo = activo;
+    }
+
+    public void setNumeroSobre(String numeroSobre) {
+        this.numeroSobre = numeroSobre;
     }
 }

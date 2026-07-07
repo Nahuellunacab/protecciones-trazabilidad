@@ -10,6 +10,51 @@ services:
       - "${DB_PORT}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    # Permite que "depends_on: condition: service_healthy" (backend) espere
+    # a que Postgres esté realmente listo para aceptar conexiones, no solo
+    # a que el contenedor haya arrancado.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ../backend
+    container_name: protecciones-backend
+    environment:
+      # Dentro de la red de Docker, Postgres se resuelve por el nombre del
+      # servicio ("postgres") y su puerto interno (5432), no por localhost
+      # ni por el DB_PORT expuesto al host (5433).
+      DB_URL: jdbc:postgresql://postgres:5432/${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      # Secreto de firma de los JWT de login. Definir uno propio (largo y
+      # aleatorio) en el .env antes de un despliegue real.
+      JWT_SECRET: ${JWT_SECRET:-cambiar-este-secreto-en-produccion-por-uno-largo-y-aleatorio}
+      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-28800000}
+    ports:
+      - "8080:8080"
+    volumes:
+      # Los PDF de remitos/órdenes de provisión se guardan en uploads/ con
+      # ruta relativa; sin este volumen se perderían al recrear el contenedor.
+      - uploads_data:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ../frontend
+    container_name: protecciones-frontend
+    ports:
+      # Mismo puerto que usa "npm run dev" (5173), así no hace falta tocar
+      # CorsConfig.java: el backend ya permite ese origen.
+      - "5173:80"
+    depends_on:
+      - backend
 
 volumes:
   postgres_data:
+  uploads_data:

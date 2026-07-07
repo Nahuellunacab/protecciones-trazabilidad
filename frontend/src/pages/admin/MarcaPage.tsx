@@ -35,7 +35,11 @@ from "../../types/Marca";
 
 import axios from "axios";
 
+import { useAuth } from "../../context/AuthContext";
+
 function MarcaPage() {
+
+    const { canWrite } = useAuth();
 
     const [marcas, setMarcas] =
         useState<Marca[]>([]);
@@ -173,16 +177,20 @@ function MarcaPage() {
                 subtitle="Gestión de fabricantes y marcas de relés."
             />
 
-            <MarcaForm
-                onSubmit={handleSubmit}
-                marcaEditando={marcaEditando}
-                cancelarEdicion={() =>
-                    setMarcaEditando(null)
-                }
-            />
+            {canWrite && (
+
+                <MarcaForm
+                    onSubmit={handleSubmit}
+                    marcaEditando={marcaEditando}
+                    cancelarEdicion={() =>
+                        setMarcaEditando(null)
+                    }
+                />
+            )}
 
             <MarcaTable
                 marcas={marcas}
+                canWrite={canWrite}
                 onEditar={setMarcaEditando}
                 onEliminar={abrirDialogEliminar}
             />

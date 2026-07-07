@@ -26,7 +26,8 @@ public class RemitoResponseDTO {
             Long proveedorId,
             String proveedor,
             Long cantidadReles,
-            Boolean tieneArchivo) {
+            Boolean tieneArchivo
+    ) {
 
         this.id = id;
         this.numeroRemito = numeroRemito;

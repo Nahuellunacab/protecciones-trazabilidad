@@ -13,15 +13,10 @@ public class OrdenProvisionResponseDTO {
     private String nombreArchivo;
 
     public OrdenProvisionResponseDTO(
-
             Long id,
-
             String numero,
-
             String observaciones,
-
             Long cantidadReles,
-
             String nombreArchivo
     ) {
 

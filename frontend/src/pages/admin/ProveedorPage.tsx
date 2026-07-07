@@ -40,7 +40,11 @@ import {
 
 } from "../../services/proveedorService";
 
+import { useAuth } from "../../context/AuthContext";
+
 function ProveedorPage() {
+
+    const { canWrite } = useAuth();
 
     const [proveedores, setProveedores] =
         useState<Proveedor[]>([]);
@@ -194,8 +198,7 @@ function ProveedorPage() {
 
             <Typography
                 variant="h3"
-                fontWeight={700}
-                mb={2}
+                sx={{ fontWeight: 700, mb: 2 }}
             >
                 Proveedores
             </Typography>
@@ -203,7 +206,7 @@ function ProveedorPage() {
             <Typography
                 variant="h6"
                 color="text.secondary"
-                mb={5}
+                sx={{ mb: 5 }}
             >
                 Gestión de proveedores
                 utilizados en remitos,
@@ -211,69 +214,72 @@ function ProveedorPage() {
                 logística.
             </Typography>
 
-            <Paper
-                sx={{
-                    p: 3,
-                    mb: 4
-                }}
-            >
+            {canWrite && (
 
-                <Box
-                    component="form"
-                    onSubmit={handleSubmit}
+                <Paper
                     sx={{
-                        display: "flex",
-                        gap: 2
+                        p: 3,
+                        mb: 4
                     }}
                 >
 
-                    <TextField
-                        fullWidth
-                        label="Nombre"
-                        value={nombre}
-                        onChange={(e) =>
-                            setNombre(
-                                e.target.value
-                            )
-                        }
-                    />
-
-                    <TextField
-                        fullWidth
-                        label="Domicilio"
-                        value={domicilio}
-                        onChange={(e) =>
-                            setDomicilio(
-                                e.target.value
-                            )
-                        }
-                    />
-
-                    <TextField
-                        fullWidth
-                        label="Teléfono"
-                        value={telefono}
-                        onChange={(e) =>
-                            setTelefono(
-                                e.target.value
-                            )
-                        }
-                    />
-
-                    <Button
-                        type="submit"
-                        variant="contained"
+                    <Box
+                        component="form"
+                        onSubmit={handleSubmit}
+                        sx={{
+                            display: "flex",
+                            gap: 2
+                        }}
                     >
 
-                        {editandoId
-                            ? "GUARDAR"
-                            : "CREAR"}
+                        <TextField
+                            fullWidth
+                            label="Nombre"
+                            value={nombre}
+                            onChange={(e) =>
+                                setNombre(
+                                    e.target.value
+                                )
+                            }
+                        />
 
-                    </Button>
+                        <TextField
+                            fullWidth
+                            label="Domicilio"
+                            value={domicilio}
+                            onChange={(e) =>
+                                setDomicilio(
+                                    e.target.value
+                                )
+                            }
+                        />
 
-                </Box>
+                        <TextField
+                            fullWidth
+                            label="Teléfono"
+                            value={telefono}
+                            onChange={(e) =>
+                                setTelefono(
+                                    e.target.value
+                                )
+                            }
+                        />
 
-            </Paper>
+                        <Button
+                            type="submit"
+                            variant="contained"
+                        >
+
+                            {editandoId
+                                ? "GUARDAR"
+                                : "CREAR"}
+
+                        </Button>
+
+                    </Box>
+
+                </Paper>
+            )}
 
             <TableContainer
                 component={Paper}
@@ -340,28 +346,34 @@ function ProveedorPage() {
                                         align="right"
                                     >
 
-                                        <Button
-                                            size="small"
-                                            onClick={() =>
-                                                handleEditar(
-                                                    proveedor
-                                                )
-                                            }
-                                        >
-                                            EDITAR
-                                        </Button>
+                                        {canWrite && (
+                                            <>
 
-                                        <Button
-                                            size="small"
-                                            color="error"
-                                            onClick={() =>
-                                                handleEliminar(
-                                                    proveedor.id
-                                                )
-                                            }
-                                        >
-                                            ELIMINAR
-                                        </Button>
+                                                <Button
+                                                    size="small"
+                                                    onClick={() =>
+                                                        handleEditar(
+                                                            proveedor
+                                                        )
+                                                    }
+                                                >
+                                                    EDITAR
+                                                </Button>
+
+                                                <Button
+                                                    size="small"
+                                                    color="error"
+                                                    onClick={() =>
+                                                        handleEliminar(
+                                                            proveedor.id
+                                                        )
+                                                    }
+                                                >
+                                                    ELIMINAR
+                                                </Button>
+
+                                            </>
+                                        )}
 
                                     </TableCell>
 

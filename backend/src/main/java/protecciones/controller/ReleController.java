@@ -52,14 +52,30 @@ public class ReleController {
             String texto,
 
             @RequestParam(defaultValue = "ACTIVOS")
-            String filtroEstado) {
+            String filtroEstado,
+
+            @RequestParam(required = false)
+            Long marcaId,
+
+            @RequestParam(required = false)
+            Long modeloId,
+
+            @RequestParam(required = false)
+            String estadoNombre,
+
+            @RequestParam(required = false)
+            Long destinoId) {
 
         return releService.obtenerPaginados(
                 page,
                 size,
                 sort,
                 texto,
-                filtroEstado);
+                filtroEstado,
+                marcaId,
+                modeloId,
+                estadoNombre,
+                destinoId);
     }
 
     @GetMapping("/serial/{numeroSerie}")

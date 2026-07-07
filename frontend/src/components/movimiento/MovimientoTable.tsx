@@ -1,3 +1,5 @@
+import { useNavigate } from "react-router-dom";
+
 import type {
     Movimiento
 } from "../../types/Movimiento";
@@ -5,6 +7,7 @@ import type {
 import {
 
     Chip,
+    IconButton,
     Paper,
     Table,
     TableBody,
@@ -12,9 +15,13 @@ import {
     TableContainer,
     TableHead,
     TableRow,
+    Tooltip,
     Typography
 
 } from "@mui/material";
+
+import HistoryIcon
+from "@mui/icons-material/History";
 
 interface Props {
 
@@ -24,6 +31,8 @@ interface Props {
 function MovimientoTable({
     movimientos
 }: Props) {
+
+    const navigate = useNavigate();
 
     const movimientosOrdenados =
         [...movimientos].sort(
@@ -147,6 +156,10 @@ function MovimientoTable({
                             <strong>Notas</strong>
                         </TableCell>
 
+                        <TableCell align="center">
+                            <strong>Acciones</strong>
+                        </TableCell>
+
                     </TableRow>
 
                 </TableHead>
@@ -165,7 +178,7 @@ function MovimientoTable({
                                 <TableCell>
 
                                     <Typography
-                                        fontWeight={600}
+                                        sx={{ fontWeight: 600 }}
                                     >
 
                                         {
@@ -238,6 +251,28 @@ function MovimientoTable({
                                         movimiento.notas
                                             || "-"
                                     }
+
+                                </TableCell>
+
+                                <TableCell align="center">
+
+                                    <Tooltip title="Ver detalle del relé">
+
+                                        <IconButton
+                                            size="small"
+                                            color="primary"
+                                            onClick={() =>
+                                                navigate(
+                                                    `/reles/${movimiento.releId}`
+                                                )
+                                            }
+                                        >
+
+                                            <HistoryIcon fontSize="small" />
+
+                                        </IconButton>
+
+                                    </Tooltip>
 
                                 </TableCell>
 

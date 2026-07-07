@@ -8,7 +8,8 @@ public class ModeloCantidadDTO {
 
     public ModeloCantidadDTO(
             String modelo,
-            long cantidad) {
+            long cantidad
+    ) {
 
         this.modelo = modelo;
         this.cantidad = cantidad;

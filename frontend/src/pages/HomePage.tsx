@@ -8,9 +8,18 @@ import {
     Chip,
     Divider,
     CircularProgress,
-    LinearProgress
+    LinearProgress,
+    TextField,
+    MenuItem,
+    Button
 
 } from "@mui/material";
+
+import FileDownloadIcon
+from "@mui/icons-material/FileDownload";
+
+import PictureAsPdfIcon
+from "@mui/icons-material/PictureAsPdf";
 
 import {
 
@@ -42,12 +51,52 @@ import {
     obtenerDashboardKpis,
     obtenerUltimosMovimientos,
     obtenerRelesPorMarca,
-    obtenerRelesPorModelo
+    obtenerRelesPorModelo,
+    obtenerRelesPorEstado,
+    obtenerRelesPorDestino,
+    obtenerRelesPorProveedor,
+    obtenerMovimientosPorUsuario,
+    exportarDashboardExcel,
+    exportarDashboardPdf
 
 } from "../services/dashboardService";
 
 import type { MarcaCantidad } from "../types/MarcaCantidad";
+
 import type { ModeloCantidad } from "../types/ModeloCantidad";
+
+import type { EstadoCantidad } from "../types/EstadoCantidad";
+
+import type { DestinoCantidad } from "../types/DestinoCantidad";
+
+import type { ProveedorCantidad } from "../types/ProveedorCantidad";
+
+import type { UsuarioCantidad } from "../types/UsuarioCantidad";
+
+// Colores por estado operativo vigente (ver maquina de estados en
+// V20__actualizar_transiciones_estado.sql). Cualquier estado que no
+// figure aca (legado o nuevo, agregado por una migracion futura) cae
+// en el color por defecto en vez de romper o mostrarse "sin color".
+const COLOR_POR_ESTADO: Record<string, "default" | "primary" | "secondary" | "success" | "warning" | "error" | "info"> = {
+
+    "EN STOCK": "info",
+    "ENSAYO": "secondary",
+    "GARANTIA_PROVEEDOR": "warning",
+    "APROBADO": "success",
+    "RESERVA": "info",
+    "EN_SERVICIO": "primary",
+    "EN REPARACION": "warning",
+    "BAJA": "error"
+};
+
+function colorPorEstado(
+    estado: string
+) {
+
+    return COLOR_POR_ESTADO[estado] ?? "default";
+}
+
+const OPCIONES_LIMITE = [10, 20, 50, 100];
 
 function HomePage() {
 
@@ -65,12 +114,6 @@ function HomePage() {
     ] =
         useState<Movimiento[]>([]);
 
-    useEffect(() => {
-
-        cargarDashboard();
-
-    }, []);
-
     const [
         marcasData,
         setMarcasData
@@ -83,50 +126,165 @@ function HomePage() {
     ] =
         useState<ModeloCantidad[]>([]);
 
-    const cargarDashboard =
+    const [
+        estadosData,
+        setEstadosData
+    ] =
+        useState<EstadoCantidad[]>([]);
+
+    const [
+        destinosData,
+        setDestinosData
+    ] =
+        useState<DestinoCantidad[]>([]);
+
+    const [
+        proveedoresData,
+        setProveedoresData
+    ] =
+        useState<ProveedorCantidad[]>([]);
+
+    const [
+        usuariosData,
+        setUsuariosData
+    ] =
+        useState<UsuarioCantidad[]>([]);
+
+    // Filtros de la lista "Últimos Movimientos": rango de fechas +
+    // límite configurable (antes era un top 10 fijo, sin filtro).
+    const [desde, setDesde] =
+        useState("");
+
+    const [hasta, setHasta] =
+        useState("");
+
+    const [limite, setLimite] =
+        useState(10);
+
+    const [exportando, setExportando] =
+        useState(false);
+
+    const [exportandoPdf, setExportandoPdf] =
+        useState(false);
+
+    useEffect(() => {
+
+        cargarResumenGeneral();
+
+    }, []);
+
+    useEffect(() => {
+
+        cargarMovimientos();
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [limite, desde, hasta]);
+
+    const cargarResumenGeneral =
     async () => {
 
         try {
 
-            const kpiData =
-                await obtenerDashboardKpis();
+            // Se piden en paralelo (antes eran varios await en serie):
+            // el spinner tarda lo que tarda el más lento, no la suma
+            // de todas las llamadas.
+            const [
+                kpiData,
+                marcas,
+                modelos,
+                estados,
+                destinos,
+                proveedores,
+                usuarios
+            ] = await Promise.all([
+                obtenerDashboardKpis(),
+                obtenerRelesPorMarca(),
+                obtenerRelesPorModelo(),
+                obtenerRelesPorEstado(),
+                obtenerRelesPorDestino(),
+                obtenerRelesPorProveedor(),
+                obtenerMovimientosPorUsuario()
+            ]);
 
-            const movimientosData =
-                await obtenerUltimosMovimientos();
+            setKpis(kpiData);
 
-            const marcas =
-                await obtenerRelesPorMarca();
+            setMarcasData(marcas);
 
-            const modelos =
-                await obtenerRelesPorModelo();
+            setModelosData(modelos);
 
-            setKpis(
-                kpiData
-            );
+            setEstadosData(estados);
 
-            setMovimientos(
-                movimientosData
-            );
+            setDestinosData(destinos);
 
-            setMarcasData(
-                marcas
-            );
+            setProveedoresData(proveedores);
 
-            setModelosData(
-                modelos
-            );
+            setUsuariosData(usuarios);
 
         } catch (error) {
 
-            console.error(
-                error
-            );
+            console.error(error);
 
         } finally {
 
-            setLoading(
-                false
-            );
+            setLoading(false);
+        }
+    };
+
+    const cargarMovimientos =
+    async () => {
+
+        try {
+
+            const movimientosData =
+                await obtenerUltimosMovimientos(
+                    limite,
+                    desde || undefined,
+                    hasta || undefined
+                );
+
+            setMovimientos(movimientosData);
+
+        } catch (error) {
+
+            console.error(error);
+        }
+    };
+
+    const handleExportar =
+    async () => {
+
+        setExportando(true);
+
+        try {
+
+            await exportarDashboardExcel();
+
+        } catch (error) {
+
+            console.error(error);
+
+        } finally {
+
+            setExportando(false);
+        }
+    };
+
+    const handleExportarPdf =
+    async () => {
+
+        setExportandoPdf(true);
+
+        try {
+
+            await exportarDashboardPdf();
+
+        } catch (error) {
+
+            console.error(error);
+
+        } finally {
+
+            setExportandoPdf(false);
         }
     };
 
@@ -177,7 +335,7 @@ function HomePage() {
             :
 
             0;
-    
+
     const cardsGenerales = [
 
         {
@@ -205,94 +363,81 @@ function HomePage() {
         }
     ];
 
-    const cardsOperativas = [
-
-        {
-            title: "En Stock",
-            value: kpis.relesEnStock,
-            color: "#00695C"
-        },
-
-        {
-            title: "Instalados",
-            value: kpis.relesInstalados,
-            color: "#1976D2"
-        },
-
-        {
-            title: "En Reparación",
-            value: kpis.relesReparacion,
-            color: "#EF6C00"
-        },
-
-        {
-            title: "Ensayo",
-            value: kpis.relesEnsayo,
-            color: "#8E24AA"
-        },
-
-        {
-            title: "Garantías Vencidas",
-            value: kpis.garantiasVencidas,
-            color: "#C62828"
-        }
-    ];
-
-    const estadosData = [
-
-        {
-            name: "En Stock",
-            value: kpis.relesEnStock
-        },
-
-        {
-            name: "Instalados",
-            value: kpis.relesInstalados
-        },
-
-        {
-            name: "Reparación",
-            value: kpis.relesReparacion
-        },
-
-        {
-            name: "Ensayo",
-            value: kpis.relesEnsayo
-        },
-
-        {
-            name: "Baja",
-            value: kpis.relesBaja
-        }
-    ];
-
     return (
 
         <Stack spacing={4}>
 
-            <Box>
+            <Stack
+                direction={{ xs: "column", md: "row" }}
+                spacing={2}
+                sx={{
+                    justifyContent: "space-between",
+                    alignItems: { xs: "flex-start", md: "center" }
+                }}
+            >
 
-                <Typography
-                    variant="h4"
-                    gutterBottom
+                <Box>
+
+                    <Typography
+                        variant="h4"
+                        gutterBottom
+                    >
+
+                        Trazabilidad Operativa de Relés
+
+                    </Typography>
+
+                    <Typography
+                        variant="body1"
+                        color="text.secondary"
+                    >
+
+                        Estado operativo, movimientos y
+                        trazabilidad del stock de relés
+                        de protección.
+
+                    </Typography>
+
+                </Box>
+
+                <Stack
+                    direction={{ xs: "column", sm: "row" }}
+                    spacing={1.5}
                 >
 
-                    Trazabilidad Operativa de Relés
+                    <Button
+                        variant="outlined"
+                        startIcon={<FileDownloadIcon />}
+                        onClick={handleExportar}
+                        disabled={exportando}
+                    >
 
-                </Typography>
+                        {
+                            exportando
+                                ? "Exportando..."
+                                : "Exportar Excel"
+                        }
 
-                <Typography
-                    variant="body1"
-                    color="text.secondary"
-                >
+                    </Button>
 
-                    Estado operativo, movimientos y
-                    trazabilidad del stock de relés
-                    de protección.
+                    <Button
+                        variant="outlined"
+                        startIcon={<PictureAsPdfIcon />}
+                        onClick={handleExportarPdf}
+                        disabled={exportandoPdf}
+                    >
 
-                </Typography>
+                        {
+                            exportandoPdf
+                                ? "Exportando..."
+                                : "Exportar PDF"
+                        }
 
-            </Box>
+                    </Button>
+
+                </Stack>
+
+            </Stack>
 
              {/* Sección de KPIs de parte superior*/}
             <Typography
@@ -315,10 +460,7 @@ function HomePage() {
                 {cardsGenerales.map((card) => (
 
                     <Grid
-                        item
-                        xs={12}
-                        sm={6}
-                        md
+                        size={{ xs: 12, sm: 6, md: "grow" }}
                         key={card.title}
                         sx={{
                             flexGrow: 1,
@@ -353,75 +495,7 @@ function HomePage() {
 
                             <Typography
                                 variant="h4"
-                                fontWeight={700}
-                            >
-
-                                {card.value}
-
-                            </Typography>
-
-                        </Paper>
-
-                    </Grid>
-                ))}
-
-            </Grid>
-            
-            <Typography
-                variant="subtitle2"
-                sx={{
-                    mt: 4,
-                    mb: 2,
-                    fontWeight: 600,
-                    color: "#616161"
-                }}
-            >
-                Estado Operativo
-            </Typography>
-
-            <Grid
-                container
-                spacing={2}
-            >
-
-                {cardsOperativas.map((card) => (
-
-                    <Grid
-                        item
-                        xs={12}
-                        sm={6}
-                        md
-                        key={card.title}
-                        sx={{
-                            flexGrow: 1,
-                            display: "flex"
-                        }}
-                    >
-
-                        <Paper
-                            elevation={2}
-                            sx={{
-                                p: 2,
-                                width: "100%",
-                                minHeight: 110,
-                                borderLeft: `5px solid ${card.color}`,
-                                borderRadius: 3
-                            }}
-                        >
-
-                            <Typography
-                                variant="body2"
-                                color="text.secondary"
-                                gutterBottom
-                            >
-
-                                {card.title}
-
-                            </Typography>
-
-                            <Typography
-                                variant="h5"
-                                fontWeight={700}
+                                sx={{ fontWeight: 700 }}
                             >
 
                                 {card.value}
@@ -465,12 +539,25 @@ function HomePage() {
                 </Typography>
 
             </Paper>
-            
+
             {/*Graficos de zona media*/}
-            <Grid container spacing={3} sx={{ mb: 4 }}>
-            
-                {/*Grafico de estados de relés*/}
-                <Grid item xs={12} md={4}>
+            <Typography
+                variant="subtitle2"
+                sx={{
+                    mt: 2,
+                    mb: -1,
+                    fontWeight: 600,
+                    color: "#616161"
+                }}
+            >
+                Distribución del Stock
+            </Typography>
+
+            <Grid container spacing={3} sx={{ mb: 1 }}>
+
+                {/*Grafico de estados de relés (dinámico: sale de la
+                    tabla estado real, no de nombres hardcodeados)*/}
+                <Grid size={{ xs: 12, md: 4 }}>
 
                     <Paper
                         sx={{
@@ -500,14 +587,17 @@ function HomePage() {
                                     strokeDasharray="3 3"
                                 />
 
-                                <XAxis dataKey="name" />
+                                <XAxis
+                                    dataKey="estado"
+                                    tick={{ fontSize: 11 }}
+                                />
 
                                 <YAxis />
 
                                 <Tooltip />
 
                                 <Bar
-                                    dataKey="value"
+                                    dataKey="cantidad"
                                     fill="#00695C"
                                 />
 
@@ -520,7 +610,7 @@ function HomePage() {
                 </Grid>
 
                 {/* Gráfico de cantidad de relés por marca*/}
-                <Grid item xs={12} md={4}>
+                <Grid size={{ xs: 12, md: 4 }}>
 
                     <Paper
                         sx={{
@@ -584,7 +674,7 @@ function HomePage() {
                 </Grid>
 
                 {/* Gráfico de cantidad de relés por modelo*/}
-                <Grid item xs={12} md={4}>
+                <Grid size={{ xs: 12, md: 4 }}>
 
                     <Paper
                         sx={{
@@ -636,7 +726,204 @@ function HomePage() {
 
                                 <Bar
                                     dataKey="cantidad"
-                                    fill="#9C27B0"
+                                    fill="#F57C00"
+                                />
+
+                            </BarChart>
+
+                        </ResponsiveContainer>
+
+                    </Paper>
+
+                </Grid>
+
+            </Grid>
+
+            {/* Segunda fila de gráficos: destino, proveedor, usuario */}
+            <Grid container spacing={3} sx={{ mb: 4 }}>
+
+                {/* Gráfico de cantidad de relés por destino */}
+                <Grid size={{ xs: 12, md: 4 }}>
+
+                    <Paper
+                        sx={{
+                            p: 3,
+                            borderRadius: 4,
+                            height: 380
+                        }}
+                    >
+
+                        <Typography
+                            variant="h6"
+                            sx={{ mb: 3 }}
+                        >
+                            Distribución por Destino
+                        </Typography>
+
+                        <ResponsiveContainer
+                            width="100%"
+                            height={280}
+                        >
+
+                            <BarChart
+                                data={destinosData}
+                                layout="vertical"
+                                margin={{
+                                    top: 5,
+                                    right: 20,
+                                    left: 20,
+                                    bottom: 5
+                                }}
+                            >
+
+                                <CartesianGrid
+                                    strokeDasharray="3 3"
+                                />
+
+                                <XAxis
+                                    type="number"
+                                />
+
+                                <YAxis
+                                    type="category"
+                                    dataKey="destino"
+                                    width={160}
+                                    tick={{ fontSize: 12, fill: "#37474F" }}
+                                />
+
+                                <Tooltip />
+
+                                <Bar
+                                    dataKey="cantidad"
+                                    fill="#00838F"
+                                />
+
+                            </BarChart>
+
+                        </ResponsiveContainer>
+
+                    </Paper>
+
+                </Grid>
+
+                {/* Gráfico de cantidad de relés por proveedor */}
+                <Grid size={{ xs: 12, md: 4 }}>
+
+                    <Paper
+                        sx={{
+                            p: 3,
+                            borderRadius: 4,
+                            height: 380
+                        }}
+                    >
+
+                        <Typography
+                            variant="h6"
+                            sx={{ mb: 3 }}
+                        >
+                            Distribución por Proveedor
+                        </Typography>
+
+                        <ResponsiveContainer
+                            width="100%"
+                            height={280}
+                        >
+
+                            <BarChart
+                                data={proveedoresData}
+                                layout="vertical"
+                                margin={{
+                                    top: 5,
+                                    right: 20,
+                                    left: 20,
+                                    bottom: 5
+                                }}
+                            >
+
+                                <CartesianGrid
+                                    strokeDasharray="3 3"
+                                />
+
+                                <XAxis
+                                    type="number"
+                                />
+
+                                <YAxis
+                                    type="category"
+                                    dataKey="proveedor"
+                                    width={160}
+                                    tick={{ fontSize: 12, fill: "#37474F" }}
+                                />
+
+                                <Tooltip />
+
+                                <Bar
+                                    dataKey="cantidad"
+                                    fill="#6A1B9A"
+                                />
+
+                            </BarChart>
+
+                        </ResponsiveContainer>
+
+                    </Paper>
+
+                </Grid>
+
+                {/* Gráfico de movimientos registrados por usuario */}
+                <Grid size={{ xs: 12, md: 4 }}>
+
+                    <Paper
+                        sx={{
+                            p: 3,
+                            borderRadius: 4,
+                            height: 380
+                        }}
+                    >
+
+                        <Typography
+                            variant="h6"
+                            sx={{ mb: 3 }}
+                        >
+                            Movimientos por Usuario
+                        </Typography>
+
+                        <ResponsiveContainer
+                            width="100%"
+                            height={280}
+                        >
+
+                            <BarChart
+                                data={usuariosData}
+                                layout="vertical"
+                                margin={{
+                                    top: 5,
+                                    right: 20,
+                                    left: 20,
+                                    bottom: 5
+                                }}
+                            >
+
+                                <CartesianGrid
+                                    strokeDasharray="3 3"
+                                />
+
+                                <XAxis
+                                    type="number"
+                                />
+
+                                <YAxis
+                                    type="category"
+                                    dataKey="usuario"
+                                    width={160}
+                                    tick={{ fontSize: 12, fill: "#37474F" }}
+                                />
+
+                                <Tooltip />
+
+                                <Bar
+                                    dataKey="cantidad"
+                                    fill="#455A64"
                                 />
 
                             </BarChart>
@@ -661,14 +948,13 @@ function HomePage() {
             >
                 Estado Documental
             </Typography>
-
             <Grid
                 container
                 spacing={3}
                 sx={{ mb: 4 }}
             >
 
-                <Grid item xs={12} md={3}>
+                <Grid size={{ xs: 12, md: 3 }}>
 
                     <Paper sx={{ p: 3, borderRadius: 3 }}>
 
@@ -687,7 +973,8 @@ function HomePage() {
 
                 </Grid>
 
-                <Grid item xs={12} md={3}>
+                <Grid size={{ xs: 12, md: 3 }}>
+
                     <Paper sx={{ p: 3, borderRadius: 3 }}>
 
                         <Typography variant="body2">
@@ -705,12 +992,31 @@ function HomePage() {
 
                 </Grid>
 
-                <Grid item xs={12} md={3}>
+                <Grid size={{ xs: 12, md: 3 }}>
 
                     <Paper sx={{ p: 3, borderRadius: 3 }}>
 
                         <Typography variant="body2">
-                            Remitos cargados
+                            Documentación vinculada sin archivo adjunto
+                        </Typography>
+
+                        <Typography
+                            variant="h4"
+                            color="warning.main"
+                        >
+                            {kpis.relesDocumentacionSinArchivo}
+                        </Typography>
+
+                    </Paper>
+
+                </Grid>
+
+                <Grid size={{ xs: 12, md: 3 }}>
+
+                    <Paper sx={{ p: 3, borderRadius: 3 }}>
+
+                        <Typography variant="body2">
+                            Remitos sin asociar
                         </Typography>
 
                         <Typography
@@ -724,17 +1030,17 @@ function HomePage() {
 
                 </Grid>
 
-                <Grid item xs={12} md={3}>
+                <Grid size={{ xs: 12, md: 3 }}>
 
                     <Paper sx={{ p: 3, borderRadius: 3 }}>
 
                         <Typography variant="body2">
-                            Ordenes de Provisión cargadas
+                            Órdenes de Provisión sin asociar
                         </Typography>
 
                         <Typography
                             variant="h4"
-                            color="success.main"
+                            color="info.main"
                         >
                             {kpis.ordenesPendientes}
                         </Typography>
@@ -758,7 +1064,7 @@ function HomePage() {
 
                 <Typography
                     variant="h6"
-                    fontWeight={600}
+                    sx={{ fontWeight: 600 }}
                 >
 
                     Nivel de Trazabilidad
@@ -812,32 +1118,92 @@ function HomePage() {
 
             </Paper>
 
-            
+
             {/*Ultimos movimientos*/}
             <Paper
                 elevation={2}
                 sx={{
                     p: 3,
                     mt: 4,
-                    maxHeight: 550,
-                    overflowY: "auto",
                     borderRadius: 3
                 }}
             >
 
                 <Typography
                     variant="h6"
-                    gutterBottom
-                    fontWeight={600}
+                    sx={{ fontWeight: 600, mb: 2 }}
                 >
 
                     Últimos Movimientos
 
                 </Typography>
 
+                <Stack
+                    direction={{ xs: "column", sm: "row" }}
+                    spacing={2}
+                    sx={{ mb: 3 }}
+                >
+
+                    <TextField
+                        label="Desde"
+                        type="date"
+                        size="small"
+                        slotProps={{ inputLabel: { shrink: true } }}
+                        value={desde}
+                        onChange={(e) => setDesde(e.target.value)}
+                    />
+
+                    <TextField
+                        label="Hasta"
+                        type="date"
+                        size="small"
+                        slotProps={{ inputLabel: { shrink: true } }}
+                        value={hasta}
+                        onChange={(e) => setHasta(e.target.value)}
+                    />
+
+                    <TextField
+                        label="Mostrar"
+                        select
+                        size="small"
+                        sx={{ minWidth: 120 }}
+                        value={limite}
+                        onChange={(e) => setLimite(Number(e.target.value))}
+                    >
+
+                        {OPCIONES_LIMITE.map((opcion) => (
+
+                            <MenuItem
+                                key={opcion}
+                                value={opcion}
+                            >
+                                {opcion}
+                            </MenuItem>
+                        ))}
+
+                    </TextField>
+
+                </Stack>
+
                 <Divider sx={{ mb: 3 }} />
 
-                <Stack spacing={2}>
+                <Stack
+                    spacing={2}
+                    sx={{
+                        maxHeight: 550,
+                        overflowY: "auto"
+                    }}
+                >
+
+                    {movimientos.length === 0 && (
+
+                        <Typography
+                            variant="body2"
+                            color="text.secondary"
+                        >
+                            No hay movimientos para el rango seleccionado.
+                        </Typography>
+                    )}
 
                     {movimientos.map((mov) => (
 
@@ -859,8 +1225,8 @@ function HomePage() {
                             <Box sx={{ width: "35%" }}>
 
                                 <Typography
-                                    fontWeight={700}
                                     variant="body1"
+                                    sx={{ fontWeight: 700 }}
                                 >
 
                                     {mov.rele}
@@ -889,6 +1255,16 @@ function HomePage() {
 
                                 </Typography>
 
+                                <Typography
+                                    variant="caption"
+                                    color="text.secondary"
+                                    sx={{ display: "block" }}
+                                >
+
+                                    Responsable: {mov.responsable}
+
+                                </Typography>
+
                             </Box>
 
 
@@ -899,21 +1275,7 @@ function HomePage() {
                                 <Chip
                                     label={mov.estado}
 
-                                    color={
-                                        mov.estado === "INSTALADO"
-
-                                            ? "primary"
-
-                                            : mov.estado === "EN REPARACION"
-
-                                                ? "warning"
-
-                                                : mov.estado === "EN ENSAYO"
-
-                                                    ? "secondary"
-
-                                                    : "success"
-                                    }
+                                    color={colorPorEstado(mov.estado)}
 
                                     sx={{
                                         minWidth: 120,

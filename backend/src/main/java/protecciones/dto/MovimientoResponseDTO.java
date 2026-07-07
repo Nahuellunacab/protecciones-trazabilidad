@@ -6,6 +6,8 @@ public class MovimientoResponseDTO {
 
     private Long id;
 
+    private Long releId;
+
     private String rele;
 
     private String modelo;
@@ -30,6 +32,7 @@ public class MovimientoResponseDTO {
 
     public MovimientoResponseDTO(
             Long id,
+            Long releId,
             String rele,
             String modelo,
             String marca,
@@ -44,6 +47,7 @@ public class MovimientoResponseDTO {
     ) {
 
         this.id = id;
+        this.releId = releId;
         this.rele = rele;
         this.modelo = modelo;
         this.marca = marca;
@@ -59,6 +63,10 @@ public class MovimientoResponseDTO {
 
     public Long getId() {
         return id;
+    }
+
+    public Long getReleId() {
+        return releId;
     }
 
     public String getRele() {

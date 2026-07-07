@@ -13,6 +13,9 @@ from "../pages/HomePage";
 import RelePage
 from "../pages/RelePage";
 
+import ReleDetailPage
+from "../pages/ReleDetailPage";
+
 import MovimientoPage
 from "../pages/MovimientoPage";
 
@@ -43,6 +46,15 @@ from "../pages/admin/RemitoPage";
 import OrdenProvisionPage
 from "../pages/admin/OrdenProvisionPage";
 
+import UsuarioPage
+from "../pages/admin/UsuarioPage";
+
+import LoginPage
+from "../pages/LoginPage";
+
+import ProtectedRoute
+from "./ProtectedRoute";
+
 function AppRouter() {
 
     return (
@@ -52,8 +64,17 @@ function AppRouter() {
             <Routes>
 
                 <Route
+                    path="/login"
+                    element={<LoginPage />}
+                />
+
+                <Route
                     path="/"
-                    element={<MainLayout />}
+                    element={
+                        <ProtectedRoute>
+                            <MainLayout />
+                        </ProtectedRoute>
+                    }
                 >
 
                     <Route
@@ -64,6 +85,11 @@ function AppRouter() {
                     <Route
                         path="reles"
                         element={<RelePage />}
+                    />
+
+                    <Route
+                        path="reles/:id"
+                        element={<ReleDetailPage />}
                     />
 
                     <Route
@@ -114,6 +140,11 @@ function AppRouter() {
                     <Route
                         path="admin/ordenes-provision"
                         element={<OrdenProvisionPage />}
+                    />
+
+                    <Route
+                        path="admin/usuarios"
+                        element={<UsuarioPage />}
                     />
 
                 </Route>

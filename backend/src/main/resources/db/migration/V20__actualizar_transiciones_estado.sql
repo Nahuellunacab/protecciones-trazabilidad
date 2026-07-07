@@ -2,6 +2,9 @@
 -- REDEFINICION DE TRANSICIONES DE ESTADO
 -- Workflow Protecciones EPEC
 -- ============================================================
+-- Los ids se resuelven por nombre (no hardcodeados) porque la
+-- numeracion real de la tabla estado no coincide con el orden
+-- en que estos estados fueron mencionados historicamente.
 
 DELETE FROM transicion_estado;
 
@@ -12,46 +15,46 @@ VALUES
 -- ------------------------------------------------------------
 -- EN STOCK (estado inicial)
 -- ------------------------------------------------------------
-(1,6),      -- EN STOCK -> ENSAYO
-(1,9),      -- EN STOCK -> GARANTIA_PROVEEDOR
-(1,8),      -- EN STOCK -> APROBADO
-(1,7),      -- EN STOCK -> RESERVA
-(1,11),     -- EN STOCK -> BAJA
+((SELECT id FROM estado WHERE nombre='EN STOCK'),(SELECT id FROM estado WHERE nombre='ENSAYO')),
+((SELECT id FROM estado WHERE nombre='EN STOCK'),(SELECT id FROM estado WHERE nombre='GARANTIA_PROVEEDOR')),
+((SELECT id FROM estado WHERE nombre='EN STOCK'),(SELECT id FROM estado WHERE nombre='APROBADO')),
+((SELECT id FROM estado WHERE nombre='EN STOCK'),(SELECT id FROM estado WHERE nombre='RESERVA')),
+((SELECT id FROM estado WHERE nombre='EN STOCK'),(SELECT id FROM estado WHERE nombre='BAJA')),
 
 -- ------------------------------------------------------------
 -- ENSAYO
 -- ------------------------------------------------------------
-(6,8),      -- ENSAYO -> APROBADO
-(6,9),      -- ENSAYO -> GARANTIA
-(6,11),     -- ENSAYO -> BAJA
+((SELECT id FROM estado WHERE nombre='ENSAYO'),(SELECT id FROM estado WHERE nombre='APROBADO')),
+((SELECT id FROM estado WHERE nombre='ENSAYO'),(SELECT id FROM estado WHERE nombre='GARANTIA_PROVEEDOR')),
+((SELECT id FROM estado WHERE nombre='ENSAYO'),(SELECT id FROM estado WHERE nombre='BAJA')),
 
 -- ------------------------------------------------------------
 -- GARANTIA PROVEEDOR
 -- ------------------------------------------------------------
-(9,8),      -- GARANTIA -> APROBADO
-(9,11),     -- GARANTIA -> BAJA
+((SELECT id FROM estado WHERE nombre='GARANTIA_PROVEEDOR'),(SELECT id FROM estado WHERE nombre='APROBADO')),
+((SELECT id FROM estado WHERE nombre='GARANTIA_PROVEEDOR'),(SELECT id FROM estado WHERE nombre='BAJA')),
 
 -- ------------------------------------------------------------
 -- APROBADO
 -- ------------------------------------------------------------
-(8,10),     -- APROBADO -> EN SERVICIO
-(8,7),      -- APROBADO -> RESERVA
-(8,11),     -- APROBADO -> BAJA
+((SELECT id FROM estado WHERE nombre='APROBADO'),(SELECT id FROM estado WHERE nombre='EN_SERVICIO')),
+((SELECT id FROM estado WHERE nombre='APROBADO'),(SELECT id FROM estado WHERE nombre='RESERVA')),
+((SELECT id FROM estado WHERE nombre='APROBADO'),(SELECT id FROM estado WHERE nombre='BAJA')),
 
 -- ------------------------------------------------------------
 -- RESERVA
 -- ------------------------------------------------------------
-(7,10),      -- RESERVA -> EN SERVICIO
-(7,11),      -- RESERVA -> BAJA
+((SELECT id FROM estado WHERE nombre='RESERVA'),(SELECT id FROM estado WHERE nombre='EN_SERVICIO')),
+((SELECT id FROM estado WHERE nombre='RESERVA'),(SELECT id FROM estado WHERE nombre='BAJA')),
 
 -- ------------------------------------------------------------
 -- EN SERVICIO
 -- ------------------------------------------------------------
-(10,3),      -- EN SERVICIO -> EN REPARACION
-(10,11),     -- EN SERVICIO -> BAJA
+((SELECT id FROM estado WHERE nombre='EN_SERVICIO'),(SELECT id FROM estado WHERE nombre='EN REPARACION')),
+((SELECT id FROM estado WHERE nombre='EN_SERVICIO'),(SELECT id FROM estado WHERE nombre='BAJA')),
 
 -- ------------------------------------------------------------
 -- EN REPARACION
 -- ------------------------------------------------------------
-(3,1),       -- EN REPARACION -> EN STOCK
-(3,11);      -- EN REPARACION -> BAJA
+((SELECT id FROM estado WHERE nombre='EN REPARACION'),(SELECT id FROM estado WHERE nombre='EN STOCK')),
+((SELECT id FROM estado WHERE nombre='EN REPARACION'),(SELECT id FROM estado WHERE nombre='BAJA'));

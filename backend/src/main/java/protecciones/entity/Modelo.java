@@ -1,4 +1,5 @@
 package protecciones.entity;
+
 import jakarta.persistence.*;
 
 @Entity
@@ -57,7 +58,7 @@ public class Modelo {
     public void setNombre(String nombre) {
         this.nombre = nombre;
     }
-    
+
     public void setMarca(Marca marca) {
         this.marca = marca;
     }

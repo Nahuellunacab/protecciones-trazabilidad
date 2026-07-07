@@ -1,16 +1,9 @@
 import { useState } from "react";
 
+import { useNavigate } from "react-router-dom";
+
 import type { Rele }
 from "../../types/Rele";
-
-import type { Movimiento }
-from "../../types/Movimiento";
-
-import {
-
-    obtenerHistorialPorRele
-
-} from "../../services/movimientoService";
 
 import {
     Paper,
@@ -24,27 +17,37 @@ import {
     Chip,
     Stack,
     Button,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
     ToggleButton,
     ToggleButtonGroup,
-    CircularProgress,
     Box,
     Tooltip,
     IconButton,
+    Skeleton,
 } from "@mui/material";
 
 import PictureAsPdfIcon
 from "@mui/icons-material/PictureAsPdf";
 
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import CheckIcon from '@mui/icons-material/Check';
+import EmptyState
+from "../common/EmptyState";
+
+import ContentCopyIcon
+from "@mui/icons-material/ContentCopy";
+
+import CheckIcon
+from "@mui/icons-material/Check";
+
+import EditIcon
+from "@mui/icons-material/Edit";
+
+import HistoryIcon
+from "@mui/icons-material/History";
 
 interface Props {
 
     reles: Rele[];
+
+    cargando: boolean;
 
     filtroEstado:
         "ACTIVOS"
@@ -66,36 +69,26 @@ interface Props {
     onEditar: (
         rele: Rele
     ) => void;
+
+    canWrite: boolean;
 }
 
 function ReleTable({
     reles,
+    cargando,
     onEditar,
     filtroEstado,
-    setFiltroEstado
+    setFiltroEstado,
+    canWrite
 }: Props) {
 
-    const [
-        historialOpen,
-        setHistorialOpen
-    ] = useState(false);
+    const navigate = useNavigate();
 
     const [
-        historial,
-        setHistorial
-    ] = useState<Movimiento[]>([]);
+        copiedId,
+        setCopiedId
+    ] = useState<number | null>(null);
 
-    const [
-        historialLoading,
-        setHistorialLoading
-    ] = useState(false);
-
-    const [
-        releHistorial,
-        setReleHistorial
-    ] = useState<Rele | null>(null);
-    const [copiedId, setCopiedId] = useState<number | null>(null);
-        
     const getEstadoColor = (estado: string) => {
 
         switch (estado?.toUpperCase()) {
@@ -126,80 +119,47 @@ function ReleTable({
         }
     };
 
-    const handleCopy = async (texto: string | undefined, id: number) => {
+    const handleCopy = async (
+        texto: string | undefined,
+        id: number
+    ) => {
+
         if (!texto) return;
 
         try {
-            if (navigator && navigator.clipboard && navigator.clipboard.writeText) {
+
+            if (
+                navigator &&
+                navigator.clipboard &&
+                navigator.clipboard.writeText
+            ) {
+
                 await navigator.clipboard.writeText(texto);
+
             } else {
-                const ta = document.createElement('textarea');
+
+                const ta = document.createElement("textarea");
                 ta.value = texto;
                 document.body.appendChild(ta);
                 ta.select();
-                document.execCommand('copy');
+                document.execCommand("copy");
                 document.body.removeChild(ta);
             }
 
             setCopiedId(id);
-            setTimeout(() => setCopiedId(null), 1500);
-        } catch (err) {
-            console.error('Error copying text', err);
-        }
-    };
-        
-    
-    
-    const handleVerHistorial =
-    async (
-        rele: Rele
-    ) => {
 
-        try {
-
-            setHistorialLoading(true);
-
-            setReleHistorial(rele);
-
-            const data =
-                await obtenerHistorialPorRele(
-                    rele.id
-                );
-
-            setHistorial(data);
-
-            setHistorialOpen(true);
-
-        } catch (error) {
-
-            console.error(error);
-
-        } finally {
-
-            setHistorialLoading(false);
-        }
-    };
-
-    const formatearFecha = (
-        fecha: string
-    ) => {
-
-        return new Date(fecha)
-            .toLocaleString(
-                "es-AR",
-                {
-
-                    day: "2-digit",
-
-                    month: "2-digit",
-
-                    year: "numeric",
-
-                    hour: "2-digit",
-
-                    minute: "2-digit"
-                }
+            setTimeout(
+                () => setCopiedId(null),
+                1500
             );
+
+        } catch (err) {
+
+            console.error(
+                "Error copying text",
+                err
+            );
+        }
     };
 
     return (
@@ -301,6 +261,67 @@ function ReleTable({
                     <TableBody>
 
                         {
+                            cargando && (
+
+                                Array.from(
+                                    { length: 5 }
+                                ).map(
+                                    (_, indice) => (
+
+                                        <TableRow
+                                            key={
+                                                `skeleton-${indice}`
+                                            }
+                                        >
+
+                                            {
+                                                Array.from(
+                                                    { length: 10 }
+                                                ).map(
+                                                    (_, columna) => (
+
+                                                        <TableCell
+                                                            key={columna}
+                                                        >
+
+                                                            <Skeleton
+                                                                variant="text"
+                                                            />
+
+                                                        </TableCell>
+                                                    )
+                                                )
+                                            }
+
+                                        </TableRow>
+                                    )
+                                )
+                            )
+                        }
+
+                        {
+                            !cargando
+                            &&
+                            reles.length === 0 && (
+
+                                <TableRow>
+
+                                    <TableCell colSpan={10}>
+
+                                        <EmptyState
+                                            titulo="No se encontraron relés"
+                                            subtitulo="Probá ajustar la búsqueda o el filtro de estado."
+                                        />
+
+                                    </TableCell>
+
+                                </TableRow>
+                            )
+                        }
+
+                        {
+                            !cargando
+                            &&
                             reles.map(
                                 (rele) => (
 
@@ -330,32 +351,39 @@ function ReleTable({
 
                                         <TableCell>
 
-                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
 
-                                            {
-                                                rele.codigoConfiguracion
-                                                    ? (
-                                                        <>
-                                                            <Typography>
-                                                                {rele.codigoConfiguracion}
-                                                            </Typography>
+                                                {
+                                                    rele.codigoConfiguracion
+                                                        ? (
+                                                            <>
+                                                                <Typography>
+                                                                    {rele.codigoConfiguracion}
+                                                                </Typography>
 
-                                                            <Tooltip title={copiedId === rele.id ? "Copiado" : "Copiar"}>
-                                                                <IconButton
-                                                                    size="small"
-                                                                    onClick={() => handleCopy(rele.codigoConfiguracion, rele.id)}
-                                                                >
-                                                                    {copiedId === rele.id ? <CheckIcon fontSize="small" color="success" /> : <ContentCopyIcon fontSize="small" />}
-                                                                </IconButton>
-                                                            </Tooltip>
-                                                        </>
-                                                    )
-                                                    : (
-                                                        "-"
-                                                    )
-                                            }
+                                                                <Tooltip title={copiedId === rele.id ? "Copiado" : "Copiar"}>
+                                                                    <IconButton
+                                                                        size="small"
+                                                                        onClick={() =>
+                                                                            handleCopy(
+                                                                                rele.codigoConfiguracion ?? undefined,
+                                                                                rele.id
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        {
+                                                                            copiedId === rele.id
+                                                                                ? <CheckIcon fontSize="small" color="success" />
+                                                                                : <ContentCopyIcon fontSize="small" />
+                                                                        }
+                                                                    </IconButton>
+                                                                </Tooltip>
+                                                            </>
+                                                        )
+                                                        : "-"
+                                                }
 
-                                        </Box>
+                                            </Box>
 
                                         </TableCell>
 
@@ -533,44 +561,55 @@ function ReleTable({
 
                                         </TableCell>
 
-                                        <TableCell>
+                                        <TableCell align="center">
 
                                             <Box
                                                 sx={{
                                                     display: "flex",
                                                     flexDirection: "row",
-                                                    gap: 1,
+                                                    gap: 0.5,
                                                     justifyContent: "center"
                                                 }}
                                             >
 
-                                                <Button
-                                                    size="small"
-                                                    variant="outlined"
-                                                    onClick={() =>
-                                                        onEditar(
-                                                            rele
-                                                        )
-                                                    }
-                                                >
+                                                {canWrite && (
 
-                                                    EDITAR
+                                                    <Tooltip title="Editar">
 
-                                                </Button>
+                                                        <IconButton
+                                                            size="small"
+                                                            color="primary"
+                                                            onClick={() =>
+                                                                onEditar(
+                                                                    rele
+                                                                )
+                                                            }
+                                                        >
 
-                                                <Button
-                                                    size="small"
-                                                    variant="contained"
-                                                    onClick={() =>
-                                                        handleVerHistorial(
-                                                            rele
-                                                        )
-                                                    }
-                                                >
+                                                            <EditIcon fontSize="small" />
 
-                                                    HISTORIAL
+                                                        </IconButton>
 
-                                                </Button>
+                                                    </Tooltip>
+                                                )}
+
+                                                <Tooltip title="Ver detalle">
+
+                                                    <IconButton
+                                                        size="small"
+                                                        color="primary"
+                                                        onClick={() =>
+                                                            navigate(
+                                                                `/reles/${rele.id}`
+                                                            )
+                                                        }
+                                                    >
+
+                                                        <HistoryIcon fontSize="small" />
+
+                                                    </IconButton>
+
+                                                </Tooltip>
 
                                             </Box>
 
@@ -586,190 +625,6 @@ function ReleTable({
                 </Table>
 
             </TableContainer>
-
-            <Dialog
-                open={historialOpen}
-                onClose={() =>
-                    setHistorialOpen(false)
-                }
-                maxWidth="md"
-                fullWidth
-            >
-
-                <DialogTitle>
-
-                    Historial de Movimientos
-
-                    {
-                        releHistorial && (
-                            <>
-                                {" - "}
-                                {
-                                    releHistorial.numeroSerie
-                                }
-                            </>
-                        )
-                    }
-
-                </DialogTitle>
-
-                <DialogContent dividers>
-
-                    {
-                        historialLoading ? (
-
-                            <Box
-                                sx={{
-                                    display: "flex",
-                                    flexDirection: "row",
-                                    gap: 1,
-                                    justifyContent: "center"
-                                }}
-                            >
-
-                                <CircularProgress />
-
-                            </Box>
-
-                        ) : historial.length === 0 ? (
-
-                            <Typography>
-
-                                No hay movimientos registrados.
-
-                            </Typography>
-
-                        ) : (
-
-                            <Table size="small">
-
-                                <TableHead>
-
-                                    <TableRow>
-
-                                        <TableCell>
-                                            Fecha
-                                        </TableCell>
-
-                                        <TableCell>
-                                            Estado
-                                        </TableCell>
-
-                                        <TableCell>
-                                            Ubicación
-                                        </TableCell>
-
-                                        <TableCell>
-                                            Posición
-                                        </TableCell>
-
-                                        <TableCell>
-                                            Responsable
-                                        </TableCell>
-
-                                        <TableCell>
-                                            Notas
-                                        </TableCell>
-
-                                    </TableRow>
-
-                                </TableHead>
-
-                                <TableBody>
-
-                                    {
-                                        historial.map(
-                                            (movimiento) => (
-
-                                            <TableRow
-                                                key={
-                                                    movimiento.id
-                                                }
-                                            >
-
-                                                <TableCell>
-
-                                                    {
-                                                        formatearFecha(
-                                                            movimiento.fechaMovimiento
-                                                        )
-                                                    }
-
-                                                </TableCell>
-
-                                                <TableCell>
-
-                                                    {
-                                                        movimiento.estado
-                                                    }
-
-                                                </TableCell>
-
-                                                <TableCell>
-
-                                                    {
-                                                        movimiento.localidad
-                                                        ||
-                                                        "-"
-                                                    }
-
-                                                </TableCell>
-
-                                                <TableCell>
-
-                                                    {
-                                                        movimiento.posicion
-                                                        ||
-                                                        "-"
-                                                    }
-
-                                                </TableCell>
-
-                                                <TableCell>
-
-                                                    {
-                                                        movimiento.responsable
-                                                    }
-
-                                                </TableCell>
-
-                                                <TableCell>
-
-                                                    {
-                                                        movimiento.notas
-                                                        ||
-                                                        "-"
-                                                    }
-
-                                                </TableCell>
-
-                                            </TableRow>
-                                        ))
-                                    }
-
-                                </TableBody>
-
-                            </Table>
-                        )
-                    }
-
-                </DialogContent>
-
-                <DialogActions>
-
-                    <Button
-                        onClick={() =>
-                            setHistorialOpen(false)
-                        }
-                    >
-
-                        CERRAR
-
-                    </Button>
-
-                </DialogActions>
-
-            </Dialog>
 
         </>
     );

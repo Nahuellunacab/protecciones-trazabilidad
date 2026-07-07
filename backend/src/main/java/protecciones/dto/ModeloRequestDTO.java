@@ -22,7 +22,6 @@ public class ModeloRequestDTO {
         return marcaId;
     }
 
-
     public void setNombre(
             String nombre
     ) {
