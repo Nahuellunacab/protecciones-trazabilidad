@@ -3,11 +3,27 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
 import {
-    Box,
+    Alert,
     Button,
+    Paper,
+    Snackbar,
+    Stack,
     ToggleButton,
-    ToggleButtonGroup
+    ToggleButtonGroup,
+    Typography
 } from "@mui/material";
+
+import TodayIcon
+from "@mui/icons-material/Today";
+
+import DateRangeIcon
+from "@mui/icons-material/DateRange";
+
+import CalendarMonthIcon
+from "@mui/icons-material/CalendarMonth";
+
+import AllInclusiveIcon
+from "@mui/icons-material/AllInclusive";
 
 import {
     obtenerMovimientos,
@@ -51,24 +67,120 @@ function MovimientoPage() {
     const [movimientos, setMovimientos] =
         useState<Movimiento[]>([]);
 
+    const [cargando, setCargando] =
+        useState(true);
+
+    const [errorCargaOpen, setErrorCargaOpen] =
+        useState(false);
+
+    const [errorExportOpen, setErrorExportOpen] =
+        useState(false);
+
+    type FiltroFecha =
+        "HOY" | "SEMANA" | "MES" | "TODOS";
+
     const [filtroFecha, setFiltroFecha] =
-        useState<
-            "HOY"
-            |
-            "SEMANA"
-            |
-            "MES"
-            |
-            "TODOS"
-        >("TODOS");
+        useState<FiltroFecha>("TODOS");
+
+    const NOMBRES_ARCHIVO:
+        Record<FiltroFecha, string> = {
+            HOY: "movimientos_hoy.xlsx",
+            SEMANA: "movimientos_semana.xlsx",
+            MES: "movimientos_mes.xlsx",
+            TODOS: "movimientos_completo.xlsx"
+        };
+
+    const DESCRIPCION_RANGO:
+        Record<FiltroFecha, string> = {
+            HOY: "Movimientos de hoy",
+            SEMANA: "Últimos 7 días",
+            MES: "Mes en curso",
+            TODOS: "Todo el historial"
+        };
+
+    const obtenerRangoFecha = (
+        filtro: FiltroFecha
+    ): {
+        desde?: Date;
+        hasta?: Date;
+    } => {
+
+        const hoy = new Date();
+
+        if (filtro === "HOY") {
+
+            const inicio =
+                new Date(
+                    hoy.getFullYear(),
+                    hoy.getMonth(),
+                    hoy.getDate()
+                );
+
+            const fin =
+                new Date(
+                    hoy.getFullYear(),
+                    hoy.getMonth(),
+                    hoy.getDate(),
+                    23, 59, 59, 999
+                );
+
+            return { desde: inicio, hasta: fin };
+        }
+
+        if (filtro === "SEMANA") {
+
+            const inicio =
+                new Date(hoy);
+
+            inicio.setDate(
+                hoy.getDate() - 7
+            );
+
+            return { desde: inicio, hasta: hoy };
+        }
+
+        if (filtro === "MES") {
+
+            const inicio =
+                new Date(
+                    hoy.getFullYear(),
+                    hoy.getMonth(),
+                    1
+                );
+
+            return { desde: inicio, hasta: hoy };
+        }
+
+        return {};
+    };
+
+    const formatearISO = (fecha: Date) =>
+        fecha.toISOString().split("T")[0];
 
     const cargarMovimientos =
         async () => {
 
-        const data =
-            await obtenerMovimientos();
+        try {
 
-        setMovimientos(data);
+            setCargando(true);
+
+            const data =
+                await obtenerMovimientos();
+
+            setMovimientos(data);
+
+            setErrorCargaOpen(false);
+
+        } catch (error) {
+
+            console.error(error);
+
+            setErrorCargaOpen(true);
+
+        } finally {
+
+            setCargando(false);
+        }
     };
 
     useEffect(() => {
@@ -89,89 +201,28 @@ function MovimientoPage() {
     const handleExportarExcel =
         async () => {
 
-            const hoy =
-                new Date();
+        try {
 
-            let nombreArchivo =
-                "movimientos_completo.xlsx";
-
-            let desde:
-                string | undefined;
-
-            let hasta:
-                string | undefined;
-
-            if (
-                filtroFecha === "HOY"
-            ) {
-
-                const fecha =
-                    hoy.toISOString()
-                        .split("T")[0];
-
-                desde = fecha;
-                hasta = fecha;
-
-                nombreArchivo =
-                    "movimientos_hoy.xlsx";
-            }
-
-            if (
-                filtroFecha === "SEMANA"
-            ) {
-
-                const hace7Dias =
-                    new Date();
-
-                hace7Dias.setDate(
-                    hoy.getDate() - 7
-                );
-
-                desde =
-                    hace7Dias
-                        .toISOString()
-                        .split("T")[0];
-
-                hasta =
-                    hoy
-                        .toISOString()
-                        .split("T")[0];
-
-                nombreArchivo =
-                    "movimientos_semana.xlsx";
-            }
-
-            if (
-                filtroFecha === "MES"
-            ) {
-
-                const primerDia =
-                    new Date(
-                        hoy.getFullYear(),
-                        hoy.getMonth(),
-                        1
-                    );
-
-                desde =
-                    primerDia
-                        .toISOString()
-                        .split("T")[0];
-
-                hasta =
-                    hoy
-                        .toISOString()
-                        .split("T")[0];
-
-                nombreArchivo =
-                    "movimientos_mes.xlsx";
-            }
+            const { desde, hasta } =
+                obtenerRangoFecha(filtroFecha);
 
             await exportarMovimientosExcel(
-                nombreArchivo,
-                desde,
-                hasta
+                NOMBRES_ARCHIVO[filtroFecha],
+                desde && formatearISO(desde),
+                hasta && formatearISO(hasta)
             );
+
+        } catch (error) {
+
+            console.error(error);
+
+            setErrorExportOpen(true);
+        }
     };
+
+    const { desde: desdeFiltro, hasta: hastaFiltro } =
+        obtenerRangoFecha(filtroFecha);
+
     const movimientosFiltrados =
         movimientos.filter(
             (movimiento) => {
@@ -188,57 +239,14 @@ function MovimientoPage() {
                         movimiento.fechaMovimiento
                     );
 
-                const hoy =
-                    new Date();
+                if (desdeFiltro && fecha < desdeFiltro) {
 
-                if (
-                    filtroFecha === "HOY"
-                ) {
-
-                    return (
-
-                        fecha.toDateString()
-
-                        ===
-
-                        hoy.toDateString()
-                    );
+                    return false;
                 }
 
-                if (
-                    filtroFecha === "SEMANA"
-                ) {
+                if (hastaFiltro && fecha > hastaFiltro) {
 
-                    const hace7Dias =
-                        new Date();
-
-                    hace7Dias.setDate(
-                        hoy.getDate() - 7
-                    );
-
-                    return fecha >= hace7Dias;
-                }
-
-                if (
-                    filtroFecha === "MES"
-                ) {
-
-                    return (
-
-                        fecha.getMonth()
-
-                        ===
-
-                        hoy.getMonth()
-
-                        &&
-
-                        fecha.getFullYear()
-
-                        ===
-
-                        hoy.getFullYear()
-                    );
+                    return false;
                 }
 
                 return true;
@@ -269,70 +277,151 @@ function MovimientoPage() {
                 />
             )}
 
-            <Box
+            <Snackbar
+                open={errorCargaOpen}
+                autoHideDuration={4000}
+                onClose={() =>
+                    setErrorCargaOpen(false)
+                }
+            >
+
+                <Alert severity="error">
+
+                    No se pudo cargar el listado de movimientos
+
+                </Alert>
+
+            </Snackbar>
+
+            <Snackbar
+                open={errorExportOpen}
+                autoHideDuration={4000}
+                onClose={() =>
+                    setErrorExportOpen(false)
+                }
+            >
+
+                <Alert severity="error">
+
+                    No se pudo generar el informe. Intentá nuevamente
+
+                </Alert>
+
+            </Snackbar>
+
+            <Paper
+                variant="outlined"
                 sx={{
-                    display: "flex",
-                    justifyContent: "flex-end",
+                    p: 2,
                     mb: 2,
-                    mt: 3
+                    mt: 3,
+                    display: "flex",
+                    flexWrap: "wrap",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: 2
                 }}
             >
 
-                <ToggleButtonGroup
+                <Stack spacing={0.5}>
 
-                    value={filtroFecha}
+                    <Typography
+                        variant="subtitle2"
+                        color="text.secondary"
+                    >
+                        Período
+                    </Typography>
 
-                    exclusive
+                    <ToggleButtonGroup
 
-                    onChange={(_, value) => {
+                        value={filtroFecha}
 
-                        if (value) {
+                        exclusive
 
-                            setFiltroFecha(
-                                value
-                            );
+                        size="small"
+
+                        onChange={(_, value) => {
+
+                            if (value) {
+
+                                setFiltroFecha(
+                                    value
+                                );
+                            }
+                        }}
+                    >
+
+                        <ToggleButton value="HOY">
+                            <TodayIcon
+                                fontSize="small"
+                                sx={{ mr: 0.5 }}
+                            />
+                            Hoy
+                        </ToggleButton>
+
+                        <ToggleButton value="SEMANA">
+                            <DateRangeIcon
+                                fontSize="small"
+                                sx={{ mr: 0.5 }}
+                            />
+                            Semana
+                        </ToggleButton>
+
+                        <ToggleButton value="MES">
+                            <CalendarMonthIcon
+                                fontSize="small"
+                                sx={{ mr: 0.5 }}
+                            />
+                            Mes
+                        </ToggleButton>
+
+                        <ToggleButton value="TODOS">
+                            <AllInclusiveIcon
+                                fontSize="small"
+                                sx={{ mr: 0.5 }}
+                            />
+                            Todos
+                        </ToggleButton>
+
+                    </ToggleButtonGroup>
+
+                    <Typography
+                        variant="caption"
+                        color="text.secondary"
+                    >
+
+                        {DESCRIPCION_RANGO[filtroFecha]}
+                        {" · "}
+                        {movimientosFiltrados.length}
+                        {" "}
+                        {
+                            movimientosFiltrados.length === 1
+                                ? "movimiento"
+                                : "movimientos"
                         }
-                    }}
 
-                    sx={{
-                        mb: 2
-                    }}
-                >
+                    </Typography>
 
-                    <ToggleButton value="HOY">
-                        Hoy
-                    </ToggleButton>
-
-                    <ToggleButton value="SEMANA">
-                        Semana
-                    </ToggleButton>
-
-                    <ToggleButton value="MES">
-                        Mes
-                    </ToggleButton>
-
-                    <ToggleButton value="TODOS">
-                        Todos
-                    </ToggleButton>
-
-                </ToggleButtonGroup>
+                </Stack>
 
                 <Button
                     variant="contained"
                     startIcon={<FileDownloadIcon />}
                     onClick={handleExportarExcel}
+                    disabled={movimientosFiltrados.length === 0}
                 >
 
                     Exportar Informe
 
                 </Button>
 
-            </Box>
+            </Paper>
 
             <MovimientoTable
                 movimientos={
                     movimientosFiltrados
                 }
+                cargando={cargando}
             />
 
         </div>

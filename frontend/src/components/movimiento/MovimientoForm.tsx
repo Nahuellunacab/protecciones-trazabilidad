@@ -13,6 +13,10 @@ import type {
 } from "../../types/Posicion";
 
 import type {
+    Destino
+} from "../../types/Destino";
+
+import type {
     Rele
 } from "../../types/Rele";
 
@@ -27,8 +31,12 @@ import {
 } from "../../services/estadoService";
 
 import {
-    obtenerPosiciones
+    obtenerPosicionesPorDestino
 } from "../../services/posicionService";
+
+import {
+    obtenerDestinos
+} from "../../services/destinoService";
 
 import {
 
@@ -53,6 +61,7 @@ import {
     DialogTitle,
     Divider,
     FormControl,
+    FormHelperText,
     InputLabel,
     MenuItem,
     Paper,
@@ -99,8 +108,23 @@ function MovimientoForm({
     const [estados, setEstados] =
         useState<Estado[]>([]);
 
+    const [destinos, setDestinos] =
+        useState<Destino[]>([]);
+
+    const [
+        destinoSeleccionado,
+        setDestinoSeleccionado
+    ] =
+        useState<Destino | null>(null);
+
     const [posiciones, setPosiciones] =
         useState<Posicion[]>([]);
+
+    const [posicionesLoading, setPosicionesLoading] =
+        useState(false);
+
+    const [catalogosError, setCatalogosError] =
+        useState(false);
 
     const [formData, setFormData] =
         useState<MovimientoRequest>({
@@ -132,15 +156,93 @@ function MovimientoForm({
     const cargarCatalogos =
         async () => {
 
-        const relesData =
-            await obtenerOpciones();
+        try {
 
-        const posicionesData =
-            await obtenerPosiciones();
+            const [
+                relesData,
+                destinosData
+            ] =
+                await Promise.all([
+                    obtenerOpciones(),
+                    obtenerDestinos()
+                ]);
 
-        setReles(relesData);
+            setReles(relesData);
 
-        setPosiciones(posicionesData);
+            setDestinos(
+                [...destinosData].sort(
+                    (a, b) =>
+                        a.provincia.localeCompare(
+                            b.provincia
+                        )
+                        ||
+                        a.nombre.localeCompare(
+                            b.nombre
+                        )
+                )
+            );
+
+            setCatalogosError(false);
+
+        } catch (error) {
+
+            console.error(error);
+
+            setCatalogosError(true);
+        }
+    };
+
+    const handleSeleccionDestino =
+    async (
+        destino: Destino | null
+    ) => {
+
+        setDestinoSeleccionado(
+            destino
+        );
+
+        setFormData({
+
+            ...formData,
+
+            posicionId: 0
+        });
+
+        if (!destino) {
+
+            setPosiciones([]);
+
+            return;
+        }
+
+        try {
+
+            setPosicionesLoading(true);
+
+            const posicionesData =
+                await obtenerPosicionesPorDestino(
+                    destino.id
+                );
+
+            setPosiciones(
+                [...posicionesData].sort(
+                    (a, b) =>
+                        a.nombre.localeCompare(
+                            b.nombre
+                        )
+                )
+            );
+
+        } catch (error) {
+
+            console.error(error);
+
+            setPosiciones([]);
+
+        } finally {
+
+            setPosicionesLoading(false);
+        }
     };
 
     const handleChange = (
@@ -253,6 +355,10 @@ function MovimientoForm({
 
             setEstados([]);
 
+            setDestinoSeleccionado(null);
+
+            setPosiciones([]);
+
         } catch (error) {
 
             console.error(error);
@@ -345,6 +451,19 @@ function MovimientoForm({
                 >
 
                     <Stack spacing={2}>
+
+                        {
+                            catalogosError && (
+
+                                <Alert severity="error">
+
+                                    No se pudieron cargar los relés o
+                                    destinos. Recargá la página para
+                                    reintentar.
+
+                                </Alert>
+                            )
+                        }
 
                         <Autocomplete
 
@@ -551,6 +670,36 @@ function MovimientoForm({
 
                         </FormControl>
 
+                        <Autocomplete
+
+                            options={destinos}
+
+                            groupBy={(option) =>
+                                option.provincia
+                            }
+
+                            getOptionLabel={(option) =>
+
+                                `${option.nombre} (${option.localidad})`
+                            }
+
+                            value={destinoSeleccionado}
+
+                            onChange={(_, value) =>
+                                handleSeleccionDestino(
+                                    value
+                                )
+                            }
+
+                            renderInput={(params) => (
+
+                                <TextField
+                                    {...params}
+                                    label="Destino"
+                                />
+                            )}
+                        />
+
                         <FormControl fullWidth>
 
                             <InputLabel>
@@ -564,6 +713,11 @@ function MovimientoForm({
                                 }
                                 label="Posición"
                                 onChange={handleChange}
+                                disabled={
+                                    !destinoSeleccionado
+                                    ||
+                                    posicionesLoading
+                                }
                             >
 
                                 {posiciones.map(
@@ -575,10 +729,6 @@ function MovimientoForm({
                                     >
 
                                         {
-                                            posicion.destino
-                                        }
-                                        {" | "}
-                                        {
                                             posicion.nombre
                                         }
 
@@ -586,6 +736,47 @@ function MovimientoForm({
                                 ))}
 
                             </Select>
+
+                            {
+                                !destinoSeleccionado && (
+
+                                    <FormHelperText>
+
+                                        Elegí un destino para ver
+                                        sus posiciones disponibles
+
+                                    </FormHelperText>
+                                )
+                            }
+
+                            {
+                                destinoSeleccionado
+                                &&
+                                posicionesLoading && (
+
+                                    <FormHelperText>
+
+                                        Cargando posiciones...
+
+                                    </FormHelperText>
+                                )
+                            }
+
+                            {
+                                destinoSeleccionado
+                                &&
+                                !posicionesLoading
+                                &&
+                                posiciones.length === 0 && (
+
+                                    <FormHelperText error>
+
+                                        Este destino no tiene
+                                        posiciones cargadas
+
+                                    </FormHelperText>
+                                )
+                            }
 
                         </FormControl>
 
@@ -602,7 +793,15 @@ function MovimientoForm({
                         <Button
                             variant="contained"
                             type="submit"
-                            disabled={loading}
+                            disabled={
+                                loading
+                                ||
+                                !formData.releId
+                                ||
+                                !formData.estadoId
+                                ||
+                                !formData.posicionId
+                            }
                         >
 
                             {loading ? (

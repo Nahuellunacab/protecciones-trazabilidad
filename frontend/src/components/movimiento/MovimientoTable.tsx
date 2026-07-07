@@ -9,6 +9,7 @@ import {
     Chip,
     IconButton,
     Paper,
+    Skeleton,
     Table,
     TableBody,
     TableCell,
@@ -23,13 +24,19 @@ import {
 import HistoryIcon
 from "@mui/icons-material/History";
 
+import EmptyState
+from "../common/EmptyState";
+
 interface Props {
 
     movimientos: Movimiento[];
+
+    cargando?: boolean;
 }
 
 function MovimientoTable({
-    movimientos
+    movimientos,
+    cargando = false
 }: Props) {
 
     const navigate = useNavigate();
@@ -167,6 +174,67 @@ function MovimientoTable({
                 <TableBody>
 
                     {
+                        cargando && (
+
+                            Array.from(
+                                { length: 5 }
+                            ).map(
+                                (_, indice) => (
+
+                                    <TableRow
+                                        key={
+                                            `skeleton-${indice}`
+                                        }
+                                    >
+
+                                        {
+                                            Array.from(
+                                                { length: 10 }
+                                            ).map(
+                                                (_, columna) => (
+
+                                                    <TableCell
+                                                        key={columna}
+                                                    >
+
+                                                        <Skeleton
+                                                            variant="text"
+                                                        />
+
+                                                    </TableCell>
+                                                )
+                                            )
+                                        }
+
+                                    </TableRow>
+                                )
+                            )
+                        )
+                    }
+
+                    {
+                        !cargando
+                        &&
+                        movimientosOrdenados.length === 0 && (
+
+                            <TableRow>
+
+                                <TableCell colSpan={10}>
+
+                                    <EmptyState
+                                        titulo="No se encontraron movimientos"
+                                        subtitulo="Probá ajustar el período seleccionado."
+                                    />
+
+                                </TableCell>
+
+                            </TableRow>
+                        )
+                    }
+
+                    {
+                        !cargando
+                        &&
                         movimientosOrdenados.map(
                             (movimiento) => (
 
