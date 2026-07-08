@@ -37,6 +37,8 @@ interface Props {
     marcaPreseleccionada?: number;
 
     bloquearMarca?: boolean;
+
+    nombreSugerido?: string;
 }
 
 function ModeloForm({
@@ -51,7 +53,9 @@ function ModeloForm({
 
     marcaPreseleccionada,
 
-    bloquearMarca = false
+    bloquearMarca = false,
+
+    nombreSugerido
 
     }: Props) {
 
@@ -85,7 +89,7 @@ function ModeloForm({
             limpiarFormulario();
         }
 
-    }, [modeloEditando]);
+    }, [modeloEditando, nombreSugerido]);
 
     useEffect(() => {
 
@@ -103,7 +107,9 @@ function ModeloForm({
     const limpiarFormulario =
         () => {
 
-        setNombre("");
+        setNombre(
+            nombreSugerido ?? ""
+        );
 
         setMarcaId(
             marcaPreseleccionada ?? ""

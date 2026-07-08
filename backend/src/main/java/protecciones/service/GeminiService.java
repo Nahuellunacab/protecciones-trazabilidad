@@ -6,6 +6,7 @@ import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
@@ -48,7 +49,10 @@ public class GeminiService {
 
         requestFactory.setConnectTimeout(5_000);
 
-        requestFactory.setReadTimeout(15_000);
+        // 45s: el resumen del dashboard (solo texto) responde rapido, pero
+        // el analisis multimodal de un PDF/imagen de remito (ver
+        // generarTextoConArchivo) tarda bastante mas que un prompt de texto.
+        requestFactory.setReadTimeout(45_000);
 
         this.restClient =
                 RestClient.builder()
@@ -67,14 +71,56 @@ public class GeminiService {
             int maxOutputTokens
     ) {
 
+        return ejecutar(
+                systemPrompt,
+                List.of(
+                        Map.of("text", userPrompt)
+                ),
+                maxOutputTokens
+        );
+    }
+
+    // Usado por la carga inteligente por remito (ver RemitoIAService): manda
+    // el PDF/imagen del remito como inlineData (base64) junto con el prompt,
+    // para que Gemini extraiga los datos del documento en vez de resumir texto.
+    public String generarTextoConArchivo(
+            String systemPrompt,
+            String userPrompt,
+            byte[] archivo,
+            String mimeType,
+            int maxOutputTokens
+    ) {
+
+        String archivoBase64 =
+                Base64.getEncoder().encodeToString(archivo);
+
+        return ejecutar(
+                systemPrompt,
+                List.of(
+                        Map.of("text", userPrompt),
+                        Map.of(
+                                "inlineData", Map.of(
+                                        "mimeType", mimeType,
+                                        "data", archivoBase64
+                                )
+                        )
+                ),
+                maxOutputTokens
+        );
+    }
+
+    private String ejecutar(
+            String systemPrompt,
+            List<Map<String, Object>> parts,
+            int maxOutputTokens
+    ) {
+
         Map<String, Object> body = Map.of(
 
                 "contents", List.of(
                         Map.of(
                                 "role", "user",
-                                "parts", List.of(
-                                        Map.of("text", userPrompt)
-                                )
+                                "parts", parts
                         )
                 ),
 

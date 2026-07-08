@@ -23,7 +23,13 @@ import {
     Tooltip,
     IconButton,
     Skeleton,
+    Snackbar,
+    Alert,
 } from "@mui/material";
+
+import { abrirArchivoRemito } from "../../services/remitoService";
+
+import { abrirArchivoOP } from "../../services/ordenProvisionService";
 
 import PictureAsPdfIcon
 from "@mui/icons-material/PictureAsPdf";
@@ -88,6 +94,35 @@ function ReleTable({
         copiedId,
         setCopiedId
     ] = useState<number | null>(null);
+
+    const [
+        errorDocumento,
+        setErrorDocumento
+    ] = useState("");
+
+    const handleVerRemito = (
+        remitoId: number
+    ) => {
+
+        abrirArchivoRemito(remitoId).catch(() =>
+
+            setErrorDocumento(
+                "No se pudo abrir el PDF del remito"
+            )
+        );
+    };
+
+    const handleVerOP = (
+        ordenProvisionId: number
+    ) => {
+
+        abrirArchivoOP(ordenProvisionId).catch(() =>
+
+            setErrorDocumento(
+                "No se pudo abrir el PDF de la orden de provisión"
+            )
+        );
+    };
 
     const getEstadoColor = (estado: string) => {
 
@@ -514,9 +549,8 @@ function ReleTable({
                                                                 variant="text"
                                                                 startIcon={<PictureAsPdfIcon />}
                                                                 onClick={() =>
-                                                                    window.open(
-                                                                        `/api/remitos/${rele.remitoId}/archivo`,
-                                                                        "_blank"
+                                                                    handleVerRemito(
+                                                                        rele.remitoId!
                                                                     )
                                                                 }
                                                             >
@@ -538,9 +572,8 @@ function ReleTable({
                                                                 variant="text"
                                                                 startIcon={<PictureAsPdfIcon />}
                                                                 onClick={() =>
-                                                                    window.open(
-                                                                        `/api/ordenes-provision/${rele.ordenProvisionId}/archivo`,
-                                                                        "_blank"
+                                                                    handleVerOP(
+                                                                        rele.ordenProvisionId!
                                                                     )
                                                                 }
                                                             >
@@ -625,6 +658,22 @@ function ReleTable({
                 </Table>
 
             </TableContainer>
+
+            <Snackbar
+                open={Boolean(errorDocumento)}
+                autoHideDuration={4000}
+                onClose={() =>
+                    setErrorDocumento("")
+                }
+            >
+
+                <Alert severity="error">
+
+                    {errorDocumento}
+
+                </Alert>
+
+            </Snackbar>
 
         </>
     );

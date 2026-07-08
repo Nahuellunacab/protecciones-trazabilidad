@@ -18,7 +18,6 @@ import {
     TableContainer,
     TableHead,
     TableRow,
-    TextField,
     Typography
 
 } from "@mui/material";
@@ -42,6 +41,8 @@ import {
 
 import { useAuth } from "../../context/AuthContext";
 
+import ProveedorForm from "../../components/admin/proveedor/ProveedorForm";
+
 function ProveedorPage() {
 
     const { canWrite } = useAuth();
@@ -49,17 +50,8 @@ function ProveedorPage() {
     const [proveedores, setProveedores] =
         useState<Proveedor[]>([]);
 
-    const [nombre, setNombre] =
-        useState("");
-
-    const [domicilio, setDomicilio] =
-        useState("");
-
-    const [telefono, setTelefono] =
-        useState("");
-
-    const [editandoId, setEditandoId] =
-        useState<number | null>(null);
+    const [proveedorEditando, setProveedorEditando] =
+        useState<Proveedor | null>(null);
 
     const [errorMessage, setErrorMessage] =
         useState("");
@@ -88,30 +80,18 @@ function ProveedorPage() {
     }, []);
 
     async function handleSubmit(
-        e: React.FormEvent
+        data: ProveedorRequest
     ) {
-
-        e.preventDefault();
 
         setErrorMessage("");
 
         try {
 
-            const data:
-            ProveedorRequest = {
-
-                nombre,
-
-                domicilio,
-
-                telefono
-            };
-
-            if (editandoId) {
+            if (proveedorEditando) {
 
                 await actualizarProveedor(
 
-                    editandoId,
+                    proveedorEditando.id,
                     data
                 );
 
@@ -122,7 +102,7 @@ function ProveedorPage() {
                 );
             }
 
-            limpiarFormulario();
+            setProveedorEditando(null);
 
             cargarDatos();
 
@@ -164,32 +144,9 @@ function ProveedorPage() {
         proveedor: Proveedor
     ) {
 
-        setEditandoId(
-            proveedor.id
+        setProveedorEditando(
+            proveedor
         );
-
-        setNombre(
-            proveedor.nombre
-        );
-
-        setDomicilio(
-            proveedor.domicilio
-        );
-
-        setTelefono(
-            proveedor.telefono
-        );
-    }
-
-    function limpiarFormulario() {
-
-        setNombre("");
-
-        setDomicilio("");
-
-        setTelefono("");
-
-        setEditandoId(null);
     }
 
     return (
@@ -216,69 +173,13 @@ function ProveedorPage() {
 
             {canWrite && (
 
-                <Paper
-                    sx={{
-                        p: 3,
-                        mb: 4
-                    }}
-                >
-
-                    <Box
-                        component="form"
-                        onSubmit={handleSubmit}
-                        sx={{
-                            display: "flex",
-                            gap: 2
-                        }}
-                    >
-
-                        <TextField
-                            fullWidth
-                            label="Nombre"
-                            value={nombre}
-                            onChange={(e) =>
-                                setNombre(
-                                    e.target.value
-                                )
-                            }
-                        />
-
-                        <TextField
-                            fullWidth
-                            label="Domicilio"
-                            value={domicilio}
-                            onChange={(e) =>
-                                setDomicilio(
-                                    e.target.value
-                                )
-                            }
-                        />
-
-                        <TextField
-                            fullWidth
-                            label="Teléfono"
-                            value={telefono}
-                            onChange={(e) =>
-                                setTelefono(
-                                    e.target.value
-                                )
-                            }
-                        />
-
-                        <Button
-                            type="submit"
-                            variant="contained"
-                        >
-
-                            {editandoId
-                                ? "GUARDAR"
-                                : "CREAR"}
-
-                        </Button>
-
-                    </Box>
-
-                </Paper>
+                <ProveedorForm
+                    onSubmit={handleSubmit}
+                    proveedorEditando={proveedorEditando}
+                    cancelarEdicion={() =>
+                        setProveedorEditando(null)
+                    }
+                />
             )}
 
             <TableContainer

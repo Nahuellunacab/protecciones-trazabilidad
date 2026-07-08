@@ -11,30 +11,39 @@ import {
     Typography
 } from "@mui/material";
 
-import type { Marca }
-from "../../../types/Marca";
+import type { Proveedor }
+from "../../../types/Proveedor";
+
+import type { ProveedorRequest }
+from "../../../types/ProveedorRequest";
 
 interface Props {
 
     onSubmit: (
-        nombre: string
+        data: ProveedorRequest
     ) => Promise<void>;
 
-    marcaEditando?: Marca | null;
+    proveedorEditando?: Proveedor | null;
 
     cancelarEdicion: () => void;
 
     nombreSugerido?: string;
 }
 
-function MarcaForm({
+function ProveedorForm({
     onSubmit,
-    marcaEditando,
+    proveedorEditando,
     cancelarEdicion,
     nombreSugerido
 }: Props) {
 
     const [nombre, setNombre] =
+        useState("");
+
+    const [domicilio, setDomicilio] =
+        useState("");
+
+    const [telefono, setTelefono] =
         useState("");
 
     const [error, setError] =
@@ -45,10 +54,18 @@ function MarcaForm({
 
     useEffect(() => {
 
-        if (marcaEditando) {
+        if (proveedorEditando) {
 
             setNombre(
-                marcaEditando.nombre
+                proveedorEditando.nombre
+            );
+
+            setDomicilio(
+                proveedorEditando.domicilio
+            );
+
+            setTelefono(
+                proveedorEditando.telefono
             );
 
         } else {
@@ -56,9 +73,13 @@ function MarcaForm({
             setNombre(
                 nombreSugerido ?? ""
             );
+
+            setDomicilio("");
+
+            setTelefono("");
         }
 
-    }, [marcaEditando, nombreSugerido]);
+    }, [proveedorEditando, nombreSugerido]);
 
     const validar = () => {
 
@@ -66,17 +87,6 @@ function MarcaForm({
 
             setError(
                 "El nombre es obligatorio"
-            );
-
-            return false;
-        }
-
-        if (
-            nombre.trim().length < 2
-        ) {
-
-            setError(
-                "Debe tener al menos 2 caracteres"
             );
 
             return false;
@@ -98,11 +108,23 @@ function MarcaForm({
 
             setLoading(true);
 
-            await onSubmit(
-                nombre.trim()
-            );
+            await onSubmit({
+
+                nombre:
+                    nombre.trim(),
+
+                domicilio:
+                    domicilio.trim(),
+
+                telefono:
+                    telefono.trim()
+            });
 
             setNombre("");
+
+            setDomicilio("");
+
+            setTelefono("");
 
         } finally {
 
@@ -128,9 +150,9 @@ function MarcaForm({
                 }}
             >
                 {
-                    marcaEditando
-                        ? "Editar Marca"
-                        : "Nueva Marca"
+                    proveedorEditando
+                        ? "Editar Proveedor"
+                        : "Nuevo Proveedor"
                 }
             </Typography>
 
@@ -149,6 +171,28 @@ function MarcaForm({
                     fullWidth
                 />
 
+                <TextField
+                    label="Domicilio"
+                    value={domicilio}
+                    onChange={(e) =>
+                        setDomicilio(
+                            e.target.value
+                        )
+                    }
+                    fullWidth
+                />
+
+                <TextField
+                    label="Teléfono"
+                    value={telefono}
+                    onChange={(e) =>
+                        setTelefono(
+                            e.target.value
+                        )
+                    }
+                    fullWidth
+                />
+
                 <Stack
                     direction="row"
                     spacing={2}
@@ -160,14 +204,14 @@ function MarcaForm({
                         disabled={loading}
                     >
                         {
-                            marcaEditando
+                            proveedorEditando
                                 ? "Actualizar"
                                 : "Crear"
                         }
                     </Button>
 
                     {
-                        marcaEditando && (
+                        proveedorEditando && (
 
                             <Button
                                 variant="outlined"
@@ -188,4 +232,4 @@ function MarcaForm({
     );
 }
 
-export default MarcaForm;
+export default ProveedorForm;

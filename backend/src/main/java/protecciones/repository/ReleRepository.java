@@ -55,6 +55,16 @@ public interface ReleRepository
             String numeroSerie
     );
 
+    // Usado por la carga inteligente por remito (RemitoIAService) para
+    // recuperar el modelo correcto a partir de un codigo de configuracion
+    // ya cargado en el sistema, aunque el nombre de modelo leido por OCR
+    // tenga errores: el codigo de configuracion se trata como fuente de
+    // verdad mas confiable que el texto de modelo extraido del documento.
+    Optional<Rele>
+    findFirstByCodigoConfiguracionIgnoreCase(
+            String codigoConfiguracion
+    );
+
     long countByModeloIdAndActivoTrue(
             Long modeloId
     );

@@ -5,8 +5,11 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import protecciones.dto.RemitoAnalisisResponseDTO;
+import protecciones.dto.RemitoDatosExtraidosDTO;
 import protecciones.dto.RemitoRequestDTO;
 import protecciones.dto.RemitoResponseDTO;
+import protecciones.service.RemitoIAService;
 import protecciones.service.RemitoService;
 import java.util.List;
 import org.springframework.core.io.Resource;
@@ -18,12 +21,19 @@ public class RemitoController {
     private final RemitoService
             remitoService;
 
+    private final RemitoIAService
+            remitoIAService;
+
     public RemitoController(
-            RemitoService remitoService
+            RemitoService remitoService,
+            RemitoIAService remitoIAService
     ) {
 
         this.remitoService =
                 remitoService;
+
+        this.remitoIAService =
+                remitoIAService;
     }
 
     @GetMapping
@@ -143,5 +153,35 @@ public class RemitoController {
         return remitoService
                 .obtenerDisponibles();
         }
-        
+
+    @PostMapping(
+            value = "/analizar",
+            consumes =
+                    MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+    public RemitoAnalisisResponseDTO
+    analizar(
+
+            @RequestPart(
+                    "archivo"
+            )
+            MultipartFile archivo
+    ) {
+
+        return remitoIAService
+                .analizar(archivo);
+    }
+
+    @PostMapping("/analizar/revalidar")
+    public RemitoAnalisisResponseDTO
+    revalidar(
+
+            @RequestBody
+            RemitoDatosExtraidosDTO datos
+    ) {
+
+        return remitoIAService
+                .revalidar(datos);
+    }
+
 }

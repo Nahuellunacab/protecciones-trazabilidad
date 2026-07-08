@@ -97,3 +97,56 @@ export async function subirArchivoOP(
         formData
     );
 }
+
+// Igual que abrirArchivoRemito (ver remitoService.ts): no se puede usar
+// window.open directo a `/api/...` porque esa ruta requiere el header
+// Authorization que solo agrega el interceptor de axios. Se pide el
+// archivo como blob autenticado y se abre como object URL.
+export async function abrirArchivoOP(
+    opId: number
+): Promise<void> {
+
+    const ventana =
+        window.open(
+            "",
+            "_blank"
+        );
+
+    try {
+
+        const response =
+            await api.get(
+                `/ordenes-provision/${opId}/archivo`,
+                {
+                    responseType: "blob"
+                }
+            );
+
+        const blobUrl =
+            URL.createObjectURL(
+                response.data
+            );
+
+        if (ventana) {
+
+            ventana.location.href =
+                blobUrl;
+
+        } else {
+
+            window.open(
+                blobUrl,
+                "_blank"
+            );
+        }
+
+    } catch (err) {
+
+        if (ventana) {
+
+            ventana.close();
+        }
+
+        throw err;
+    }
+}

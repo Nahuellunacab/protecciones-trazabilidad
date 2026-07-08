@@ -21,7 +21,8 @@ import {
     TableHead,
     TableRow,
     CircularProgress,
-    Alert
+    Alert,
+    Snackbar
 } from "@mui/material";
 
 import ArrowBackIcon
@@ -47,6 +48,12 @@ from "../services/releService";
 
 import { obtenerHistorialPorRele }
 from "../services/movimientoService";
+
+import { abrirArchivoRemito }
+from "../services/remitoService";
+
+import { abrirArchivoOP }
+from "../services/ordenProvisionService";
 
 import PageHeader
 from "../components/common/PageHeader";
@@ -118,6 +125,12 @@ function ReleDetailPage() {
         useState(true);
 
     const [error, setError] =
+        useState("");
+
+    // Error transitorio al intentar abrir un PDF (remito/OP): se muestra en
+    // un Snackbar aparte, sin reemplazar toda la página como hace `error`
+    // (que indica que el relé en sí no se pudo cargar).
+    const [errorDocumento, setErrorDocumento] =
         useState("");
 
     useEffect(() => {
@@ -536,9 +549,12 @@ function ReleDetailPage() {
                                                     variant="outlined"
                                                     startIcon={<PictureAsPdfIcon />}
                                                     onClick={() =>
-                                                        window.open(
-                                                            `/api/remitos/${rele.remitoId}/archivo`,
-                                                            "_blank"
+                                                        abrirArchivoRemito(
+                                                            rele.remitoId!
+                                                        ).catch(() =>
+                                                            setErrorDocumento(
+                                                                "No se pudo abrir el PDF del remito"
+                                                            )
                                                         )
                                                     }
                                                 >
@@ -575,9 +591,12 @@ function ReleDetailPage() {
                                                     variant="outlined"
                                                     startIcon={<PictureAsPdfIcon />}
                                                     onClick={() =>
-                                                        window.open(
-                                                            `/api/ordenes-provision/${rele.ordenProvisionId}/archivo`,
-                                                            "_blank"
+                                                        abrirArchivoOP(
+                                                            rele.ordenProvisionId!
+                                                        ).catch(() =>
+                                                            setErrorDocumento(
+                                                                "No se pudo abrir el PDF de la orden de provisión"
+                                                            )
                                                         )
                                                     }
                                                 >
@@ -603,6 +622,22 @@ function ReleDetailPage() {
                 </Box>
 
             </Paper>
+
+            <Snackbar
+                open={Boolean(errorDocumento)}
+                autoHideDuration={4000}
+                onClose={() =>
+                    setErrorDocumento("")
+                }
+            >
+
+                <Alert severity="error">
+
+                    {errorDocumento}
+
+                </Alert>
+
+            </Snackbar>
 
         </div>
     );

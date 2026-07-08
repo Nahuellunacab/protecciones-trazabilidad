@@ -45,7 +45,8 @@ import {
     crearRemito,
     actualizarRemito,
     eliminarRemito,
-    subirArchivoRemito
+    subirArchivoRemito,
+    abrirArchivoRemito
 
 } from "../../services/remitoService";
 
@@ -562,9 +563,13 @@ function RemitoPage() {
                                                 <IconButton
                                                     color="error"
                                                     onClick={() =>
-                                                        window.open(
-                                                            `/api/remitos/${remito.id}/archivo`,
-                                                            "_blank"
+                                                        abrirArchivoRemito(
+                                                            remito.id
+                                                        ).catch(() =>
+                                                            mostrarMensaje(
+                                                                "No se pudo abrir el PDF del remito",
+                                                                "error"
+                                                            )
                                                         )
                                                     }
                                                 >
