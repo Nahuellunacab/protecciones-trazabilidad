@@ -62,6 +62,9 @@ from "@mui/icons-material/AutoAwesome";
 import InsightsIcon
 from "@mui/icons-material/Insights";
 
+import RefreshIcon
+from "@mui/icons-material/Refresh";
+
 import {
 
     ResponsiveContainer,
@@ -310,14 +313,20 @@ function HomePage() {
     const [exportandoPdf, setExportandoPdf] =
         useState(false);
 
-    // Resumen ejecutivo generado con IA: se pide aparte, en paralelo al
-    // resto del dashboard, para no bloquear la carga de KPIs si Anthropic
-    // tarda o no esta configurado (resumen queda en null y no se muestra).
+    // Resumen ejecutivo generado con IA: ya no se pide automáticamente al
+    // cargar el dashboard (consumía cuota de Gemini en cada visita). Se
+    // pide solo cuando el usuario aprieta el botón "Generar/Actualizar".
     const [resumenIA, setResumenIA] =
         useState<string | null>(null);
 
     const [resumenIALoading, setResumenIALoading] =
-        useState(true);
+        useState(false);
+
+    // Si ya se intentó generar el resumen al menos una vez y no hay
+    // texto, distingue "todavía no se pidió" de "se pidió y no hay
+    // resumen disponible" (sin clave configurada o falló la llamada).
+    const [resumenIASolicitado, setResumenIASolicitado] =
+        useState(false);
 
     // Momento en que el frontend recibió el resumen actual (ver
     // formatearFechaHoraResumen más arriba).
@@ -327,8 +336,6 @@ function HomePage() {
     useEffect(() => {
 
         cargarResumenGeneral();
-
-        cargarResumenIA();
 
     }, []);
 
@@ -387,6 +394,10 @@ function HomePage() {
 
     const cargarResumenIA =
     async () => {
+
+        setResumenIALoading(true);
+
+        setResumenIASolicitado(true);
 
         try {
 
@@ -739,98 +750,101 @@ function HomePage() {
 
             </Stack>
 
-            {/* Resumen ejecutivo generado con IA. Se oculta por completo si
-                no hay clave de Anthropic configurada o si la llamada falla:
-                es un agregado informativo, nunca un requisito del dashboard.
-                El contenido (encabezado/viñetas) y el prompt no cambian: acá
-                solo se mejora la presentación (tarjeta tipo "panel BI"). */}
-            {(resumenIALoading || resumenIA) && (
+            {/* Resumen ejecutivo generado con IA. Ya no se pide solo al
+                cargar el dashboard: el usuario lo dispara con el botón
+                "Generar"/"Actualizar" para no consumir cuota de Gemini en
+                cada visita. El backend igual mantiene su caché de 30 min
+                por si se aprieta el botón varias veces seguidas. */}
+            <Paper
+                elevation={2}
+                sx={{
+                    borderRadius: 3,
+                    overflow: "hidden",
+                    border: "1px solid",
+                    borderColor: (theme) =>
+                        theme.palette.mode === "dark"
+                            ? "rgba(124, 214, 200, 0.25)"
+                            : "rgba(0, 105, 92, 0.18)"
+                }}
+            >
 
-                <Paper
-                    elevation={2}
+                {/* Encabezado tipo panel ejecutivo: icono en badge,
+                    título + subtítulo, y a la derecha el botón de
+                    generar/actualizar + fecha de la última generación. */}
+                <Box
                     sx={{
-                        borderRadius: 3,
-                        overflow: "hidden",
-                        border: "1px solid",
+                        px: 3,
+                        py: 2,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        gap: 2,
+                        flexWrap: "wrap",
+                        borderBottom: "1px solid",
                         borderColor: (theme) =>
                             theme.palette.mode === "dark"
-                                ? "rgba(124, 214, 200, 0.25)"
-                                : "rgba(0, 105, 92, 0.18)"
+                                ? "rgba(124, 214, 200, 0.18)"
+                                : "rgba(0, 105, 92, 0.12)",
+                        background: (theme) =>
+                            theme.palette.mode === "dark"
+                                ? "linear-gradient(135deg, rgba(0,105,92,0.20), rgba(0,105,92,0.04))"
+                                : "linear-gradient(135deg, rgba(0,105,92,0.10), rgba(0,105,92,0.02))"
                     }}
                 >
 
-                    {/* Encabezado tipo panel ejecutivo: icono en badge,
-                        título + subtítulo, y fecha/hora de generación a la
-                        derecha (momento en que el frontend recibió el dato;
-                        el backend cachea el resumen 30 minutos). */}
-                    <Box
-                        sx={{
-                            px: 3,
-                            py: 2,
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "space-between",
-                            gap: 2,
-                            flexWrap: "wrap",
-                            borderBottom: "1px solid",
-                            borderColor: (theme) =>
-                                theme.palette.mode === "dark"
-                                    ? "rgba(124, 214, 200, 0.18)"
-                                    : "rgba(0, 105, 92, 0.12)",
-                            background: (theme) =>
-                                theme.palette.mode === "dark"
-                                    ? "linear-gradient(135deg, rgba(0,105,92,0.20), rgba(0,105,92,0.04))"
-                                    : "linear-gradient(135deg, rgba(0,105,92,0.10), rgba(0,105,92,0.02))"
-                        }}
+                    <Stack
+                        direction="row"
+                        spacing={1.5}
+                        sx={{ alignItems: "center" }}
                     >
 
-                        <Stack
-                            direction="row"
-                            spacing={1.5}
-                            sx={{ alignItems: "center" }}
+                        <Box
+                            sx={{
+                                width: 40,
+                                height: 40,
+                                borderRadius: 2,
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                flexShrink: 0,
+                                bgcolor: "primary.main",
+                                color: "primary.contrastText"
+                            }}
                         >
+                            <AutoAwesomeIcon fontSize="small" />
+                        </Box>
 
-                            <Box
+                        <Box>
+
+                            <Typography
+                                variant="h6"
+                                sx={{ fontWeight: 700, lineHeight: 1.2 }}
+                            >
+                                Resumen Ejecutivo
+                            </Typography>
+
+                            <Typography
+                                variant="caption"
+                                color="text.secondary"
                                 sx={{
-                                    width: 40,
-                                    height: 40,
-                                    borderRadius: 2,
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    flexShrink: 0,
-                                    bgcolor: "primary.main",
-                                    color: "primary.contrastText"
+                                    display: "block",
+                                    letterSpacing: 0.3,
+                                    textTransform: "uppercase",
+                                    fontWeight: 600
                                 }}
                             >
-                                <AutoAwesomeIcon fontSize="small" />
-                            </Box>
+                                Generado por Inteligencia Artificial
+                            </Typography>
 
-                            <Box>
+                        </Box>
 
-                                <Typography
-                                    variant="h6"
-                                    sx={{ fontWeight: 700, lineHeight: 1.2 }}
-                                >
-                                    Resumen Ejecutivo
-                                </Typography>
+                    </Stack>
 
-                                <Typography
-                                    variant="caption"
-                                    color="text.secondary"
-                                    sx={{
-                                        display: "block",
-                                        letterSpacing: 0.3,
-                                        textTransform: "uppercase",
-                                        fontWeight: 600
-                                    }}
-                                >
-                                    Generado por Inteligencia Artificial
-                                </Typography>
-
-                            </Box>
-
-                        </Stack>
+                    <Stack
+                        direction="row"
+                        spacing={2}
+                        sx={{ alignItems: "center" }}
+                    >
 
                         {!resumenIALoading && resumenGeneradoEn && (
 
@@ -849,105 +863,137 @@ function HomePage() {
                             </Stack>
                         )}
 
-                    </Box>
+                        <Button
+                            variant="outlined"
+                            size="small"
+                            startIcon={<RefreshIcon />}
+                            onClick={cargarResumenIA}
+                            disabled={resumenIALoading}
+                        >
 
-                    {/* Contenido: mismo texto que genera Gemini, solo se
-                        mejora tipografía/espaciado y se agrega un icono por
-                        punto en vez del punto de color plano anterior. */}
-                    <Box sx={{ px: 3, py: 2.5 }}>
+                            {
+                                resumenIASolicitado
+                                    ? "Actualizar"
+                                    : "Generar resumen"
+                            }
 
-                        {resumenIALoading ? (
+                        </Button>
 
-                            <Stack spacing={2}>
+                    </Stack>
 
-                                <Stack
-                                    direction="row"
-                                    spacing={1}
-                                    sx={{ alignItems: "center" }}
+                </Box>
+
+                {/* Contenido: mismo texto que genera Gemini, solo se
+                    mejora tipografía/espaciado y se agrega un icono por
+                    punto en vez del punto de color plano anterior. */}
+                <Box sx={{ px: 3, py: 2.5 }}>
+
+                    {resumenIALoading ? (
+
+                        <Stack spacing={2}>
+
+                            <Stack
+                                direction="row"
+                                spacing={1}
+                                sx={{ alignItems: "center" }}
+                            >
+
+                                <CircularProgress size={16} thickness={5} />
+
+                                <Typography
+                                    variant="body2"
+                                    color="text.secondary"
                                 >
-
-                                    <CircularProgress size={16} thickness={5} />
-
-                                    <Typography
-                                        variant="body2"
-                                        color="text.secondary"
-                                    >
-                                        Generando resumen ejecutivo con IA…
-                                    </Typography>
-
-                                </Stack>
-
-                                <Stack spacing={0.75}>
-                                    <Skeleton variant="text" width="85%" />
-                                    <Skeleton variant="text" width="60%" />
-                                    <Skeleton variant="text" width="70%" />
-                                    <Skeleton variant="text" width="50%" />
-                                </Stack>
+                                    Generando resumen ejecutivo con IA…
+                                </Typography>
 
                             </Stack>
 
-                        ) : (
+                            <Stack spacing={0.75}>
+                                <Skeleton variant="text" width="85%" />
+                                <Skeleton variant="text" width="60%" />
+                                <Skeleton variant="text" width="70%" />
+                                <Skeleton variant="text" width="50%" />
+                            </Stack>
 
-                            (() => {
+                        </Stack>
 
-                                const { encabezado, puntos } =
-                                    parsearResumenIA(resumenIA ?? "");
+                    ) : resumenIA ? (
 
-                                return (
+                        (() => {
 
-                                    <>
+                            const { encabezado, puntos } =
+                                parsearResumenIA(resumenIA);
 
-                                        <Typography
-                                            variant="subtitle1"
-                                            sx={{
-                                                fontWeight: 600,
-                                                mb: puntos.length > 0 ? 2 : 0
-                                            }}
-                                        >
-                                            {encabezado}
-                                        </Typography>
+                            return (
 
-                                        {puntos.length > 0 && (
+                                <>
 
-                                            <Stack spacing={1.5}>
+                                    <Typography
+                                        variant="subtitle1"
+                                        sx={{
+                                            fontWeight: 600,
+                                            mb: puntos.length > 0 ? 2 : 0
+                                        }}
+                                    >
+                                        {encabezado}
+                                    </Typography>
 
-                                                {puntos.map((punto, index) => (
+                                    {puntos.length > 0 && (
 
-                                                    <Stack
-                                                        key={index}
-                                                        direction="row"
-                                                        spacing={1.5}
-                                                        sx={{ alignItems: "flex-start" }}
+                                        <Stack spacing={1.5}>
+
+                                            {puntos.map((punto, index) => (
+
+                                                <Stack
+                                                    key={index}
+                                                    direction="row"
+                                                    spacing={1.5}
+                                                    sx={{ alignItems: "flex-start" }}
+                                                >
+
+                                                    <InsightsIcon
+                                                        color="primary"
+                                                        sx={{ fontSize: 18, mt: 0.25 }}
+                                                    />
+
+                                                    <Typography
+                                                        variant="body2"
+                                                        color="text.secondary"
+                                                        sx={{ lineHeight: 1.6 }}
                                                     >
+                                                        {punto}
+                                                    </Typography>
 
-                                                        <InsightsIcon
-                                                            color="primary"
-                                                            sx={{ fontSize: 18, mt: 0.25 }}
-                                                        />
+                                                </Stack>
+                                            ))}
 
-                                                        <Typography
-                                                            variant="body2"
-                                                            color="text.secondary"
-                                                            sx={{ lineHeight: 1.6 }}
-                                                        >
-                                                            {punto}
-                                                        </Typography>
+                                        </Stack>
+                                    )}
 
-                                                    </Stack>
-                                                ))}
+                                </>
+                            );
+                        })()
 
-                                            </Stack>
-                                        )}
+                    ) : (
 
-                                    </>
-                                );
-                            })()
-                        )}
+                        <Typography
+                            variant="body2"
+                            color="text.secondary"
+                        >
 
-                    </Box>
+                            {
+                                resumenIASolicitado
+                                    ? "No se pudo generar el resumen (sin clave de Gemini configurada o falló la llamada)."
+                                    : "Todavía no se generó. Apretá \"Generar resumen\" para pedirle a la IA un análisis del stock actual."
+                            }
 
-                </Paper>
-            )}
+                        </Typography>
+                    )}
+
+                </Box>
+
+            </Paper>
 
             {/* Copiloto IA: tarjeta independiente, no reemplaza ni
                 modifica ningun contenido existente del dashboard. */}
