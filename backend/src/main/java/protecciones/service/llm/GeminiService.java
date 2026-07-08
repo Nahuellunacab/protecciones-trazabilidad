@@ -1,14 +1,20 @@
 package protecciones.service.llm;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
 
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 // Implementacion de LLMService contra la Gemini API (Google AI Studio),
 // usada por DashboardService (resumen ejecutivo) y por CopilotoIAService
@@ -18,31 +24,52 @@ import java.util.Map;
 // no forma parte de la abstraccion generica LLMService.
 // Se eligio Gemini por tener capa gratuita real (no trial con vencimiento);
 // dado el volumen bajo de uso esperado, no justifica un proveedor pago.
+//
+// Soporta varias claves de API rotando automaticamente: "gemini.api-key"
+// puede ser una sola clave o una lista separada por comas (una por cuenta
+// de Google AI Studio). Cuando una clave devuelve 429 (cuota diaria
+// agotada), se reintenta la misma llamada con la siguiente clave de la
+// lista antes de fallar; el puntero queda en esa clave para las llamadas
+// siguientes, asi no se vuelve a probar la agotada en cada request.
 @Service
 public class GeminiService implements LLMService {
 
     private static final String API_URL_TEMPLATE =
             "https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent?key=%s";
 
+    private static final Logger
+            log = LoggerFactory.getLogger(GeminiService.class);
+
     private final RestClient
             restClient;
 
-    private final String
-            apiKey;
+    private final List<String>
+            apiKeys;
 
     private final String
             modelo;
 
+    // Indice de la ultima clave usada (o intentada); arranca en la
+    // primera y solo avanza cuando una clave agota su cuota, nunca vuelve
+    // atras sola (si todas estan agotadas, el ciclo las vuelve a probar
+    // todas en el siguiente request, asi se auto-recupera cuando Google
+    // resetea la cuota diaria sin necesidad de trackear horarios).
+    private final AtomicInteger
+            indiceClaveActual = new AtomicInteger(0);
+
     public GeminiService(
             @Value("${gemini.api-key:}")
-            String apiKey,
+            String apiKeysConfiguradas,
 
             @Value("${gemini.model:gemini-2.5-flash}")
             String modelo
     ) {
 
-        this.apiKey =
-                apiKey;
+        this.apiKeys =
+                Arrays.stream(apiKeysConfiguradas.split(","))
+                        .map(String::trim)
+                        .filter(clave -> !clave.isBlank())
+                        .toList();
 
         this.modelo =
                 modelo;
@@ -66,7 +93,7 @@ public class GeminiService implements LLMService {
     @Override
     public boolean estaDisponible() {
 
-        return apiKey != null && !apiKey.isBlank();
+        return !apiKeys.isEmpty();
     }
 
     @Override
@@ -121,6 +148,13 @@ public class GeminiService implements LLMService {
             int maxOutputTokens
     ) {
 
+        if (apiKeys.isEmpty()) {
+
+            throw new IllegalStateException(
+                    "No hay ninguna clave de Gemini configurada"
+            );
+        }
+
         Map<String, Object> body = Map.of(
 
                 "contents", List.of(
@@ -145,18 +179,48 @@ public class GeminiService implements LLMService {
                 )
         );
 
-        String url =
-                API_URL_TEMPLATE.formatted(modelo, apiKey);
+        HttpClientErrorException.TooManyRequests ultimoErrorPorCuota = null;
 
-        Map<?, ?> response =
-                restClient.post()
-                        .uri(url)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .body(body)
-                        .retrieve()
-                        .body(Map.class);
+        for (int intento = 0; intento < apiKeys.size(); intento++) {
 
-        return extraerTexto(response);
+            int indice =
+                    indiceClaveActual.get() % apiKeys.size();
+
+            String claveActual =
+                    apiKeys.get(indice);
+
+            String url =
+                    API_URL_TEMPLATE.formatted(modelo, claveActual);
+
+            try {
+
+                Map<?, ?> response =
+                        restClient.post()
+                                .uri(url)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .body(body)
+                                .retrieve()
+                                .body(Map.class);
+
+                return extraerTexto(response);
+
+            } catch (HttpClientErrorException.TooManyRequests ex) {
+
+                log.warn(
+                        "Clave de Gemini #{} de {} alcanzo su cuota (429); "
+                                + "rotando a la siguiente.",
+                        indice + 1,
+                        apiKeys.size()
+                );
+
+                ultimoErrorPorCuota = ex;
+
+                indiceClaveActual.incrementAndGet();
+            }
+        }
+
+        // Se probaron todas las claves configuradas y todas devolvieron 429.
+        throw ultimoErrorPorCuota;
     }
 
     private String extraerTexto(
