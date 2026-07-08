@@ -59,6 +59,9 @@ from "@mui/icons-material/AssignmentOutlined";
 import AutoAwesomeIcon
 from "@mui/icons-material/AutoAwesome";
 
+import InsightsIcon
+from "@mui/icons-material/Insights";
+
 import {
 
     ResponsiveContainer,
@@ -108,6 +111,9 @@ import type { EstadoCantidad } from "../types/EstadoCantidad";
 import type { DestinoCantidad } from "../types/DestinoCantidad";
 
 import type { ProveedorCantidad } from "../types/ProveedorCantidad";
+
+import CopilotoIACard
+from "../components/dashboard/CopilotoIACard";
 
 // Colores por estado operativo vigente (ver maquina de estados en
 // V20__actualizar_transiciones_estado.sql). Cualquier estado que no
@@ -159,6 +165,25 @@ function parsearResumenIA(
         ?? "";
 
     return { encabezado, puntos };
+}
+
+// Fecha/hora en que el frontend recibió el resumen (no la genera el
+// backend): es la mejor referencia honesta de "cuándo se generó" sin
+// tocar la API, ya que el resumen se cachea 30 minutos en el servidor.
+function formatearFechaHoraResumen(
+    fecha: Date
+) {
+
+    const fechaTexto =
+        fecha.toLocaleDateString("es-AR");
+
+    const horaTexto =
+        fecha.toLocaleTimeString("es-AR", {
+            hour: "2-digit",
+            minute: "2-digit"
+        });
+
+    return `${fechaTexto} · ${horaTexto} hs`;
 }
 
 interface MetricCardProps {
@@ -294,6 +319,11 @@ function HomePage() {
     const [resumenIALoading, setResumenIALoading] =
         useState(true);
 
+    // Momento en que el frontend recibió el resumen actual (ver
+    // formatearFechaHoraResumen más arriba).
+    const [resumenGeneradoEn, setResumenGeneradoEn] =
+        useState<Date | null>(null);
+
     useEffect(() => {
 
         cargarResumenGeneral();
@@ -365,11 +395,17 @@ function HomePage() {
 
             setResumenIA(data.resumen);
 
+            setResumenGeneradoEn(
+                data.resumen ? new Date() : null
+            );
+
         } catch (error) {
 
             console.error(error);
 
             setResumenIA(null);
+
+            setResumenGeneradoEn(null);
 
         } finally {
 
@@ -705,125 +741,217 @@ function HomePage() {
 
             {/* Resumen ejecutivo generado con IA. Se oculta por completo si
                 no hay clave de Anthropic configurada o si la llamada falla:
-                es un agregado informativo, nunca un requisito del dashboard. */}
+                es un agregado informativo, nunca un requisito del dashboard.
+                El contenido (encabezado/viñetas) y el prompt no cambian: acá
+                solo se mejora la presentación (tarjeta tipo "panel BI"). */}
             {(resumenIALoading || resumenIA) && (
 
                 <Paper
                     elevation={2}
                     sx={{
-                        p: 3,
                         borderRadius: 3,
+                        overflow: "hidden",
                         border: "1px solid",
                         borderColor: (theme) =>
                             theme.palette.mode === "dark"
                                 ? "rgba(124, 214, 200, 0.25)"
-                                : "rgba(0, 105, 92, 0.18)",
-                        background: (theme) =>
-                            theme.palette.mode === "dark"
-                                ? "linear-gradient(135deg, rgba(0,105,92,0.12), rgba(0,105,92,0.02))"
-                                : "linear-gradient(135deg, rgba(0,105,92,0.06), rgba(0,105,92,0.01))"
+                                : "rgba(0, 105, 92, 0.18)"
                     }}
                 >
 
-                    <Stack
-                        direction="row"
-                        spacing={1.5}
-                        sx={{ alignItems: "flex-start" }}
+                    {/* Encabezado tipo panel ejecutivo: icono en badge,
+                        título + subtítulo, y fecha/hora de generación a la
+                        derecha (momento en que el frontend recibió el dato;
+                        el backend cachea el resumen 30 minutos). */}
+                    <Box
+                        sx={{
+                            px: 3,
+                            py: 2,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            gap: 2,
+                            flexWrap: "wrap",
+                            borderBottom: "1px solid",
+                            borderColor: (theme) =>
+                                theme.palette.mode === "dark"
+                                    ? "rgba(124, 214, 200, 0.18)"
+                                    : "rgba(0, 105, 92, 0.12)",
+                            background: (theme) =>
+                                theme.palette.mode === "dark"
+                                    ? "linear-gradient(135deg, rgba(0,105,92,0.20), rgba(0,105,92,0.04))"
+                                    : "linear-gradient(135deg, rgba(0,105,92,0.10), rgba(0,105,92,0.02))"
+                        }}
                     >
 
-                        <AutoAwesomeIcon
-                            color="primary"
-                            sx={{ mt: 0.25 }}
-                        />
+                        <Stack
+                            direction="row"
+                            spacing={1.5}
+                            sx={{ alignItems: "center" }}
+                        >
 
-                        <Box sx={{ flex: 1 }}>
-
-                            <Typography
-                                variant="overline"
-                                color="primary"
-                                sx={{ fontWeight: 700, letterSpacing: 0.5 }}
+                            <Box
+                                sx={{
+                                    width: 40,
+                                    height: 40,
+                                    borderRadius: 2,
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    flexShrink: 0,
+                                    bgcolor: "primary.main",
+                                    color: "primary.contrastText"
+                                }}
                             >
-                                Resumen ejecutivo · Generado por IA
-                            </Typography>
+                                <AutoAwesomeIcon fontSize="small" />
+                            </Box>
 
-                            {resumenIALoading ? (
+                            <Box>
 
-                                <Stack spacing={0.75} sx={{ mt: 0.75 }}>
+                                <Typography
+                                    variant="h6"
+                                    sx={{ fontWeight: 700, lineHeight: 1.2 }}
+                                >
+                                    Resumen Ejecutivo
+                                </Typography>
+
+                                <Typography
+                                    variant="caption"
+                                    color="text.secondary"
+                                    sx={{
+                                        display: "block",
+                                        letterSpacing: 0.3,
+                                        textTransform: "uppercase",
+                                        fontWeight: 600
+                                    }}
+                                >
+                                    Generado por Inteligencia Artificial
+                                </Typography>
+
+                            </Box>
+
+                        </Stack>
+
+                        {!resumenIALoading && resumenGeneradoEn && (
+
+                            <Stack
+                                direction="row"
+                                spacing={0.5}
+                                sx={{ alignItems: "center", color: "text.secondary" }}
+                            >
+
+                                <AccessTimeIcon sx={{ fontSize: 15 }} />
+
+                                <Typography variant="caption">
+                                    {formatearFechaHoraResumen(resumenGeneradoEn)}
+                                </Typography>
+
+                            </Stack>
+                        )}
+
+                    </Box>
+
+                    {/* Contenido: mismo texto que genera Gemini, solo se
+                        mejora tipografía/espaciado y se agrega un icono por
+                        punto en vez del punto de color plano anterior. */}
+                    <Box sx={{ px: 3, py: 2.5 }}>
+
+                        {resumenIALoading ? (
+
+                            <Stack spacing={2}>
+
+                                <Stack
+                                    direction="row"
+                                    spacing={1}
+                                    sx={{ alignItems: "center" }}
+                                >
+
+                                    <CircularProgress size={16} thickness={5} />
+
+                                    <Typography
+                                        variant="body2"
+                                        color="text.secondary"
+                                    >
+                                        Generando resumen ejecutivo con IA…
+                                    </Typography>
+
+                                </Stack>
+
+                                <Stack spacing={0.75}>
                                     <Skeleton variant="text" width="85%" />
                                     <Skeleton variant="text" width="60%" />
                                     <Skeleton variant="text" width="70%" />
                                     <Skeleton variant="text" width="50%" />
                                 </Stack>
 
-                            ) : (
+                            </Stack>
 
-                                (() => {
+                        ) : (
 
-                                    const { encabezado, puntos } =
-                                        parsearResumenIA(resumenIA ?? "");
+                            (() => {
 
-                                    return (
+                                const { encabezado, puntos } =
+                                    parsearResumenIA(resumenIA ?? "");
 
-                                        <>
+                                return (
 
-                                            <Typography
-                                                variant="body1"
-                                                sx={{ mt: 0.5, fontWeight: 600 }}
-                                            >
-                                                {encabezado}
-                                            </Typography>
+                                    <>
 
-                                            {puntos.length > 0 && (
+                                        <Typography
+                                            variant="subtitle1"
+                                            sx={{
+                                                fontWeight: 600,
+                                                mb: puntos.length > 0 ? 2 : 0
+                                            }}
+                                        >
+                                            {encabezado}
+                                        </Typography>
 
-                                                <Stack
-                                                    spacing={0.75}
-                                                    sx={{ mt: 1.5 }}
-                                                >
+                                        {puntos.length > 0 && (
 
-                                                    {puntos.map((punto, index) => (
+                                            <Stack spacing={1.5}>
 
-                                                        <Stack
-                                                            key={index}
-                                                            direction="row"
-                                                            spacing={1.25}
-                                                            sx={{ alignItems: "flex-start" }}
+                                                {puntos.map((punto, index) => (
+
+                                                    <Stack
+                                                        key={index}
+                                                        direction="row"
+                                                        spacing={1.5}
+                                                        sx={{ alignItems: "flex-start" }}
+                                                    >
+
+                                                        <InsightsIcon
+                                                            color="primary"
+                                                            sx={{ fontSize: 18, mt: 0.25 }}
+                                                        />
+
+                                                        <Typography
+                                                            variant="body2"
+                                                            color="text.secondary"
+                                                            sx={{ lineHeight: 1.6 }}
                                                         >
+                                                            {punto}
+                                                        </Typography>
 
-                                                            <Box
-                                                                sx={{
-                                                                    width: 6,
-                                                                    height: 6,
-                                                                    borderRadius: "50%",
-                                                                    bgcolor: "primary.main",
-                                                                    mt: 0.9,
-                                                                    flexShrink: 0
-                                                                }}
-                                                            />
+                                                    </Stack>
+                                                ))}
 
-                                                            <Typography
-                                                                variant="body2"
-                                                                color="text.secondary"
-                                                            >
-                                                                {punto}
-                                                            </Typography>
+                                            </Stack>
+                                        )}
 
-                                                        </Stack>
-                                                    ))}
+                                    </>
+                                );
+                            })()
+                        )}
 
-                                                </Stack>
-                                            )}
-
-                                        </>
-                                    );
-                                })()
-                            )}
-
-                        </Box>
-
-                    </Stack>
+                    </Box>
 
                 </Paper>
             )}
+
+            {/* Copiloto IA: tarjeta independiente, no reemplaza ni
+                modifica ningun contenido existente del dashboard. */}
+            <CopilotoIACard />
 
             {/* Sección de KPIs de parte superior*/}
             <Box>

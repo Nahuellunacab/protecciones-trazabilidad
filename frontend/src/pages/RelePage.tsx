@@ -198,6 +198,71 @@ function RelePage() {
 
     }, [searchParams]);
 
+    // Permite que otras partes de la app (por ahora, la accion
+    // FILTRAR_RELES del Copiloto IA del dashboard) apliquen los mismos
+    // filtros que ya existen en esta pantalla navegando a
+    // /reles?texto=...&estadoNombre=...&destino=..., sin agregar ningun
+    // filtro nuevo ni cambiar el comportamiento cuando estos parametros no
+    // estan presentes. "destino" llega como nombre (no id) y se resuelve
+    // aca mismo contra la lista de destinos ya cargada.
+    useEffect(() => {
+
+        const textoParam =
+            searchParams.get("texto");
+
+        const estadoParam =
+            searchParams.get("estadoNombre");
+
+        const destinoParam =
+            searchParams.get("destino");
+
+        if (!textoParam && !estadoParam && !destinoParam) {
+
+            return;
+        }
+
+        // Si pide filtrar por destino, esperamos a que la lista de
+        // destinos este cargada para poder resolver el nombre a un id.
+        if (destinoParam && destinos.length === 0) {
+
+            return;
+        }
+
+        if (textoParam) {
+
+            setTextoBusqueda(textoParam);
+        }
+
+        if (estadoParam) {
+
+            setEstadoNombre(estadoParam);
+        }
+
+        if (destinoParam) {
+
+            const destinoEncontrado =
+                destinos.find(
+                    (destino) =>
+                        destino.nombre.toLowerCase()
+                        ===
+                        destinoParam.toLowerCase()
+                );
+
+            if (destinoEncontrado) {
+
+                setDestinoId(destinoEncontrado.id);
+            }
+        }
+
+        setPage(0);
+
+        setSearchParams(
+            {},
+            { replace: true }
+        );
+
+    }, [destinos, searchParams]);
+
     const cargarReles = async () => {
 
         setCargando(true);

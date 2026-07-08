@@ -1799,38 +1799,78 @@ function ReleForm({
 
                                             <Grid size={12}>
 
-                                                <Button
+                                                <Paper
                                                     variant="outlined"
-                                                    component="label"
-                                                    startIcon={<AutoAwesomeIcon />}
-                                                    disabled={analizandoRemito}
+                                                    sx={(theme) => ({
+                                                        p: 2.5,
+                                                        borderRadius: 3,
+                                                        borderWidth: 2,
+                                                        borderColor: "primary.main",
+                                                        backgroundColor:
+                                                            alpha(theme.palette.primary.main, 0.06),
+                                                        display: "flex",
+                                                        flexDirection: "column",
+                                                        alignItems: "center",
+                                                        gap: 1
+                                                    })}
                                                 >
 
-                                                    {
-                                                        analizandoRemito
-                                                            ? "Analizando remito..."
-                                                            : "Cargar desde Remito con IA"
-                                                    }
-
-                                                    <input
-                                                        hidden
-                                                        type="file"
-                                                        accept="application/pdf,image/png,image/jpeg,image/jpg,image/webp"
-                                                        onChange={(e) => {
-
-                                                            const archivo =
-                                                                e.target.files?.[0]
-                                                                ?? null;
-
-                                                            handleArchivoIA(
-                                                                archivo
-                                                            );
-
-                                                            e.target.value = "";
+                                                    <Button
+                                                        variant="contained"
+                                                        component="label"
+                                                        size="large"
+                                                        fullWidth
+                                                        startIcon={
+                                                            <AutoAwesomeIcon fontSize="medium" />
+                                                        }
+                                                        disabled={analizandoRemito}
+                                                        sx={{
+                                                            py: 1.5,
+                                                            fontSize: "1rem",
+                                                            fontWeight: 700,
+                                                            borderRadius: 2,
+                                                            boxShadow: 3,
+                                                            textTransform: "none"
                                                         }}
-                                                    />
+                                                    >
 
-                                                </Button>
+                                                        {
+                                                            analizandoRemito
+                                                                ? "Analizando remito..."
+                                                                : "Cargar desde Remito con IA"
+                                                        }
+
+                                                        <input
+                                                            hidden
+                                                            type="file"
+                                                            accept="application/pdf,image/png,image/jpeg,image/jpg,image/webp"
+                                                            onChange={(e) => {
+
+                                                                const archivo =
+                                                                    e.target.files?.[0]
+                                                                    ?? null;
+
+                                                                handleArchivoIA(
+                                                                    archivo
+                                                                );
+
+                                                                e.target.value = "";
+                                                            }}
+                                                        />
+
+                                                    </Button>
+
+                                                    <Typography
+                                                        variant="body2"
+                                                        color="text.secondary"
+                                                        sx={{ textAlign: "center" }}
+                                                    >
+                                                        Subí el PDF o la foto del remito y el sistema
+                                                        detecta automáticamente los relés, sus modelos
+                                                        y números de serie.
+                                                    </Typography>
+
+                                                </Paper>
 
                                             </Grid>
 

@@ -134,6 +134,8 @@ public interface ReleRepository
         FROM Rele r
         JOIN r.modelo m
         JOIN m.marca ma
+        LEFT JOIN r.remito rm
+        LEFT JOIN rm.proveedor prov
         WHERE (:activo IS NULL OR r.activo = :activo)
         AND (
                 :texto IS NULL
@@ -141,6 +143,7 @@ public interface ReleRepository
                 OR LOWER(r.numeroSerie) LIKE LOWER(CONCAT('%', :texto, '%'))
                 OR LOWER(m.nombre) LIKE LOWER(CONCAT('%', :texto, '%'))
                 OR LOWER(ma.nombre) LIKE LOWER(CONCAT('%', :texto, '%'))
+                OR (prov.nombre IS NOT NULL AND LOWER(prov.nombre) LIKE LOWER(CONCAT('%', :texto, '%')))
         )
         AND (:marcaId IS NULL OR ma.id = :marcaId)
         AND (:modeloId IS NULL OR m.id = :modeloId)

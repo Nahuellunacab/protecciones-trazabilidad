@@ -112,3 +112,18 @@ export async function darDeBaja(
         }
     );
 }
+
+// Usado por la accion ABRIR_RELE del Copiloto IA: resuelve un numero de
+// serie al rele correspondiente (mismo endpoint que ya usa la busqueda
+// puntual por serie), para poder navegar a /reles/{id}.
+export async function buscarRelePorSerie(
+    numeroSerie: string
+): Promise<Rele> {
+
+    const response =
+        await api.get(
+            `/reles/serial/${encodeURIComponent(numeroSerie)}`
+        );
+
+    return response.data;
+}

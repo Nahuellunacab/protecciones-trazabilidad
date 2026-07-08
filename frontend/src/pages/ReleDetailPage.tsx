@@ -22,7 +22,9 @@ import {
     TableRow,
     CircularProgress,
     Alert,
-    Snackbar
+    Snackbar,
+    Stack,
+    Divider
 } from "@mui/material";
 
 import ArrowBackIcon
@@ -36,6 +38,21 @@ from "@mui/icons-material/Edit";
 
 import SwapHorizIcon
 from "@mui/icons-material/SwapHoriz";
+
+import AccessTimeIcon
+from "@mui/icons-material/AccessTime";
+
+import ApartmentIcon
+from "@mui/icons-material/Apartment";
+
+import RoomIcon
+from "@mui/icons-material/Room";
+
+import PersonOutlineIcon
+from "@mui/icons-material/PersonOutlineOutlined";
+
+import NotesIcon
+from "@mui/icons-material/Notes";
 
 import type { Rele }
 from "../types/Rele";
@@ -322,6 +339,8 @@ function ReleDetailPage() {
                     <Tab label={`Historial (${historial.length})`} />
 
                     <Tab label="Documentación" />
+
+                    <Tab label="Historial Operativo" />
 
                 </Tabs>
 
@@ -616,6 +635,199 @@ function ReleDetailPage() {
                                 </Grid>
 
                             </Grid>
+                        )
+                    }
+
+                    {
+                        tab === 3 && (
+
+                            historial.length === 0 ? (
+
+                                <EmptyState
+                                    titulo="Sin movimientos registrados"
+                                    subtitulo="Este relé todavía no tiene historial operativo cargado."
+                                />
+
+                            ) : (
+
+                                <Box sx={{ position: "relative", pl: 4 }}>
+
+                                    {/* Linea vertical continua de la timeline, detras de las tarjetas */}
+                                    <Box
+                                        sx={{
+                                            position: "absolute",
+                                            left: 15,
+                                            top: 8,
+                                            bottom: 8,
+                                            width: 2,
+                                            bgcolor: "divider"
+                                        }}
+                                    />
+
+                                    <Stack spacing={3}>
+
+                                        {
+                                            // El backend devuelve el historial mas reciente primero
+                                            // (findByReleIdOrderByFechaMovimientoDescIdDesc); para una
+                                            // linea de tiempo cronologica se muestra en orden inverso
+                                            // (mas antiguo arriba, mas reciente abajo), sin pedirle al
+                                            // backend un orden distinto.
+                                            [...historial]
+                                                .reverse()
+                                                .map((movimiento) => (
+
+                                                    <Box
+                                                        key={movimiento.id}
+                                                        sx={{ position: "relative" }}
+                                                    >
+
+                                                        <Box
+                                                            sx={{
+                                                                position: "absolute",
+                                                                left: -32,
+                                                                top: 10,
+                                                                width: 16,
+                                                                height: 16,
+                                                                borderRadius: "50%",
+                                                                bgcolor: `${getEstadoColor(movimiento.estado)}.main`,
+                                                                border: "3px solid",
+                                                                borderColor: "background.paper",
+                                                                boxShadow: 1,
+                                                                zIndex: 1
+                                                            }}
+                                                        />
+
+                                                        <Paper
+                                                            variant="outlined"
+                                                            sx={{
+                                                                p: 2,
+                                                                borderRadius: 2,
+                                                                borderLeft: "4px solid",
+                                                                borderLeftColor: `${getEstadoColor(movimiento.estado)}.main`
+                                                            }}
+                                                        >
+
+                                                            <Stack
+                                                                direction="row"
+                                                                spacing={1}
+                                                                sx={{
+                                                                    alignItems: "center",
+                                                                    justifyContent: "space-between",
+                                                                    flexWrap: "wrap",
+                                                                    mb: 1.5
+                                                                }}
+                                                            >
+
+                                                                <Chip
+                                                                    size="small"
+                                                                    label={movimiento.estado}
+                                                                    color={getEstadoColor(movimiento.estado)}
+                                                                />
+
+                                                                <Stack
+                                                                    direction="row"
+                                                                    spacing={0.5}
+                                                                    sx={{ alignItems: "center", color: "text.secondary" }}
+                                                                >
+                                                                    <AccessTimeIcon sx={{ fontSize: 15 }} />
+                                                                    <Typography variant="caption">
+                                                                        {formatearFecha(movimiento.fechaMovimiento)}
+                                                                    </Typography>
+                                                                </Stack>
+
+                                                            </Stack>
+
+                                                            <Grid container spacing={1.5}>
+
+                                                                <Grid size={{ xs: 12, sm: 6 }}>
+                                                                    <Stack
+                                                                        direction="row"
+                                                                        spacing={1}
+                                                                        sx={{ alignItems: "center" }}
+                                                                    >
+                                                                        <ApartmentIcon
+                                                                            fontSize="small"
+                                                                            color="action"
+                                                                        />
+                                                                        <Typography variant="body2">
+                                                                            {movimiento.destino || "-"}
+                                                                        </Typography>
+                                                                    </Stack>
+                                                                </Grid>
+
+                                                                <Grid size={{ xs: 12, sm: 6 }}>
+                                                                    <Stack
+                                                                        direction="row"
+                                                                        spacing={1}
+                                                                        sx={{ alignItems: "center" }}
+                                                                    >
+                                                                        <RoomIcon
+                                                                            fontSize="small"
+                                                                            color="action"
+                                                                        />
+                                                                        <Typography variant="body2">
+                                                                            {movimiento.posicion || "-"}
+                                                                        </Typography>
+                                                                    </Stack>
+                                                                </Grid>
+
+                                                                <Grid size={{ xs: 12, sm: 6 }}>
+                                                                    <Stack
+                                                                        direction="row"
+                                                                        spacing={1}
+                                                                        sx={{ alignItems: "center" }}
+                                                                    >
+                                                                        <PersonOutlineIcon
+                                                                            fontSize="small"
+                                                                            color="action"
+                                                                        />
+                                                                        <Typography variant="body2">
+                                                                            {movimiento.responsable || "-"}
+                                                                        </Typography>
+                                                                    </Stack>
+                                                                </Grid>
+
+                                                            </Grid>
+
+                                                            {
+                                                                movimiento.notas && (
+
+                                                                    <>
+
+                                                                        <Divider sx={{ my: 1.5 }} />
+
+                                                                        <Stack
+                                                                            direction="row"
+                                                                            spacing={1}
+                                                                            sx={{ alignItems: "flex-start" }}
+                                                                        >
+                                                                            <NotesIcon
+                                                                                fontSize="small"
+                                                                                color="action"
+                                                                                sx={{ mt: 0.25 }}
+                                                                            />
+                                                                            <Typography
+                                                                                variant="body2"
+                                                                                color="text.secondary"
+                                                                            >
+                                                                                {movimiento.notas}
+                                                                            </Typography>
+                                                                        </Stack>
+
+                                                                    </>
+                                                                )
+                                                            }
+
+                                                        </Paper>
+
+                                                    </Box>
+                                                ))
+                                        }
+
+                                    </Stack>
+
+                                </Box>
+                            )
                         )
                     }
 

@@ -34,6 +34,7 @@ import protecciones.repository.ReleRepository;
 import protecciones.repository.RemitoRepository;
 import protecciones.repository.OrdenProvisionRepository;
 import protecciones.repository.UltimoMovimientoRepository;
+import protecciones.service.llm.LLMService;
 
 import java.io.ByteArrayOutputStream;
 import java.time.LocalDate;
@@ -103,8 +104,8 @@ public class DashboardService {
     private final UltimoMovimientoRepository
             ultimoMovimientoRepository;
 
-    private final GeminiService
-            geminiService;
+    private final LLMService
+            llmService;
 
     private volatile String
             resumenIACacheado;
@@ -122,7 +123,7 @@ public class DashboardService {
             RemitoRepository remitoRepository,
             OrdenProvisionRepository ordenProvisionRepository,
             UltimoMovimientoRepository ultimoMovimientoRepository,
-            GeminiService geminiService
+            LLMService llmService
     ) {
 
         this.releRepository =
@@ -143,8 +144,8 @@ public class DashboardService {
         this.ultimoMovimientoRepository =
                 ultimoMovimientoRepository;
 
-        this.geminiService =
-                geminiService;
+        this.llmService =
+                llmService;
     }
 
     public DashboardKpiDTO
@@ -215,7 +216,7 @@ public class DashboardService {
     public ResumenIADTO
     obtenerResumenIA() {
 
-        if (!geminiService.estaDisponible()) {
+        if (!llmService.estaDisponible()) {
 
             return new ResumenIADTO(null);
         }
@@ -254,7 +255,7 @@ public class DashboardService {
         try {
 
             String resumen =
-                    geminiService.generarTexto(
+                    llmService.generarTexto(
                             PROMPT_SISTEMA_RESUMEN,
                             construirPromptResumen(kpis, porEstado, porMarca, porDestino, porProveedor),
                             600

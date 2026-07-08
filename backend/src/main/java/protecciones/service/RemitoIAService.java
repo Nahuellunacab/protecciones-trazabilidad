@@ -21,6 +21,7 @@ import protecciones.repository.MarcaRepository;
 import protecciones.repository.ModeloRepository;
 import protecciones.repository.ProveedorRepository;
 import protecciones.repository.ReleRepository;
+import protecciones.service.llm.GeminiService;
 
 import java.io.IOException;
 import java.text.Normalizer;

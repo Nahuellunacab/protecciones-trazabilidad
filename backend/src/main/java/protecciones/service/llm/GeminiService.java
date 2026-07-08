@@ -1,4 +1,4 @@
-package protecciones.service;
+package protecciones.service.llm;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
@@ -10,13 +10,16 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
-// Cliente minimo de la Gemini API (Google AI Studio), usado por
-// DashboardService para redactar el resumen ejecutivo del dashboard.
+// Implementacion de LLMService contra la Gemini API (Google AI Studio),
+// usada por DashboardService (resumen ejecutivo) y por CopilotoIAService
+// (Copiloto IA). RemitoIAService tambien depende de esta clase en forma
+// concreta (no de la interfaz) porque necesita generarTextoConArchivo,
+// que es especifico de Gemini (envio multimodal de PDF/imagen) y todavia
+// no forma parte de la abstraccion generica LLMService.
 // Se eligio Gemini por tener capa gratuita real (no trial con vencimiento);
-// dado el volumen bajo de uso esperado (un resumen recalculado a lo sumo
-// cada 30 minutos, ver DashboardService), no justifica un proveedor pago.
+// dado el volumen bajo de uso esperado, no justifica un proveedor pago.
 @Service
-public class GeminiService {
+public class GeminiService implements LLMService {
 
     private static final String API_URL_TEMPLATE =
             "https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent?key=%s";
@@ -60,11 +63,13 @@ public class GeminiService {
                         .build();
     }
 
+    @Override
     public boolean estaDisponible() {
 
         return apiKey != null && !apiKey.isBlank();
     }
 
+    @Override
     public String generarTexto(
             String systemPrompt,
             String userPrompt,
@@ -83,6 +88,7 @@ public class GeminiService {
     // Usado por la carga inteligente por remito (ver RemitoIAService): manda
     // el PDF/imagen del remito como inlineData (base64) junto con el prompt,
     // para que Gemini extraiga los datos del documento en vez de resumir texto.
+    // No es parte de LLMService: es especifico de Gemini/multimodal.
     public String generarTextoConArchivo(
             String systemPrompt,
             String userPrompt,
