@@ -6,7 +6,6 @@ La aplicación permite administrar:
 
 - relés de protección
 - modelos y marcas
-- tensiones auxiliares
 - movimientos operativos
 - historial operativo
 - estados
@@ -271,7 +270,6 @@ Esto permite evolucionar posteriormente hacia:
 ```mermaid
 erDiagram
 
-    TIPO ||--o{ MODELO : clasifica
     MARCA ||--o{ MODELO : fabrica
 
     MODELO ||--o{ RELE : define
@@ -302,7 +300,6 @@ erDiagram
 ## Catálogos
 
 - Marca
-- Tipo
 - Estado
 - Provincia
 - Localidad
@@ -337,8 +334,6 @@ erDiagram
 - Edición de modelos
 - Eliminación de modelos
 - Asociación Marca ↔ Modelo
-- Asociación Tipo ↔ Modelo
-- Gestión de tensiones auxiliares
 - Validación de duplicados
 - Métricas operativas por modelo
 - Conteo de relés activos
@@ -364,6 +359,7 @@ Los modelos sin relés activos:
 - Edición de relés
 - Asociación con modelos
 - Asociación logística con remitos
+- Carga inteligente por remito: subís el PDF/imagen del remito y una IA (Gemini) propone los relés a cargar (marca, modelo, número de serie), quedando a confirmación del usuario antes de dar de alta
 - Número de serie único
 - Gestión de garantía
 - Estado operacional actual
@@ -516,7 +512,6 @@ y constituyen:
 
 ## Catálogos
 
-- /api/tipos
 - /api/marcas
 - /api/estados
 - /api/provincias
@@ -625,7 +620,9 @@ PATCH /api/reles/{id}/baja
 - gráficos de distribución (estado, marca, modelo, destino, proveedor)
 - tabla de últimos movimientos
 - métricas en tiempo real
-- resumen ejecutivo generado por IA (Gemini API, opcional — requiere `GEMINI_API_KEY`)
+- exportación a Excel y PDF
+- resumen ejecutivo generado por IA (Gemini API, opcional — requiere `GEMINI_API_KEY`; admite varias claves separadas por coma para repartir cuota gratuita entre cuentas; se genera bajo demanda con un botón, no automáticamente al cargar la página)
+- Copiloto IA: chat que responde preguntas sobre el estado del stock y puede navegar/filtrar la interfaz por vos (ej. "mostrame los relés en reparación"), también sobre Gemini API
 
 ---
 
@@ -633,9 +630,6 @@ PATCH /api/reles/{id}/baja
 
 ## Operación
 
-- workflow de estados
-- validaciones operacionales
-- transiciones válidas
 - auditoría automática
 
 ## Frontend
@@ -651,8 +645,6 @@ PATCH /api/reles/{id}/baja
 
 - Soft delete global
 - Auditoría automática
-- Seguridad JWT
-- Roles y permisos
 - Optimización de queries
 
 ## Integraciones futuras
@@ -660,7 +652,6 @@ PATCH /api/reles/{id}/baja
 - IBM Maximo
 - MIF
 - APIs corporativas
-- Exportación Excel/PDF
 
 ---
 
