@@ -65,6 +65,9 @@ from "@mui/icons-material/Delete";
 
 import { useAuth } from "../../context/AuthContext";
 
+import SelectorArchivoAdjunto
+from "../../components/common/SelectorArchivoAdjunto";
+
 function RemitoPage() {
 
     const { canWrite } = useAuth();
@@ -421,32 +424,13 @@ function RemitoPage() {
 
                         <Grid size={{ xs: 12, md: 2 }}>
 
-                            <Button
-                                variant="outlined"
-                                component="label"
-                                fullWidth
-                                sx={{ height: 56 }}
-                            >
-
-                                {
-                                    archivo
-                                        ? "PDF OK"
-                                        : "SUBIR PDF"
-                                }
-
-                                <input
-                                    hidden
-                                    type="file"
-                                    accept="application/pdf"
-                                    onChange={(e) =>
-                                        setArchivo(
-                                            e.target.files?.[0]
-                                            || null
-                                        )
-                                    }
-                                />
-
-                            </Button>
+                            <SelectorArchivoAdjunto
+                                label="SUBIR PDF"
+                                labelSeleccionado="PDF/FOTO OK"
+                                value={archivo}
+                                onChange={setArchivo}
+                                height={56}
+                            />
 
                         </Grid>
 

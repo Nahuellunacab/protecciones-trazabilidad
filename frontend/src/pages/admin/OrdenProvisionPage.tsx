@@ -55,6 +55,9 @@ import {
 
 import { useAuth } from "../../context/AuthContext";
 
+import SelectorArchivoAdjunto
+from "../../components/common/SelectorArchivoAdjunto";
+
 function OrdenProvisionPage() {
 
     const { canWrite } = useAuth();
@@ -408,34 +411,17 @@ function OrdenProvisionPage() {
 
                         <Grid size={{ xs: 12, md: 2 }}>
 
-                            <Button
-                                variant="outlined"
-                                component="label"
-                                fullWidth
-                                sx={{ height: 56 }}
-                            >
-
-                                {
-                                    archivo
-                                        ? "PDF CARGADO"
-                                        : editandoId !== null
-                                            ? "SUBIR/REEMPLAZAR PDF"
-                                            : "SUBIR PDF"
+                            <SelectorArchivoAdjunto
+                                label={
+                                    editandoId !== null
+                                        ? "SUBIR/REEMPLAZAR PDF"
+                                        : "SUBIR PDF"
                                 }
-
-                                <input
-                                    hidden
-                                    type="file"
-                                    accept="application/pdf"
-                                    onChange={(e) =>
-                                        setArchivo(
-                                            e.target.files?.[0]
-                                            || null
-                                        )
-                                    }
-                                />
-
-                            </Button>
+                                labelSeleccionado="PDF/FOTO CARGADO"
+                                value={archivo}
+                                onChange={setArchivo}
+                                height={56}
+                            />
 
                             {
                                 archivo ? (

@@ -144,7 +144,8 @@ public class OrdenProvisionService {
             MultipartFile archivo
     ) {
 
-        ArchivoAdjuntoValidator.validarPdf(archivo);
+        byte[] pdfBytes =
+                ArchivoAdjuntoValidator.prepararParaGuardar(archivo);
 
         try {
 
@@ -174,7 +175,7 @@ public class OrdenProvisionService {
 
             Files.write(
                     destino,
-                    archivo.getBytes()
+                    pdfBytes
             );
 
             orden.setNombreArchivo(

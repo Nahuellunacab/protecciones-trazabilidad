@@ -5,6 +5,9 @@ import org.junit.jupiter.api.io.TempDir;
 import org.springframework.mock.web.MockMultipartFile;
 import protecciones.exception.BusinessException;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 
@@ -140,5 +143,86 @@ class ArchivoAdjuntoValidatorTest {
                         carpeta, "../fuera-de-la-carpeta.pdf"
                 )
         ).isInstanceOf(BusinessException.class);
+    }
+
+    @Test
+    void prepararParaGuardar_archivoVacio_lanzaBusinessException() {
+
+        MockMultipartFile archivo = new MockMultipartFile(
+                "archivo", "remito.pdf", "application/pdf", new byte[0]
+        );
+
+        assertThatThrownBy(() -> ArchivoAdjuntoValidator.prepararParaGuardar(archivo))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("adjuntar un archivo");
+    }
+
+    @Test
+    void prepararParaGuardar_pdfValido_devuelveLosMismosBytes() {
+
+        MockMultipartFile archivo = new MockMultipartFile(
+                "archivo", "remito.pdf", "application/pdf", CONTENIDO_PDF_VALIDO
+        );
+
+        byte[] resultado = ArchivoAdjuntoValidator.prepararParaGuardar(archivo);
+
+        assertThat(resultado).isEqualTo(CONTENIDO_PDF_VALIDO);
+    }
+
+    @Test
+    void prepararParaGuardar_fotoJpegValida_seConvierteAPdf() throws Exception {
+
+        byte[] jpeg = generarImagenDePrueba("jpg");
+
+        MockMultipartFile archivo = new MockMultipartFile(
+                "archivo", "remito.jpg", "image/jpeg", jpeg
+        );
+
+        byte[] resultado = ArchivoAdjuntoValidator.prepararParaGuardar(archivo);
+
+        assertThat(new String(resultado, 0, 4, StandardCharsets.US_ASCII))
+                .isEqualTo("%PDF");
+    }
+
+    @Test
+    void prepararParaGuardar_fotoPngValida_seConvierteAPdf() throws Exception {
+
+        byte[] png = generarImagenDePrueba("png");
+
+        MockMultipartFile archivo = new MockMultipartFile(
+                "archivo", "remito.png", "image/png", png
+        );
+
+        byte[] resultado = ArchivoAdjuntoValidator.prepararParaGuardar(archivo);
+
+        assertThat(new String(resultado, 0, 4, StandardCharsets.US_ASCII))
+                .isEqualTo("%PDF");
+    }
+
+    @Test
+    void prepararParaGuardar_formatoNoSoportado_lanzaBusinessException() {
+
+        MockMultipartFile archivo = new MockMultipartFile(
+                "archivo",
+                "remito.txt",
+                "text/plain",
+                "esto no es ni un pdf ni una foto".getBytes(StandardCharsets.UTF_8)
+        );
+
+        assertThatThrownBy(() -> ArchivoAdjuntoValidator.prepararParaGuardar(archivo))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("Solo se permiten archivos PDF o fotos");
+    }
+
+    private byte[] generarImagenDePrueba(String formato) throws Exception {
+
+        BufferedImage imagen =
+                new BufferedImage(10, 10, BufferedImage.TYPE_INT_RGB);
+
+        ByteArrayOutputStream salida = new ByteArrayOutputStream();
+
+        ImageIO.write(imagen, formato, salida);
+
+        return salida.toByteArray();
     }
 }

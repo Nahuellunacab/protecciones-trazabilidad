@@ -46,6 +46,9 @@ from "@mui/icons-material/LocalShipping";
 import AutoAwesomeIcon
 from "@mui/icons-material/AutoAwesome";
 
+import PhotoCameraIcon
+from "@mui/icons-material/PhotoCamera";
+
 import type { Modelo }
 from "../../types/Modelo";
 
@@ -108,7 +111,8 @@ import type {
 import CargaInteligenteRemitoDialog
 from "./CargaInteligenteRemitoDialog";
 
-
+import SelectorArchivoAdjunto
+from "../common/SelectorArchivoAdjunto";
 
 import {
     obtenerOrdenesProvision,
@@ -1815,50 +1819,98 @@ function ReleForm({
                                                     })}
                                                 >
 
-                                                    <Button
-                                                        variant="contained"
-                                                        component="label"
-                                                        size="large"
-                                                        fullWidth
-                                                        startIcon={
-                                                            <AutoAwesomeIcon fontSize="medium" />
-                                                        }
-                                                        disabled={analizandoRemito}
-                                                        sx={{
-                                                            py: 1.5,
-                                                            fontSize: "1rem",
-                                                            fontWeight: 700,
-                                                            borderRadius: 2,
-                                                            boxShadow: 3,
-                                                            textTransform: "none"
-                                                        }}
+                                                    <Stack
+                                                        direction={{ xs: "column", sm: "row" }}
+                                                        spacing={1}
+                                                        sx={{ width: "100%" }}
                                                     >
 
-                                                        {
-                                                            analizandoRemito
-                                                                ? "Analizando remito..."
-                                                                : "Cargar desde Remito con IA"
-                                                        }
-
-                                                        <input
-                                                            hidden
-                                                            type="file"
-                                                            accept="application/pdf,image/png,image/jpeg,image/jpg,image/webp"
-                                                            onChange={(e) => {
-
-                                                                const archivo =
-                                                                    e.target.files?.[0]
-                                                                    ?? null;
-
-                                                                handleArchivoIA(
-                                                                    archivo
-                                                                );
-
-                                                                e.target.value = "";
+                                                        <Button
+                                                            variant="contained"
+                                                            component="label"
+                                                            size="large"
+                                                            fullWidth
+                                                            startIcon={
+                                                                <AutoAwesomeIcon fontSize="medium" />
+                                                            }
+                                                            disabled={analizandoRemito}
+                                                            sx={{
+                                                                py: 1.5,
+                                                                fontSize: "1rem",
+                                                                fontWeight: 700,
+                                                                borderRadius: 2,
+                                                                boxShadow: 3,
+                                                                textTransform: "none"
                                                             }}
-                                                        />
+                                                        >
 
-                                                    </Button>
+                                                            {
+                                                                analizandoRemito
+                                                                    ? "Analizando remito..."
+                                                                    : "Cargar desde Remito con IA"
+                                                            }
+
+                                                            <input
+                                                                hidden
+                                                                type="file"
+                                                                accept="application/pdf,image/png,image/jpeg,image/jpg,image/webp"
+                                                                onChange={(e) => {
+
+                                                                    const archivo =
+                                                                        e.target.files?.[0]
+                                                                        ?? null;
+
+                                                                    handleArchivoIA(
+                                                                        archivo
+                                                                    );
+
+                                                                    e.target.value = "";
+                                                                }}
+                                                            />
+
+                                                        </Button>
+
+                                                        <Button
+                                                            variant="outlined"
+                                                            component="label"
+                                                            size="large"
+                                                            startIcon={
+                                                                <PhotoCameraIcon fontSize="medium" />
+                                                            }
+                                                            disabled={analizandoRemito}
+                                                            sx={{
+                                                                py: 1.5,
+                                                                fontWeight: 700,
+                                                                borderRadius: 2,
+                                                                textTransform: "none",
+                                                                flexShrink: 0
+                                                            }}
+                                                        >
+
+                                                            Tomar foto
+
+                                                            <input
+                                                                hidden
+                                                                type="file"
+                                                                accept="image/*"
+                                                                capture="environment"
+                                                                onChange={(e) => {
+
+                                                                    const archivo =
+                                                                        e.target.files?.[0]
+                                                                        ?? null;
+
+                                                                    handleArchivoIA(
+                                                                        archivo
+                                                                    );
+
+                                                                    e.target.value = "";
+                                                                }}
+                                                            />
+
+                                                        </Button>
+
+                                                    </Stack>
 
                                                     <Typography
                                                         variant="body2"
@@ -1985,27 +2037,12 @@ function ReleForm({
 
                                                         <Grid size={3}>
 
-                                                            <Button
-                                                                variant="outlined"
-                                                                component="label"
-                                                                fullWidth
-                                                            >
-
-                                                                Seleccionar PDF
-
-                                                                <input
-                                                                    hidden
-                                                                    type="file"
-                                                                    accept=".pdf"
-                                                                    onChange={(e) =>
-                                                                        setArchivoOP(
-                                                                            e.target.files?.[0]
-                                                                            ?? null
-                                                                        )
-                                                                    }
-                                                                />
-
-                                                            </Button>
+                                                            <SelectorArchivoAdjunto
+                                                                label="Seleccionar PDF"
+                                                                labelSeleccionado="PDF/foto listo"
+                                                                value={archivoOP}
+                                                                onChange={setArchivoOP}
+                                                            />
 
                                                         </Grid>
 
@@ -2263,27 +2300,12 @@ function ReleForm({
 
                                                         <Grid size={3}>
 
-                                                            <Button
-                                                                variant="outlined"
-                                                                component="label"
-                                                                fullWidth
-                                                            >
-
-                                                                Seleccionar PDF
-
-                                                                <input
-                                                                    hidden
-                                                                    type="file"
-                                                                    accept=".pdf"
-                                                                    onChange={(e) =>
-                                                                        setArchivoRemito(
-                                                                            e.target.files?.[0]
-                                                                            ?? null
-                                                                        )
-                                                                    }
-                                                                />
-
-                                                            </Button>
+                                                            <SelectorArchivoAdjunto
+                                                                label="Seleccionar PDF"
+                                                                labelSeleccionado="PDF/foto listo"
+                                                                value={archivoRemito}
+                                                                onChange={setArchivoRemito}
+                                                            />
 
                                                         </Grid>
 

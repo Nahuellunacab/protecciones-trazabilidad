@@ -188,7 +188,8 @@ private final ReleRepository releRepository;
                 MultipartFile archivo
         ) {
 
-        ArchivoAdjuntoValidator.validarPdf(archivo);
+        byte[] pdfBytes =
+                ArchivoAdjuntoValidator.prepararParaGuardar(archivo);
 
         try {
 
@@ -218,7 +219,7 @@ private final ReleRepository releRepository;
 
                 Files.write(
                         destino,
-                        archivo.getBytes()
+                        pdfBytes
                 );
 
                 remito.setNombreArchivo(
