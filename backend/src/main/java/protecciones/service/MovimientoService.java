@@ -94,7 +94,11 @@ public class MovimientoService {
         Rele rele =
                 releRepository.findById(
                         dto.getReleId()
-                ).orElseThrow();
+                ).orElseThrow(() ->
+                        new BusinessException(
+                                "Relé no encontrado"
+                        )
+                );
 
         if (!Boolean.TRUE.equals(
                 rele.getActivo()
@@ -108,12 +112,20 @@ public class MovimientoService {
         Estado estadoDestino =
                 estadoRepository.findById(
                         dto.getEstadoId()
-                ).orElseThrow();
+                ).orElseThrow(() ->
+                        new BusinessException(
+                                "Estado no encontrado"
+                        )
+                );
 
         Posicion posicion =
                 posicionRepository.findById(
                         dto.getPosicionId()
-                ).orElseThrow();
+                ).orElseThrow(() ->
+                        new BusinessException(
+                                "Posición no encontrada"
+                        )
+                );
 
         Usuario usuario =
                 currentUserProvider.obtenerUsuarioActual();

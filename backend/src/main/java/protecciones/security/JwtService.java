@@ -18,7 +18,7 @@ public class JwtService {
     private final long expirationMs;
 
     public JwtService(
-            @Value("${jwt.secret:cambiar-este-secreto-en-produccion-por-uno-largo-y-aleatorio}")
+            @Value("${jwt.secret}")
             String secret,
             @Value("${jwt.expiration-ms:28800000}")
             long expirationMs

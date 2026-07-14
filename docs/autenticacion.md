@@ -8,7 +8,7 @@ Documento de referencia sobre el sistema de login del proyecto (implementado en 
 
 - **JWT stateless** vía header `Authorization: Bearer <token>`. No hay sesión ni cookies del lado del servidor.
 - El login se identifica por **email o número de sobre (legajo)** — ambos únicos (columnas `usuario.email` y `usuario.numero_sobre`).
-- El token se firma con `JWT_SECRET` (variable de entorno, con default solo para desarrollo — ver `application.properties` y `docker/.env.example`) y expira a las `JWT_EXPIRATION_MS` (default: 8 horas, la duración de un turno). Internamente el JWT siempre usa el **email** como subject, sin importar con qué identificador se logueó la persona.
+- El token se firma con `JWT_SECRET` (variable de entorno **obligatoria, sin default** — la app no arranca sin ella; ver `application.properties` y `docker/.env.example`) y expira a las `JWT_EXPIRATION_MS` (default: 8 horas, la duración de un turno). Internamente el JWT siempre usa el **email** como subject, sin importar con qué identificador se logueó la persona.
 - No hay refresh token: al expirar, el usuario vuelve a loguearse. No hay recuperación de contraseña por email — en cambio, cualquier usuario logueado puede cambiar su propia contraseña (ver sección 7).
 
 ## 2. Roles
