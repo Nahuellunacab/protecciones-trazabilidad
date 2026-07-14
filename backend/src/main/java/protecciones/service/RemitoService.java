@@ -1,4 +1,6 @@
 package protecciones.service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -24,6 +26,9 @@ import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class RemitoService {
+
+    private static final Logger
+            log = LoggerFactory.getLogger(RemitoService.class);
 
     private final RemitoRepository
             remitoRepository;
@@ -97,10 +102,26 @@ private final ReleRepository releRepository;
                 proveedor
         );
 
-        Remito guardado =
-                remitoRepository.save(
-                        remito
-                );
+        Remito guardado;
+
+        try {
+
+            guardado =
+                    remitoRepository.save(
+                            remito
+                    );
+
+        } catch (
+                DataIntegrityViolationException ex
+        ) {
+
+            // Defensa en profundidad: validarDuplicado ya chequeo esto,
+            // pero el indice UNIQUE de la base es el que cierra la
+            // ventana de carrera entre el chequeo y el insert.
+            throw new BusinessException(
+                    "El número de remito ya existe"
+            );
+        }
 
         return mapToDTO(
                 guardado
@@ -152,10 +173,23 @@ private final ReleRepository releRepository;
                 proveedor
         );
 
-        Remito actualizado =
-                remitoRepository.save(
-                        remito
-                );
+        Remito actualizado;
+
+        try {
+
+            actualizado =
+                    remitoRepository.save(
+                            remito
+                    );
+
+        } catch (
+                DataIntegrityViolationException ex
+        ) {
+
+            throw new BusinessException(
+                    "El número de remito ya existe"
+            );
+        }
 
         return mapToDTO(
                 actualizado
@@ -165,6 +199,11 @@ private final ReleRepository releRepository;
     public void eliminar(
             Long id
     ) {
+
+        Remito remito =
+                remitoRepository
+                        .findById(id)
+                        .orElseThrow();
 
         try {
 
@@ -178,6 +217,27 @@ private final ReleRepository releRepository;
             throw new BusinessException(
                     "No se puede eliminar el remito porque tiene relés asociados"
             );
+        }
+
+        // El registro ya se borro de la base; si el archivo adjunto no se
+        // puede borrar del filesystem no vale la pena romper la operacion
+        // por esto (en el peor caso queda un archivo huerfano en uploads/).
+        if (remito.getRutaArchivo() != null) {
+
+            try {
+
+                Files.deleteIfExists(
+                        Paths.get(remito.getRutaArchivo())
+                );
+
+            } catch (IOException ex) {
+
+                log.warn(
+                        "No se pudo borrar el archivo adjunto del remito {}: {}",
+                        id,
+                        ex.getMessage()
+                );
+            }
         }
     }
 
@@ -222,6 +282,14 @@ private final ReleRepository releRepository;
                         pdfBytes
                 );
 
+                // Si ya habia un archivo adjunto (reemplazo), se guarda la
+                // ruta vieja para borrarla recien despues de que el nuevo
+                // archivo se haya escrito y el registro se haya guardado
+                // con exito, asi nunca queda el remito sin ningun archivo
+                // valido si algo falla a mitad de camino.
+                String rutaAnterior =
+                        remito.getRutaArchivo();
+
                 remito.setNombreArchivo(
                         ArchivoAdjuntoValidator.sanitizarNombreOriginal(
                                 archivo.getOriginalFilename()
@@ -235,6 +303,13 @@ private final ReleRepository releRepository;
                 remitoRepository.save(
                         remito
                 );
+
+                if (rutaAnterior != null) {
+
+                        Files.deleteIfExists(
+                                Paths.get(rutaAnterior)
+                        );
+                }
 
         } catch (
                 IOException ex

@@ -1,5 +1,7 @@
 package protecciones.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -24,6 +26,9 @@ import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class OrdenProvisionService {
+
+    private static final Logger
+            log = LoggerFactory.getLogger(OrdenProvisionService.class);
 
     private final OrdenProvisionRepository
             ordenProvisionRepository;
@@ -124,6 +129,11 @@ public class OrdenProvisionService {
             Long id
     ) {
 
+        OrdenProvision orden =
+                ordenProvisionRepository
+                        .findById(id)
+                        .orElseThrow();
+
         try {
 
             ordenProvisionRepository
@@ -136,6 +146,27 @@ public class OrdenProvisionService {
             throw new BusinessException(
                     "No se puede eliminar la orden porque tiene relés asociados"
             );
+        }
+
+        // El registro ya se borro de la base; si el archivo adjunto no se
+        // puede borrar del filesystem no vale la pena romper la operacion
+        // por esto (en el peor caso queda un archivo huerfano en uploads/).
+        if (orden.getRutaArchivo() != null) {
+
+            try {
+
+                Files.deleteIfExists(
+                        Paths.get(orden.getRutaArchivo())
+                );
+
+            } catch (IOException ex) {
+
+                log.warn(
+                        "No se pudo borrar el archivo adjunto de la orden {}: {}",
+                        id,
+                        ex.getMessage()
+                );
+            }
         }
     }
 
@@ -178,6 +209,14 @@ public class OrdenProvisionService {
                     pdfBytes
             );
 
+            // Si ya habia un archivo adjunto (reemplazo), se guarda la
+            // ruta vieja para borrarla recien despues de que el nuevo
+            // archivo se haya escrito y el registro se haya guardado con
+            // exito, asi nunca queda la orden sin ningun archivo valido
+            // si algo falla a mitad de camino.
+            String rutaAnterior =
+                    orden.getRutaArchivo();
+
             orden.setNombreArchivo(
                     ArchivoAdjuntoValidator.sanitizarNombreOriginal(
                             archivo.getOriginalFilename()
@@ -191,6 +230,13 @@ public class OrdenProvisionService {
             ordenProvisionRepository.save(
                     orden
             );
+
+            if (rutaAnterior != null) {
+
+                Files.deleteIfExists(
+                        Paths.get(rutaAnterior)
+                );
+            }
 
         } catch (
                 IOException ex
