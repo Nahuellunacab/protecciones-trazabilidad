@@ -37,8 +37,10 @@ import protecciones.repository.UltimoMovimientoRepository;
 import protecciones.service.llm.LLMService;
 
 import java.io.ByteArrayOutputStream;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -224,7 +226,7 @@ public class DashboardService {
 
         if (!llmService.estaDisponible()) {
 
-            return new ResumenIADTO(null);
+            return new ResumenIADTO(null, null);
         }
 
         synchronized (resumenIALock) {
@@ -239,7 +241,10 @@ public class DashboardService {
 
             if (cacheVigente) {
 
-                return new ResumenIADTO(resumenIACacheado);
+                return new ResumenIADTO(
+                        resumenIACacheado,
+                        epochMillisALocalDateTime(resumenIACacheadoEn)
+                );
             }
 
             DashboardKpiDTO kpis =
@@ -272,7 +277,10 @@ public class DashboardService {
                 resumenIACacheadoEn =
                         System.currentTimeMillis();
 
-                return new ResumenIADTO(resumen);
+                return new ResumenIADTO(
+                        resumen,
+                        epochMillisALocalDateTime(resumenIACacheadoEn)
+                );
 
             } catch (Exception e) {
 
@@ -284,9 +292,19 @@ public class DashboardService {
                         e.getMessage()
                 );
 
-                return new ResumenIADTO(null);
+                return new ResumenIADTO(null, null);
             }
         }
+    }
+
+    private LocalDateTime epochMillisALocalDateTime(
+            long epochMillis
+    ) {
+
+        return LocalDateTime.ofInstant(
+                Instant.ofEpochMilli(epochMillis),
+                ZoneId.systemDefault()
+        );
     }
 
     private String construirPromptResumen(

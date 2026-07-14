@@ -313,11 +313,13 @@ function HomePage() {
     const [exportandoPdf, setExportandoPdf] =
         useState(false);
 
-    // Resumen ejecutivo generado con IA: ya no se pide automáticamente al
-    // cargar el dashboard (consumía cuota de Gemini en cada visita). Se
-    // pide solo cuando el usuario aprieta el botón "Generar/Actualizar",
-    // y cada click fuerza al backend a regenerarlo salteando su cache de
-    // 4 horas (GET .../resumen-ia?forzar=true).
+    // Resumen ejecutivo generado con IA: se pide automáticamente al montar
+    // el dashboard, pero SIN forzar (GET .../resumen-ia). El backend sirve
+    // el resumen desde su cache de 4 horas si todavía es válido y solo le
+    // pega a Gemini cuando el cache venció o nunca se generó — así el
+    // resumen "se actualiza solo" cada 4 horas como máximo, sin gastar
+    // cuota en cada visita. El botón "Actualizar" fuerza una regeneración
+    // inmediata salteando ese cache (GET .../resumen-ia?forzar=true).
     const [resumenIA, setResumenIA] =
         useState<string | null>(null);
 
@@ -330,14 +332,25 @@ function HomePage() {
     const [resumenIASolicitado, setResumenIASolicitado] =
         useState(false);
 
-    // Momento en que el frontend recibió el resumen actual (ver
-    // formatearFechaHoraResumen más arriba).
+    // Momento real en que el backend generó el resumen actual (viene de
+    // ResumenIA.generadoEn, ver formatearFechaHoraResumen más arriba). No
+    // es "cuándo lo recibió esta pestaña": si vino de cache, es la hora en
+    // que se generó la última vez, potencialmente horas atrás.
     const [resumenGeneradoEn, setResumenGeneradoEn] =
         useState<Date | null>(null);
 
     useEffect(() => {
 
         cargarResumenGeneral();
+
+    }, []);
+
+    // Pedido automático al montar el dashboard, sin forzar: si el cache
+    // del backend (4hs) sigue vigente, esto no le pega a Gemini, solo
+    // trae el resumen ya cacheado.
+    useEffect(() => {
+
+        cargarResumenIA(false);
 
     }, []);
 
@@ -394,12 +407,14 @@ function HomePage() {
         }
     };
 
-    // Botón "Generar resumen"/"Actualizar" del panel: siempre fuerza al
-    // backend a regenerar el resumen salteando su cache de 4 horas
-    // (GET .../resumen-ia?forzar=true), tanto la primera vez como en
-    // actualizaciones posteriores.
+    // forzar=false: pedido automático al montar el dashboard (respeta el
+    // cache de 4 horas del backend, no gasta cuota si todavía es válido).
+    // forzar=true: botón "Actualizar" del panel, salteando ese cache para
+    // regenerar al instante (GET .../resumen-ia?forzar=true).
     const cargarResumenIA =
-    async () => {
+    async (
+        forzar: boolean
+    ) => {
 
         setResumenIALoading(true);
 
@@ -408,12 +423,14 @@ function HomePage() {
         try {
 
             const data =
-                await obtenerResumenIA(true);
+                await obtenerResumenIA(forzar);
 
             setResumenIA(data.resumen);
 
             setResumenGeneradoEn(
-                data.resumen ? new Date() : null
+                data.generadoEn
+                    ? new Date(data.generadoEn)
+                    : null
             );
 
         } catch (error) {
@@ -756,11 +773,11 @@ function HomePage() {
 
             </Stack>
 
-            {/* Resumen ejecutivo generado con IA. Ya no se pide solo al
-                cargar el dashboard: el usuario lo dispara con el botón
-                "Generar"/"Actualizar" para no consumir cuota de Gemini en
-                cada visita. El backend igual mantiene su cache de 4 horas
-                por si se aprieta el botón varias veces seguidas. */}
+            {/* Resumen ejecutivo generado con IA. Se pide solo al cargar el
+                dashboard, pero sin forzar: el backend lo sirve desde su
+                cache de 4 horas si sigue vigente, así se "actualiza solo"
+                sin gastar cuota en cada visita. El botón "Actualizar"
+                fuerza una regeneración inmediata salteando ese cache. */}
             <Paper
                 elevation={2}
                 sx={{
@@ -873,7 +890,7 @@ function HomePage() {
                             variant="outlined"
                             size="small"
                             startIcon={<RefreshIcon />}
-                            onClick={cargarResumenIA}
+                            onClick={() => cargarResumenIA(true)}
                             disabled={resumenIALoading}
                         >
 
