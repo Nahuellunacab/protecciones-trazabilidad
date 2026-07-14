@@ -49,10 +49,11 @@ public class DashboardService {
 
     private static final int LIMITE_MOVIMIENTOS_MAXIMO = 200;
 
-    // El resumen ejecutivo se recalcula solo si cambio algun KPI o si pasaron
-    // mas de 30 minutos: evita pegarle a la API de Gemini en cada carga
-    // del dashboard cuando los datos no se movieron.
-    private static final long RESUMEN_IA_TTL_MS = 30 * 60 * 1000;
+    // El resumen ejecutivo se recalcula solo cada 4 horas (o cuando el
+    // usuario lo fuerza manualmente desde el dashboard). Ya no se invalida
+    // por cambios en los KPIs: en un sistema con movimientos frecuentes eso
+    // terminaba pegandole a la API de Gemini en casi cada carga de pagina.
+    private static final long RESUMEN_IA_TTL_MS = 4 * 60 * 60 * 1000;
 
     // Cuantos items de cada distribucion (marca/destino/proveedor) se le
     // pasan a la IA como contexto. No hace falta la lista completa (puede
@@ -110,11 +111,14 @@ public class DashboardService {
     private volatile String
             resumenIACacheado;
 
-    private volatile String
-            resumenIAFirmaCacheada;
-
     private volatile long
             resumenIACacheadoEn;
+
+    // Evita que pedidos concurrentes (varios usuarios abriendo el
+    // dashboard al mismo tiempo con el cache vencido) disparen mas de un
+    // llamado a Gemini en simultaneo.
+    private final Object
+            resumenIALock = new Object();
 
     public DashboardService(
             ReleRepository releRepository,
@@ -214,110 +218,75 @@ public class DashboardService {
     }
 
     public ResumenIADTO
-    obtenerResumenIA() {
+    obtenerResumenIA(
+            boolean forzar
+    ) {
 
         if (!llmService.estaDisponible()) {
 
             return new ResumenIADTO(null);
         }
 
-        DashboardKpiDTO kpis =
-                obtenerKpis();
+        synchronized (resumenIALock) {
 
-        List<EstadoCantidadDTO> porEstado =
-                obtenerRelesPorEstado();
+            boolean cacheVigente =
 
-        List<MarcaCantidadDTO> porMarca =
-                obtenerRelesPorMarca();
+                    !forzar
 
-        List<DestinoCantidadDTO> porDestino =
-                obtenerRelesPorDestino();
+                    && resumenIACacheado != null
 
-        List<ProveedorCantidadDTO> porProveedor =
-                obtenerRelesPorProveedor();
+                    && (System.currentTimeMillis() - resumenIACacheadoEn) < RESUMEN_IA_TTL_MS;
 
-        String firmaActual =
-                construirFirmaKpis(kpis, porEstado, porMarca, porDestino, porProveedor);
+            if (cacheVigente) {
 
-        boolean cacheVigente =
+                return new ResumenIADTO(resumenIACacheado);
+            }
 
-                resumenIACacheado != null
+            DashboardKpiDTO kpis =
+                    obtenerKpis();
 
-                && firmaActual.equals(resumenIAFirmaCacheada)
+            List<EstadoCantidadDTO> porEstado =
+                    obtenerRelesPorEstado();
 
-                && (System.currentTimeMillis() - resumenIACacheadoEn) < RESUMEN_IA_TTL_MS;
+            List<MarcaCantidadDTO> porMarca =
+                    obtenerRelesPorMarca();
 
-        if (cacheVigente) {
+            List<DestinoCantidadDTO> porDestino =
+                    obtenerRelesPorDestino();
 
-            return new ResumenIADTO(resumenIACacheado);
+            List<ProveedorCantidadDTO> porProveedor =
+                    obtenerRelesPorProveedor();
+
+            try {
+
+                String resumen =
+                        llmService.generarTexto(
+                                PROMPT_SISTEMA_RESUMEN,
+                                construirPromptResumen(kpis, porEstado, porMarca, porDestino, porProveedor),
+                                600
+                        );
+
+                resumenIACacheado =
+                        resumen;
+
+                resumenIACacheadoEn =
+                        System.currentTimeMillis();
+
+                return new ResumenIADTO(resumen);
+
+            } catch (Exception e) {
+
+                // Es una funcionalidad informativa, no operativa: si Gemini
+                // no responde (timeout, 429, etc.) el dashboard sigue andando
+                // sin el resumen en vez de romper la carga de KPIs.
+                log.warn(
+                        "No se pudo generar el resumen ejecutivo con IA: {}",
+                        e.getMessage()
+                );
+
+                return new ResumenIADTO(null);
+            }
         }
-
-        try {
-
-            String resumen =
-                    llmService.generarTexto(
-                            PROMPT_SISTEMA_RESUMEN,
-                            construirPromptResumen(kpis, porEstado, porMarca, porDestino, porProveedor),
-                            600
-                    );
-
-            resumenIACacheado =
-                    resumen;
-
-            resumenIAFirmaCacheada =
-                    firmaActual;
-
-            resumenIACacheadoEn =
-                    System.currentTimeMillis();
-
-            return new ResumenIADTO(resumen);
-
-        } catch (Exception e) {
-
-            // Es una funcionalidad informativa, no operativa: si Gemini
-            // no responde (timeout, 429, etc.) el dashboard sigue andando
-            // sin el resumen en vez de romper la carga de KPIs.
-            log.warn(
-                    "No se pudo generar el resumen ejecutivo con IA: {}",
-                    e.getMessage()
-            );
-
-            return new ResumenIADTO(null);
-        }
-    }
-
-    private String construirFirmaKpis(
-            DashboardKpiDTO kpis,
-            List<EstadoCantidadDTO> porEstado,
-            List<MarcaCantidadDTO> porMarca,
-            List<DestinoCantidadDTO> porDestino,
-            List<ProveedorCantidadDTO> porProveedor
-    ) {
-
-        return kpis.getTotalReles()
-                + "|" + kpis.getRelesActivos()
-                + "|" + kpis.getRelesBaja()
-                + "|" + kpis.getGarantiasVencidas()
-                + "|" + kpis.getRelesSinDocumentacion()
-                + "|" + kpis.getRelesDocumentacionSinArchivo()
-                + "|" + kpis.getRemitosPendientes()
-                + "|" + kpis.getOrdenesPendientes()
-                + "|" + kpis.getRelesSinHistorial()
-                + "|" + firmaDistribucion(porEstado, EstadoCantidadDTO::getEstado, EstadoCantidadDTO::getCantidad)
-                + "|" + firmaDistribucion(porMarca, MarcaCantidadDTO::getMarca, MarcaCantidadDTO::getCantidad)
-                + "|" + firmaDistribucion(porDestino, DestinoCantidadDTO::getDestino, DestinoCantidadDTO::getCantidad)
-                + "|" + firmaDistribucion(porProveedor, ProveedorCantidadDTO::getProveedor, ProveedorCantidadDTO::getCantidad);
-    }
-
-    private <T> String firmaDistribucion(
-            List<T> items,
-            java.util.function.Function<T, String> etiqueta,
-            java.util.function.Function<T, Long> cantidad
-    ) {
-
-        return items.stream()
-                .map(item -> etiqueta.apply(item) + ":" + cantidad.apply(item))
-                .reduce("", (a, b) -> a + "," + b);
     }
 
     private String construirPromptResumen(

@@ -35,12 +35,19 @@ Promise<DashboardKpi> {
 }
 
 export async function
-obtenerResumenIA():
+obtenerResumenIA(
+    forzar?: boolean
+):
 Promise<ResumenIA> {
 
     const response =
         await api.get(
-            "/dashboard/resumen-ia"
+            "/dashboard/resumen-ia",
+            {
+                params: {
+                    forzar
+                }
+            }
         );
 
     return response.data;

@@ -59,6 +59,9 @@ from "@mui/icons-material/AssignmentOutlined";
 import AutoAwesomeIcon
 from "@mui/icons-material/AutoAwesome";
 
+import RefreshIcon
+from "@mui/icons-material/Refresh";
+
 import InsightsIcon
 from "@mui/icons-material/Insights";
 
@@ -169,7 +172,7 @@ function parsearResumenIA(
 
 // Fecha/hora en que el frontend recibió el resumen (no la genera el
 // backend): es la mejor referencia honesta de "cuándo se generó" sin
-// tocar la API, ya que el resumen se cachea 30 minutos en el servidor.
+// tocar la API, ya que el resumen se cachea 4 horas en el servidor.
 function formatearFechaHoraResumen(
     fecha: Date
 ) {
@@ -310,14 +313,22 @@ function HomePage() {
     const [exportandoPdf, setExportandoPdf] =
         useState(false);
 
-    // Resumen ejecutivo generado con IA: se pide aparte, en paralelo al
-    // resto del dashboard, para no bloquear la carga de KPIs si Anthropic
-    // tarda o no esta configurado (resumen queda en null y no se muestra).
+    // Resumen ejecutivo generado con IA: ya no se pide automáticamente al
+    // cargar el dashboard (consumía cuota de Gemini en cada visita). Se
+    // pide solo cuando el usuario aprieta el botón "Generar/Actualizar",
+    // y cada click fuerza al backend a regenerarlo salteando su cache de
+    // 4 horas (GET .../resumen-ia?forzar=true).
     const [resumenIA, setResumenIA] =
         useState<string | null>(null);
 
     const [resumenIALoading, setResumenIALoading] =
-        useState(true);
+        useState(false);
+
+    // Si ya se intentó generar el resumen al menos una vez y no hay
+    // texto, distingue "todavía no se pidió" de "se pidió y no hay
+    // resumen disponible" (sin clave configurada o falló la llamada).
+    const [resumenIASolicitado, setResumenIASolicitado] =
+        useState(false);
 
     // Momento en que el frontend recibió el resumen actual (ver
     // formatearFechaHoraResumen más arriba).
@@ -327,8 +338,6 @@ function HomePage() {
     useEffect(() => {
 
         cargarResumenGeneral();
-
-        cargarResumenIA();
 
     }, []);
 
@@ -385,13 +394,21 @@ function HomePage() {
         }
     };
 
+    // Botón "Generar resumen"/"Actualizar" del panel: siempre fuerza al
+    // backend a regenerar el resumen salteando su cache de 4 horas
+    // (GET .../resumen-ia?forzar=true), tanto la primera vez como en
+    // actualizaciones posteriores.
     const cargarResumenIA =
     async () => {
+
+        setResumenIALoading(true);
+
+        setResumenIASolicitado(true);
 
         try {
 
             const data =
-                await obtenerResumenIA();
+                await obtenerResumenIA(true);
 
             setResumenIA(data.resumen);
 
@@ -739,14 +756,12 @@ function HomePage() {
 
             </Stack>
 
-            {/* Resumen ejecutivo generado con IA. Se oculta por completo si
-                no hay clave de Anthropic configurada o si la llamada falla:
-                es un agregado informativo, nunca un requisito del dashboard.
-                El contenido (encabezado/viñetas) y el prompt no cambian: acá
-                solo se mejora la presentación (tarjeta tipo "panel BI"). */}
-            {(resumenIALoading || resumenIA) && (
-
-                <Paper
+            {/* Resumen ejecutivo generado con IA. Ya no se pide solo al
+                cargar el dashboard: el usuario lo dispara con el botón
+                "Generar"/"Actualizar" para no consumir cuota de Gemini en
+                cada visita. El backend igual mantiene su cache de 4 horas
+                por si se aprieta el botón varias veces seguidas. */}
+            <Paper
                     elevation={2}
                     sx={{
                         borderRadius: 3,
@@ -762,7 +777,7 @@ function HomePage() {
                     {/* Encabezado tipo panel ejecutivo: icono en badge,
                         título + subtítulo, y fecha/hora de generación a la
                         derecha (momento en que el frontend recibió el dato;
-                        el backend cachea el resumen 30 minutos). */}
+                        el backend cachea el resumen 4 horas). */}
                     <Box
                         sx={{
                             px: 3,
@@ -832,19 +847,46 @@ function HomePage() {
 
                         </Stack>
 
-                        {!resumenIALoading && resumenGeneradoEn && (
+                        {!resumenIALoading && (
 
                             <Stack
                                 direction="row"
-                                spacing={0.5}
-                                sx={{ alignItems: "center", color: "text.secondary" }}
+                                spacing={1}
+                                sx={{ alignItems: "center" }}
                             >
 
-                                <AccessTimeIcon sx={{ fontSize: 15 }} />
+                                {resumenGeneradoEn && (
 
-                                <Typography variant="caption">
-                                    {formatearFechaHoraResumen(resumenGeneradoEn)}
-                                </Typography>
+                                    <Stack
+                                        direction="row"
+                                        spacing={0.5}
+                                        sx={{ alignItems: "center", color: "text.secondary" }}
+                                    >
+
+                                        <AccessTimeIcon sx={{ fontSize: 15 }} />
+
+                                        <Typography variant="caption">
+                                            {formatearFechaHoraResumen(resumenGeneradoEn)}
+                                        </Typography>
+
+                                    </Stack>
+                                )}
+
+                                <Button
+                                    variant="outlined"
+                                    size="small"
+                                    startIcon={<RefreshIcon />}
+                                    onClick={cargarResumenIA}
+                                    disabled={resumenIALoading}
+                                >
+
+                                    {
+                                        resumenIASolicitado
+                                            ? "Actualizar"
+                                            : "Generar resumen"
+                                    }
+
+                                </Button>
 
                             </Stack>
                         )}
@@ -886,12 +928,12 @@ function HomePage() {
 
                             </Stack>
 
-                        ) : (
+                        ) : resumenIA ? (
 
                             (() => {
 
                                 const { encabezado, puntos } =
-                                    parsearResumenIA(resumenIA ?? "");
+                                    parsearResumenIA(resumenIA);
 
                                 return (
 
@@ -942,12 +984,26 @@ function HomePage() {
                                     </>
                                 );
                             })()
+
+                        ) : (
+
+                            <Typography
+                                variant="body2"
+                                color="text.secondary"
+                            >
+
+                                {
+                                    resumenIASolicitado
+                                        ? "No se pudo generar el resumen (sin clave de Gemini configurada o falló la llamada)."
+                                        : "Todavía no se generó. Apretá \"Generar resumen\" para pedirle a la IA un análisis del stock actual."
+                                }
+
+                            </Typography>
                         )}
 
                     </Box>
 
                 </Paper>
-            )}
 
             {/* Copiloto IA: tarjeta independiente, no reemplaza ni
                 modifica ningun contenido existente del dashboard. */}

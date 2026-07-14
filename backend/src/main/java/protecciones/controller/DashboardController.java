@@ -41,10 +41,14 @@ public class DashboardController {
 
     @GetMapping("/resumen-ia")
     public ResumenIADTO
-    obtenerResumenIA() {
+    obtenerResumenIA(
+
+            @RequestParam(required = false, defaultValue = "false")
+            boolean forzar
+    ) {
 
         return dashboardService
-                .obtenerResumenIA();
+                .obtenerResumenIA(forzar);
     }
 
     @GetMapping("/movimientos")
