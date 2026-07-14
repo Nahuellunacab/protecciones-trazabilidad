@@ -12,7 +12,8 @@ import {
     TextField,
     MenuItem,
     Button,
-    Skeleton
+    Skeleton,
+    useMediaQuery
 
 } from "@mui/material";
 
@@ -251,6 +252,8 @@ function MetricCard(
 function HomePage() {
 
     const theme = useTheme();
+
+    const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
     const [loading, setLoading] =
         useState(true);
@@ -1215,8 +1218,8 @@ function HomePage() {
                                                 <YAxis
                                                     type="category"
                                                     dataKey={grafico.dataKeyCategoria}
-                                                    width={160}
-                                                    tick={{ fontSize: 12, fill: theme.palette.text.secondary }}
+                                                    width={isMobile ? 90 : 160}
+                                                    tick={{ fontSize: isMobile ? 10 : 12, fill: theme.palette.text.secondary }}
                                                 />
                                             </>
                                         )}
@@ -1380,8 +1383,10 @@ function HomePage() {
                             key={mov.id}
                             sx={{
                                 display: "flex",
+                                flexDirection: { xs: "column", sm: "row" },
                                 justifyContent: "space-between",
-                                alignItems: "center",
+                                alignItems: { xs: "flex-start", sm: "center" },
+                                gap: { xs: 1.5, sm: 0 },
                                 p: 2.5,
                                 borderRadius: 3,
                                 bgcolor: "action.hover",
@@ -1392,7 +1397,7 @@ function HomePage() {
 
                             {/* Información del relé */}
 
-                            <Box sx={{ width: "35%" }}>
+                            <Box sx={{ width: { xs: "100%", sm: "35%" }, minWidth: 0 }}>
 
                                 <Typography
                                     variant="body1"
@@ -1440,7 +1445,7 @@ function HomePage() {
 
                             {/* Estado */}
 
-                            <Box sx={{ width: "20%" }}>
+                            <Box sx={{ width: { xs: "100%", sm: "20%" } }}>
 
                                 <Chip
                                     label={mov.estado}
@@ -1460,8 +1465,8 @@ function HomePage() {
 
                             <Box
                                 sx={{
-                                    width: "25%",
-                                    textAlign: "right"
+                                    width: { xs: "100%", sm: "25%" },
+                                    textAlign: { xs: "left", sm: "right" }
                                 }}
                             >
 

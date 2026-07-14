@@ -1926,7 +1926,7 @@ function ReleForm({
 
                                             </Grid>
 
-                                            <Grid size={6}>
+                                            <Grid size={{ xs: 12, md: 6 }}>
 
                                     {
                                         opSeleccionada && (
@@ -1993,7 +1993,7 @@ function ReleForm({
                                                         spacing={2}
                                                     >
 
-                                                        <Grid size={3}>
+                                                        <Grid size={{ xs: 12, sm: 6 }}>
 
                                                             <TextField
                                                                 label="Número OP"
@@ -2014,7 +2014,7 @@ function ReleForm({
 
                                                         </Grid>
 
-                                                        <Grid size={3}>
+                                                        <Grid size={{ xs: 12, sm: 6 }}>
 
                                                             <TextField
                                                                 label="Observaciones"
@@ -2035,7 +2035,7 @@ function ReleForm({
 
                                                         </Grid>
 
-                                                        <Grid size={3}>
+                                                        <Grid size={{ xs: 12, sm: 6 }}>
 
                                                             <SelectorArchivoAdjunto
                                                                 label="Seleccionar PDF"
@@ -2046,7 +2046,7 @@ function ReleForm({
 
                                                         </Grid>
 
-                                                        <Grid size={3}>
+                                                        <Grid size={{ xs: 12, sm: 6 }}>
 
                                                             <Button
                                                                 variant="contained"
@@ -2138,7 +2138,7 @@ function ReleForm({
 
                                 </Grid>
 
-                                <Grid size={6}>
+                                <Grid size={{ xs: 12, md: 6 }}>
 
                                     {
                                         remitoSeleccionado && (
@@ -2231,7 +2231,7 @@ function ReleForm({
                                                         spacing={2}
                                                     >
 
-                                                        <Grid size={3}>
+                                                        <Grid size={{ xs: 12, sm: 6 }}>
 
                                                             <TextField
                                                                 label="Número Remito"
@@ -2252,7 +2252,7 @@ function ReleForm({
 
                                                         </Grid>
 
-                                                        <Grid size={3}>
+                                                        <Grid size={{ xs: 12, sm: 6 }}>
 
                                                             <TextField
                                                                 select
@@ -2298,7 +2298,7 @@ function ReleForm({
 
                                                         </Grid>
 
-                                                        <Grid size={3}>
+                                                        <Grid size={{ xs: 12, sm: 6 }}>
 
                                                             <SelectorArchivoAdjunto
                                                                 label="Seleccionar PDF"
@@ -2309,7 +2309,7 @@ function ReleForm({
 
                                                         </Grid>
 
-                                                        <Grid size={3}>
+                                                        <Grid size={{ xs: 12, sm: 6 }}>
 
                                                             <Button
                                                                 variant="contained"
@@ -2663,7 +2663,7 @@ function ReleForm({
 
                                             <>
 
-                                                <Grid size={6}>
+                                                <Grid size={{ xs: 12, sm: 6 }}>
 
                                                     <TextField
                                                         type="number"
@@ -2685,7 +2685,7 @@ function ReleForm({
 
                                                 </Grid>
 
-                                                <Grid size={6}>
+                                                <Grid size={{ xs: 12, sm: 6 }}>
 
                                                     <ToggleButtonGroup
                                                         exclusive

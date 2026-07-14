@@ -150,7 +150,8 @@ function UsuarioPage() {
                     variant="filled"
                     sx={{
                         width: "100%",
-                        minWidth: 420,
+                        minWidth: { xs: "auto", sm: 420 },
+                        maxWidth: "calc(100vw - 32px)",
                         fontSize: 16,
                         alignItems: "center",
                         boxShadow: 3
@@ -180,7 +181,8 @@ function UsuarioPage() {
                     variant="filled"
                     sx={{
                         width: "100%",
-                        minWidth: 450,
+                        minWidth: { xs: "auto", sm: 450 },
+                        maxWidth: "calc(100vw - 32px)",
                         fontSize: 16,
                         alignItems: "center",
                         boxShadow: 3
