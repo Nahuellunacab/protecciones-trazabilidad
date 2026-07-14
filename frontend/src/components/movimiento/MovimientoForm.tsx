@@ -537,7 +537,7 @@ function MovimientoForm({
                                     sx={{
                                         padding: 2,
                                         backgroundColor:
-                                            "#fafafa"
+                                            "action.hover"
                                     }}
                                 >
 

@@ -91,7 +91,7 @@ function ModeloTable({
 
                                     backgroundColor:
                                         modelo.cantidadRelesActivos === 0
-                                            ? "#f5f5f5"
+                                            ? "action.hover"
                                             : "inherit",
 
                                     opacity:
