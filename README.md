@@ -504,7 +504,8 @@ y constituyen:
 - fecha
 - proveedor asociado
 - integración logística con relés
-- validación de duplicados
+- validación de duplicados (en aplicación y con índice único en base de datos)
+- adjunto PDF o foto (celular) del comprobante — la foto se convierte automáticamente a PDF
 
 ---
 
@@ -621,7 +622,7 @@ PATCH /api/reles/{id}/baja
 - tabla de últimos movimientos
 - métricas en tiempo real
 - exportación a Excel y PDF
-- resumen ejecutivo generado por IA (Gemini API, opcional — requiere `GEMINI_API_KEY`; admite varias claves separadas por coma para repartir cuota gratuita entre cuentas; se genera bajo demanda con un botón, no automáticamente al cargar la página)
+- resumen ejecutivo generado por IA (Gemini API, opcional — requiere `GEMINI_API_KEY`; admite varias claves separadas por coma para repartir cuota gratuita entre cuentas; se pide automáticamente al abrir el dashboard, pero el backend lo cachea 4hs, así que en la práctica solo consume cuota cuando el cache venció; un botón "Actualizar" fuerza la regeneración inmediata)
 - Copiloto IA: chat que responde preguntas sobre el estado del stock y puede navegar/filtrar la interfaz por vos (ej. "mostrame los relés en reparación"), también sobre Gemini API
 
 ---
