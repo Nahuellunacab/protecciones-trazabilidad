@@ -11,12 +11,12 @@ import protecciones.repository.OrdenProvisionRepository;
 import protecciones.repository.ReleRepository;
 
 import java.util.List;
+import java.util.UUID;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import org.springframework.core.io.PathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
@@ -144,6 +144,8 @@ public class OrdenProvisionService {
             MultipartFile archivo
     ) {
 
+        ArchivoAdjuntoValidator.validarPdf(archivo);
+
         try {
 
             OrdenProvision orden =
@@ -157,30 +159,28 @@ public class OrdenProvisionService {
                     Paths.get(
                             uploadDir,
                             "ordenes-provision"
-                    );
+                    ).toAbsolutePath()
+                    .normalize();
 
             Files.createDirectories(
                     carpeta
             );
 
-            String nombreArchivo =
-                    System.currentTimeMillis()
-                    + "_"
-                    + archivo.getOriginalFilename();
-
             Path destino =
-                    carpeta.resolve(
-                            nombreArchivo
+                    ArchivoAdjuntoValidator.resolverDestinoSeguro(
+                            carpeta,
+                            UUID.randomUUID() + ".pdf"
                     );
 
-            Files.copy(
-                    archivo.getInputStream(),
+            Files.write(
                     destino,
-                    StandardCopyOption.REPLACE_EXISTING
+                    archivo.getBytes()
             );
 
             orden.setNombreArchivo(
-                    archivo.getOriginalFilename()
+                    ArchivoAdjuntoValidator.sanitizarNombreOriginal(
+                            archivo.getOriginalFilename()
+                    )
             );
 
             orden.setRutaArchivo(

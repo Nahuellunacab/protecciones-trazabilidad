@@ -1,5 +1,6 @@
 package protecciones.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 import org.springframework.security.core.Authentication;
@@ -29,10 +30,15 @@ public class AuthController {
     public LoginResponseDTO login(
             @Valid
             @RequestBody
-            LoginRequestDTO dto
+            LoginRequestDTO dto,
+
+            HttpServletRequest request
     ) {
 
-        return authService.login(dto);
+        return authService.login(
+                dto,
+                request.getRemoteAddr()
+        );
     }
 
     @GetMapping("/me")

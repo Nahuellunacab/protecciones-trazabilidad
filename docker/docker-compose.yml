@@ -30,15 +30,19 @@ services:
       DB_URL: jdbc:postgresql://postgres:5432/${DB_NAME}
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
-      # Secreto de firma de los JWT de login. Definir uno propio (largo y
-      # aleatorio) en el .env antes de un despliegue real.
-      JWT_SECRET: ${JWT_SECRET:-cambiar-este-secreto-en-produccion-por-uno-largo-y-aleatorio}
+      # Secreto de firma de los JWT de login. Obligatorio (sin default): definir
+      # uno propio, largo y aleatorio, en docker/.env antes de levantar el stack.
+      JWT_SECRET: ${JWT_SECRET:?Definí JWT_SECRET en docker/.env con un valor largo y aleatorio}
       JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-28800000}
       # Resumen ejecutivo del dashboard con IA (opcional, capa gratuita de
       # Gemini). Sin esta variable en el .env, el backend simplemente no
       # ofrece el resumen. Clave gratis en https://aistudio.google.com/apikey
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
       GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash}
+      # Origenes permitidos por CORS, separados por coma. Default: solo
+      # localhost/127.0.0.1 (dev y build dockerizado). Setear en docker/.env
+      # con el dominio real al desplegar en un servidor de producción.
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:*,http://127.0.0.1:*}
     ports:
       - "8080:8080"
     volumes:

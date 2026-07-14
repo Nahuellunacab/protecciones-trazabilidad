@@ -15,8 +15,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.List;
+import java.util.UUID;
 import org.springframework.core.io.PathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
@@ -188,6 +188,8 @@ private final ReleRepository releRepository;
                 MultipartFile archivo
         ) {
 
+        ArchivoAdjuntoValidator.validarPdf(archivo);
+
         try {
 
                 Remito remito =
@@ -201,37 +203,28 @@ private final ReleRepository releRepository;
                         Paths.get(
                                 uploadDir,
                                 "remitos"
-                        );
+                        ).toAbsolutePath()
+                        .normalize();
 
                 Files.createDirectories(
                         carpeta
                 );
 
-                String nombreArchivo =
-
-                        System.currentTimeMillis()
-
-                        + "_"
-
-                        + archivo.getOriginalFilename();
-
                 Path destino =
-                        carpeta.resolve(
-                                nombreArchivo
+                        ArchivoAdjuntoValidator.resolverDestinoSeguro(
+                                carpeta,
+                                UUID.randomUUID() + ".pdf"
                         );
 
-                Files.copy(
-
-                        archivo.getInputStream(),
-
+                Files.write(
                         destino,
-
-                        StandardCopyOption
-                                .REPLACE_EXISTING
+                        archivo.getBytes()
                 );
 
                 remito.setNombreArchivo(
-                        archivo.getOriginalFilename()
+                        ArchivoAdjuntoValidator.sanitizarNombreOriginal(
+                                archivo.getOriginalFilename()
+                        )
                 );
 
                 remito.setRutaArchivo(

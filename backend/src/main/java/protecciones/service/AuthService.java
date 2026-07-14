@@ -13,6 +13,7 @@ import protecciones.entity.Usuario;
 import protecciones.exception.BusinessException;
 import protecciones.repository.UsuarioRepository;
 import protecciones.security.JwtService;
+import protecciones.security.LoginRateLimiter;
 
 @Service
 public class AuthService {
@@ -25,22 +26,35 @@ public class AuthService {
 
     private final PasswordEncoder passwordEncoder;
 
+    private final LoginRateLimiter loginRateLimiter;
+
     public AuthService(
             AuthenticationManager authenticationManager,
             JwtService jwtService,
             UsuarioRepository usuarioRepository,
-            PasswordEncoder passwordEncoder
+            PasswordEncoder passwordEncoder,
+            LoginRateLimiter loginRateLimiter
     ) {
 
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
+        this.loginRateLimiter = loginRateLimiter;
     }
 
     public LoginResponseDTO login(
-            LoginRequestDTO dto
+            LoginRequestDTO dto,
+            String ipCliente
     ) {
+
+        String identificador =
+                dto.getIdentificador().trim();
+
+        loginRateLimiter.verificarNoBloqueado(
+                identificador,
+                ipCliente
+        );
 
         UserDetails userDetails;
 
@@ -49,17 +63,27 @@ public class AuthService {
             userDetails =
                     (UserDetails) authenticationManager.authenticate(
                             new UsernamePasswordAuthenticationToken(
-                                    dto.getIdentificador().trim(),
+                                    identificador,
                                     dto.getPassword()
                             )
                     ).getPrincipal();
 
         } catch (Exception ex) {
 
+            loginRateLimiter.registrarFallo(
+                    identificador,
+                    ipCliente
+            );
+
             throw new BusinessException(
                     "Email o contrasena incorrectos"
             );
         }
+
+        loginRateLimiter.registrarExito(
+                identificador,
+                ipCliente
+        );
 
         Usuario usuario =
                 usuarioRepository
