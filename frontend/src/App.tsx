@@ -1,8 +1,20 @@
 import AppRouter from "./routes/AppRouter";
 
+import OfflineBanner
+from "./components/common/OfflineBanner";
+
 function App() {
 
-    return <AppRouter />;
+    return (
+
+        <>
+
+            <OfflineBanner />
+
+            <AppRouter />
+
+        </>
+    );
 }
 
 export default App;
