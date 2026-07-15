@@ -42,12 +42,18 @@ import {
 
 import { useAuth } from "../../context/AuthContext";
 
+import BuscadorTexto
+from "../../components/common/BuscadorTexto";
+
 function ProvinciaPage() {
 
     const { canWrite } = useAuth();
 
     const [provincias, setProvincias] =
         useState<Provincia[]>([]);
+
+    const [texto, setTexto] =
+        useState("");
 
     const [nombre, setNombre] =
         useState("");
@@ -170,6 +176,17 @@ function ProvinciaPage() {
         setEditandoId(null);
     }
 
+    const provinciasFiltradas =
+
+        provincias.filter((provincia) =>
+
+            provincia.nombre
+                .toLowerCase()
+                .includes(
+                    texto.toLowerCase()
+                )
+        );
+
     return (
 
         <Box>
@@ -236,6 +253,21 @@ function ProvinciaPage() {
                 </Paper>
             )}
 
+            <Paper
+                sx={{
+                    p: 3,
+                    mb: 3
+                }}
+            >
+
+                <BuscadorTexto
+                    label="Buscar provincia"
+                    value={texto}
+                    onChange={setTexto}
+                />
+
+            </Paper>
+
             <TableContainer
                 component={Paper}
             >
@@ -264,7 +296,7 @@ function ProvinciaPage() {
 
                     <TableBody>
 
-                        {provincias.map(
+                        {provinciasFiltradas.map(
                             (provincia) => (
 
                                 <TableRow

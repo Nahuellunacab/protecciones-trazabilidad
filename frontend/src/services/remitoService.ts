@@ -35,6 +35,46 @@ Promise<Remito[]> {
     return response.data;
 }
 
+interface RemitoPageResponse {
+
+    content: Remito[];
+
+    totalElements: number;
+}
+
+export interface FiltrosRemito {
+
+    proveedorId?: number;
+
+    asociado?: boolean;
+}
+
+export async function obtenerRemitosPaginados(
+    page: number,
+    size: number,
+    texto: string,
+    sort: string = "fecha,desc",
+    filtros: FiltrosRemito = {}
+): Promise<RemitoPageResponse> {
+
+    const response =
+        await api.get(
+            "/remitos/paginado",
+            {
+                params: {
+                    page,
+                    size,
+                    sort,
+                    texto,
+                    proveedorId: filtros.proveedorId,
+                    asociado: filtros.asociado
+                }
+            }
+        );
+
+    return response.data;
+}
+
 export async function crearRemito(
     data: RemitoRequest
 ) {

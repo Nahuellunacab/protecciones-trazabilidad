@@ -4,6 +4,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import protecciones.dto.OrdenProvisionRequestDTO;
 import protecciones.dto.OrdenProvisionResponseDTO;
@@ -61,6 +65,57 @@ public class OrdenProvisionService {
                 .stream()
                 .map(this::mapToDTO)
                 .toList();
+    }
+
+    public Page<OrdenProvisionResponseDTO>
+    obtenerPaginados(
+
+            int page,
+            int size,
+            String sort,
+            String texto,
+            Boolean asociado
+    ) {
+
+        String[] sortParams =
+                sort.split(",");
+
+        String campo =
+                sortParams[0];
+
+        Sort.Direction direccion =
+                sortParams.length > 1
+                        &&
+                        sortParams[1]
+                                .equalsIgnoreCase(
+                                        "desc"
+                                )
+                        ? Sort.Direction.DESC
+                        : Sort.Direction.ASC;
+
+        Pageable pageable =
+                PageRequest.of(
+
+                        page,
+
+                        size,
+
+                        Sort.by(
+                                direccion,
+                                campo
+                        )
+                );
+
+        Page<OrdenProvision> ordenesPage =
+                ordenProvisionRepository.buscarPaginado(
+                        texto,
+                        asociado,
+                        pageable
+                );
+
+        return ordenesPage.map(
+                this::mapToDTO
+        );
     }
 
     public OrdenProvisionResponseDTO guardar(

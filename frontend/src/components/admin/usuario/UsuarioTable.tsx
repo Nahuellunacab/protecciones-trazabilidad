@@ -24,12 +24,17 @@ interface Props {
     onEditar: (
         usuario: Usuario
     ) => void;
+
+    onResetPassword: (
+        usuario: Usuario
+    ) => void;
 }
 
 function UsuarioTable({
     usuarios,
     isAdmin,
-    onEditar
+    onEditar,
+    onResetPassword
 }: Props) {
 
     return (
@@ -178,6 +183,17 @@ function UsuarioTable({
                                                 }
                                             >
                                                 Editar
+                                            </Button>
+
+                                            <Button
+                                                size="small"
+                                                variant="outlined"
+                                                color="warning"
+                                                onClick={() =>
+                                                    onResetPassword(usuario)
+                                                }
+                                            >
+                                                Resetear contraseña
                                             </Button>
 
                                         </Stack>

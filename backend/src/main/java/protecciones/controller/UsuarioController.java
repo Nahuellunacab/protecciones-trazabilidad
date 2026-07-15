@@ -2,6 +2,7 @@ package protecciones.controller;
 
 import jakarta.validation.Valid;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -32,6 +33,39 @@ public class UsuarioController {
     obtenerTodos() {
 
         return usuarioService.obtenerTodos();
+    }
+
+    @GetMapping("/paginado")
+    public Page<UsuarioResponseDTO>
+    obtenerPaginados(
+
+            @RequestParam(defaultValue = "0")
+            int page,
+
+            @RequestParam(defaultValue = "10")
+            int size,
+
+            @RequestParam(defaultValue = "id,asc")
+            String sort,
+
+            @RequestParam(defaultValue = "")
+            String texto,
+
+            @RequestParam(defaultValue = "ACTIVOS")
+            String filtroEstado,
+
+            @RequestParam(required = false)
+            String rol
+    ) {
+
+        return usuarioService.obtenerPaginados(
+                page,
+                size,
+                sort,
+                texto,
+                filtroEstado,
+                rol
+        );
     }
 
     @PostMapping

@@ -1,5 +1,6 @@
 package protecciones.controller;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -142,5 +143,35 @@ public class OrdenProvisionController {
 
         return ordenProvisionService
                 .obtenerDisponibles();
+        }
+
+        @GetMapping("/paginado")
+        public Page<OrdenProvisionResponseDTO>
+        obtenerPaginados(
+
+                @RequestParam(defaultValue = "0")
+                int page,
+
+                @RequestParam(defaultValue = "10")
+                int size,
+
+                @RequestParam(defaultValue = "id,desc")
+                String sort,
+
+                @RequestParam(defaultValue = "")
+                String texto,
+
+                @RequestParam(required = false)
+                Boolean asociado
+        ) {
+
+        return ordenProvisionService
+                .obtenerPaginados(
+                        page,
+                        size,
+                        sort,
+                        texto,
+                        asociado
+                );
         }
 }

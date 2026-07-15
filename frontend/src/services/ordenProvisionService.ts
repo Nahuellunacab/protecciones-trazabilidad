@@ -32,6 +32,44 @@ obtenerOrdenesProvisionDisponibles() {
     return response.data;
 }
 
+interface OrdenProvisionPageResponse {
+
+    content: OrdenProvision[];
+
+    totalElements: number;
+}
+
+export interface FiltrosOrdenProvision {
+
+    asociado?: boolean;
+}
+
+export async function
+obtenerOrdenesProvisionPaginadas(
+    page: number,
+    size: number,
+    texto: string,
+    sort: string = "id,desc",
+    filtros: FiltrosOrdenProvision = {}
+): Promise<OrdenProvisionPageResponse> {
+
+    const response =
+        await api.get(
+            "/ordenes-provision/paginado",
+            {
+                params: {
+                    page,
+                    size,
+                    sort,
+                    texto,
+                    asociado: filtros.asociado
+                }
+            }
+        );
+
+    return response.data;
+}
+
 export async function
 crearOrdenProvision(
     data: OrdenProvisionRequest

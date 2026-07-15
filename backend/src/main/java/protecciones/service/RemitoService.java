@@ -3,6 +3,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import protecciones.dto.RemitoRequestDTO;
 import protecciones.dto.RemitoResponseDTO;
@@ -368,6 +372,59 @@ private final ReleRepository releRepository;
                 .map(this::mapToDTO)
                 .toList();
         }
+
+    public Page<RemitoResponseDTO>
+    obtenerPaginados(
+
+            int page,
+            int size,
+            String sort,
+            String texto,
+            Long proveedorId,
+            Boolean asociado
+    ) {
+
+        String[] sortParams =
+                sort.split(",");
+
+        String campo =
+                sortParams[0];
+
+        Sort.Direction direccion =
+                sortParams.length > 1
+                        &&
+                        sortParams[1]
+                                .equalsIgnoreCase(
+                                        "desc"
+                                )
+                        ? Sort.Direction.DESC
+                        : Sort.Direction.ASC;
+
+        Pageable pageable =
+                PageRequest.of(
+
+                        page,
+
+                        size,
+
+                        Sort.by(
+                                direccion,
+                                campo
+                        )
+                );
+
+        Page<Remito> remitosPage =
+                remitoRepository.buscarPaginado(
+                        texto,
+                        proveedorId,
+                        asociado,
+                        pageable
+                );
+
+        return remitosPage.map(
+                this::mapToDTO
+        );
+    }
 
     private void validarDuplicado(
             String numeroRemito

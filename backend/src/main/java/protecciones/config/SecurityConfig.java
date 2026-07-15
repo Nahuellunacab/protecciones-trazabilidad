@@ -82,12 +82,12 @@ public class SecurityConfig {
                                 "/api/auth/password"
                         ).authenticated()
                         .requestMatchers(
+                                "/api/usuarios/**"
+                        ).hasAuthority("ADMIN")
+                        .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/**"
                         ).authenticated()
-                        .requestMatchers(
-                                "/api/usuarios/**"
-                        ).hasAuthority("ADMIN")
                         .anyRequest().hasAnyAuthority("ADMIN", "OPERADOR")
                 )
                 .exceptionHandling(exceptionHandling -> exceptionHandling

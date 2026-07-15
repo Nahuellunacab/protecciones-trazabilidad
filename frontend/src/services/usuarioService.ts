@@ -11,6 +11,45 @@ export async function obtenerUsuarios() {
     return response.data;
 }
 
+interface UsuarioPageResponse {
+
+    content: Usuario[];
+
+    totalElements: number;
+}
+
+export interface FiltrosUsuario {
+
+    rol?: string;
+}
+
+export async function obtenerUsuariosPaginados(
+    page: number,
+    size: number,
+    texto: string,
+    filtroEstado: "ACTIVOS" | "INACTIVOS" | "TODOS",
+    sort: string = "id,asc",
+    filtros: FiltrosUsuario = {}
+): Promise<UsuarioPageResponse> {
+
+    const response =
+        await api.get(
+            "/usuarios/paginado",
+            {
+                params: {
+                    page,
+                    size,
+                    sort,
+                    texto,
+                    filtroEstado,
+                    rol: filtros.rol
+                }
+            }
+        );
+
+    return response.data;
+}
+
 export async function crearUsuario(
     data: UsuarioRequest
 ) {

@@ -13,7 +13,8 @@ import {
     DialogContent,
     DialogContentText,
     DialogActions,
-    Button
+    Button,
+    Paper
 } from "@mui/material";
 
 import PageHeader
@@ -24,6 +25,9 @@ from "../../components/admin/modelo/ModeloForm";
 
 import ModeloTable
 from "../../components/admin/modelo/ModeloTable";
+
+import BuscadorTexto
+from "../../components/common/BuscadorTexto";
 
 import {
     obtenerModelos,
@@ -53,6 +57,9 @@ function ModeloPage() {
 
     const [marcas, setMarcas] =
         useState<Marca[]>([]);
+
+    const [texto, setTexto] =
+        useState("");
 
     const [modeloEditando,
         setModeloEditando] =
@@ -149,6 +156,25 @@ function ModeloPage() {
         setOpenDialog(true);
     };
 
+    const modelosFiltrados =
+
+        modelos.filter((modelo) => {
+
+            const textoLower =
+                texto.toLowerCase();
+
+            return (
+
+                modelo.nombre
+                    .toLowerCase()
+                    .includes(textoLower)
+
+                || modelo.marca
+                    .toLowerCase()
+                    .includes(textoLower)
+            );
+        });
+
     const confirmarEliminar =
         async () => {
 
@@ -209,8 +235,24 @@ function ModeloPage() {
                 />
             )}
 
+            <Paper
+                sx={{
+                    p: 3,
+                    mb: 3,
+                    borderRadius: 3
+                }}
+            >
+
+                <BuscadorTexto
+                    label="Buscar modelo"
+                    value={texto}
+                    onChange={setTexto}
+                />
+
+            </Paper>
+
             <ModeloTable
-                modelos={modelos}
+                modelos={modelosFiltrados}
                 canWrite={canWrite}
                 onEditar={setModeloEditando}
                 onEliminar={abrirDialogEliminar}

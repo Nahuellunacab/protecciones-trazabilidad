@@ -10,7 +10,11 @@ import {
     Alert,
     Box,
     Button,
+    FormControl,
+    InputLabel,
+    MenuItem,
     Paper,
+    Select,
     Snackbar,
     Table,
     TableBody,
@@ -18,12 +22,12 @@ import {
     TableContainer,
     TableHead,
     TableRow,
+    TablePagination,
     TextField,
     Typography,
     Chip,
     Grid,
-    IconButton,
-    InputAdornment
+    IconButton
 
 } from "@mui/material";
 
@@ -32,9 +36,6 @@ from "@mui/icons-material/Edit";
 
 import DeleteIcon
 from "@mui/icons-material/Delete";
-
-import SearchIcon
-from "@mui/icons-material/Search";
 
 import type {
     OrdenProvision
@@ -45,11 +46,11 @@ from "@mui/icons-material/PictureAsPdf";
 
 import {
 
-    obtenerOrdenesProvision,
     crearOrdenProvision,
     actualizarOrdenProvision,
     eliminarOrdenProvision,
-    subirArchivoOP
+    subirArchivoOP,
+    obtenerOrdenesProvisionPaginadas
 
 } from "../../services/ordenProvisionService";
 
@@ -58,12 +59,36 @@ import { useAuth } from "../../context/AuthContext";
 import SelectorArchivoAdjunto
 from "../../components/common/SelectorArchivoAdjunto";
 
+import BuscadorTexto
+from "../../components/common/BuscadorTexto";
+
+import useDebouncedValue
+from "../../hooks/useDebouncedValue";
+
 function OrdenProvisionPage() {
 
     const { canWrite } = useAuth();
 
     const [ordenes, setOrdenes] =
         useState<OrdenProvision[]>([]);
+
+    const [totalOrdenes, setTotalOrdenes] =
+        useState(0);
+
+    const [page, setPage] =
+        useState(0);
+
+    const [rowsPerPage, setRowsPerPage] =
+        useState(10);
+
+    const [texto, setTexto] =
+        useState("");
+
+    const textoDebounced =
+        useDebouncedValue(texto);
+
+    const [asociadoFiltro, setAsociadoFiltro] =
+        useState<"" | "true" | "false">("");
 
     const [numero, setNumero] =
         useState("");
@@ -73,9 +98,6 @@ function OrdenProvisionPage() {
 
     const [editandoId, setEditandoId] =
         useState<number | null>(null);
-
-    const [busqueda, setBusqueda] =
-        useState("");
 
     const [archivo, setArchivo] =
         useState<File | null>(null);
@@ -114,9 +136,26 @@ function OrdenProvisionPage() {
         try {
 
             const data =
-                await obtenerOrdenesProvision();
+                await obtenerOrdenesProvisionPaginadas(
+                    page,
+                    rowsPerPage,
+                    textoDebounced,
+                    "id,desc",
+                    {
+                        asociado:
+                            asociadoFiltro === ""
+                                ? undefined
+                                : asociadoFiltro === "true"
+                    }
+                );
 
-            setOrdenes(data);
+            setOrdenes(
+                data.content
+            );
+
+            setTotalOrdenes(
+                data.totalElements
+            );
 
         } catch {
 
@@ -129,9 +168,20 @@ function OrdenProvisionPage() {
 
     useEffect(() => {
 
+        setPage(0);
+
+    }, [texto]);
+
+    useEffect(() => {
+
         cargarDatos();
 
-    }, []);
+    }, [
+        page,
+        rowsPerPage,
+        textoDebounced,
+        asociadoFiltro
+    ]);
 
     const handleSubmit =
     async (
@@ -312,17 +362,6 @@ function OrdenProvisionPage() {
 
         setEditandoId(null);
     }
-
-    const ordenesFiltradas =
-
-        ordenes.filter((orden) =>
-
-            orden.numero
-                .toLowerCase()
-                .includes(
-                    busqueda.toLowerCase()
-                )
-        );
 
     return (
 
@@ -505,26 +544,64 @@ function OrdenProvisionPage() {
                 }}
             >
 
-                <TextField
-                    fullWidth
-                    label="Buscar Orden de Provisión"
-                    value={busqueda}
-                    onChange={(e) =>
-                        setBusqueda(
-                            e.target.value
-                        )
-                    }
-                    slotProps={{
-                        input: {
-                            startAdornment: (
+                <Grid
+                    container
+                    spacing={2}
+                >
 
-                                <InputAdornment position="start">
-                                    <SearchIcon />
-                                </InputAdornment>
-                            )
-                        }
-                    }}
-                />
+                    <Grid size={{ xs: 12, md: 8 }}>
+
+                        <BuscadorTexto
+                            label="Buscar Orden de Provisión"
+                            placeholder="Número u observaciones"
+                            value={texto}
+                            onChange={setTexto}
+                        />
+
+                    </Grid>
+
+                    <Grid size={{ xs: 12, md: 4 }}>
+
+                        <FormControl fullWidth>
+
+                            <InputLabel id="filtro-asociado-op-label">
+                                Estado
+                            </InputLabel>
+
+                            <Select
+                                labelId="filtro-asociado-op-label"
+                                label="Estado"
+                                value={asociadoFiltro}
+                                onChange={(e) => {
+
+                                    setAsociadoFiltro(
+                                        e.target.value as
+                                            "" | "true" | "false"
+                                    );
+
+                                    setPage(0);
+                                }}
+                            >
+
+                                <MenuItem value="">
+                                    Todas
+                                </MenuItem>
+
+                                <MenuItem value="true">
+                                    Asociadas
+                                </MenuItem>
+
+                                <MenuItem value="false">
+                                    Pendientes
+                                </MenuItem>
+
+                            </Select>
+
+                        </FormControl>
+
+                    </Grid>
+
+                </Grid>
 
             </Paper>
 
@@ -564,7 +641,7 @@ function OrdenProvisionPage() {
 
                     <TableBody>
 
-                        {ordenesFiltradas.map(
+                        {ordenes.map(
                             (orden) => (
 
                                 <TableRow
@@ -680,6 +757,25 @@ function OrdenProvisionPage() {
                     </TableBody>
 
                 </Table>
+
+                <TablePagination
+                    component="div"
+                    count={totalOrdenes}
+                    page={page}
+                    onPageChange={(_, nuevaPagina) =>
+                        setPage(nuevaPagina)
+                    }
+                    rowsPerPage={rowsPerPage}
+                    onRowsPerPageChange={(e) => {
+
+                        setRowsPerPage(
+                            Number(e.target.value)
+                        );
+
+                        setPage(0);
+                    }}
+                    rowsPerPageOptions={[10, 25, 50]}
+                />
 
             </TableContainer>
 

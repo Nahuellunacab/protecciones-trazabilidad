@@ -10,8 +10,11 @@ import {
     Alert,
     Box,
     Button,
+    FormControl,
+    InputLabel,
     MenuItem,
     Paper,
+    Select,
     Snackbar,
     Table,
     TableBody,
@@ -19,6 +22,7 @@ import {
     TableContainer,
     TableHead,
     TableRow,
+    TablePagination,
     TextField,
     Typography,
     Chip,
@@ -41,12 +45,12 @@ import type {
 
 import {
 
-    obtenerRemitos,
     crearRemito,
     actualizarRemito,
     eliminarRemito,
     subirArchivoRemito,
-    abrirArchivoRemito
+    abrirArchivoRemito,
+    obtenerRemitosPaginados
 
 } from "../../services/remitoService";
 
@@ -68,12 +72,39 @@ import { useAuth } from "../../context/AuthContext";
 import SelectorArchivoAdjunto
 from "../../components/common/SelectorArchivoAdjunto";
 
+import BuscadorTexto
+from "../../components/common/BuscadorTexto";
+
+import useDebouncedValue
+from "../../hooks/useDebouncedValue";
+
 function RemitoPage() {
 
     const { canWrite } = useAuth();
 
     const [remitos, setRemitos] =
         useState<Remito[]>([]);
+
+    const [totalRemitos, setTotalRemitos] =
+        useState(0);
+
+    const [page, setPage] =
+        useState(0);
+
+    const [rowsPerPage, setRowsPerPage] =
+        useState(10);
+
+    const [texto, setTexto] =
+        useState("");
+
+    const textoDebounced =
+        useDebouncedValue(texto);
+
+    const [proveedorIdFiltro, setProveedorIdFiltro] =
+        useState<number | "">("");
+
+    const [asociadoFiltro, setAsociadoFiltro] =
+        useState<"" | "true" | "false">("");
 
     const [proveedores, setProveedores] =
         useState<Proveedor[]>([]);
@@ -119,26 +150,35 @@ function RemitoPage() {
         setOpenSnackbar(true);
     }
 
-    async function cargarDatos() {
+    async function cargarRemitos() {
 
         try {
 
-            const [
-                remitosData,
-                proveedoresData
-            ] = await Promise.all([
+            const data =
+                await obtenerRemitosPaginados(
+                    page,
+                    rowsPerPage,
+                    textoDebounced,
+                    "fecha,desc",
+                    {
+                        proveedorId:
+                            proveedorIdFiltro === ""
+                                ? undefined
+                                : proveedorIdFiltro,
 
-                obtenerRemitos(),
-
-                obtenerProveedores()
-            ]);
+                        asociado:
+                            asociadoFiltro === ""
+                                ? undefined
+                                : asociadoFiltro === "true"
+                    }
+                );
 
             setRemitos(
-                remitosData
+                data.content
             );
 
-            setProveedores(
-                proveedoresData
+            setTotalRemitos(
+                data.totalElements
             );
 
         } catch {
@@ -150,11 +190,49 @@ function RemitoPage() {
         }
     }
 
+    async function cargarProveedores() {
+
+        const proveedoresData =
+            await obtenerProveedores();
+
+        setProveedores(
+            proveedoresData
+        );
+    }
+
+    async function cargarDatos() {
+
+        await Promise.all([
+
+            cargarRemitos(),
+
+            cargarProveedores()
+        ]);
+    }
+
     useEffect(() => {
 
-        cargarDatos();
+        cargarProveedores();
 
     }, []);
+
+    useEffect(() => {
+
+        setPage(0);
+
+    }, [texto]);
+
+    useEffect(() => {
+
+        cargarRemitos();
+
+    }, [
+        page,
+        rowsPerPage,
+        textoDebounced,
+        proveedorIdFiltro,
+        asociadoFiltro
+    ]);
 
     async function handleSubmit(
         e: React.FormEvent
@@ -479,6 +557,120 @@ function RemitoPage() {
 
             )}
 
+            <Paper
+                sx={{
+                    p: 3,
+                    mb: 3
+                }}
+            >
+
+                <Grid
+                    container
+                    spacing={2}
+                >
+
+                    <Grid size={{ xs: 12, md: 5 }}>
+
+                        <BuscadorTexto
+                            label="Buscar remito"
+                            placeholder="Número o proveedor"
+                            value={texto}
+                            onChange={setTexto}
+                        />
+
+                    </Grid>
+
+                    <Grid size={{ xs: 12, md: 4 }}>
+
+                        <FormControl fullWidth>
+
+                            <InputLabel id="filtro-proveedor-label">
+                                Proveedor
+                            </InputLabel>
+
+                            <Select
+                                labelId="filtro-proveedor-label"
+                                label="Proveedor"
+                                value={proveedorIdFiltro}
+                                onChange={(e) => {
+
+                                    setProveedorIdFiltro(
+                                        e.target.value as number | ""
+                                    );
+
+                                    setPage(0);
+                                }}
+                            >
+
+                                <MenuItem value="">
+                                    Todos
+                                </MenuItem>
+
+                                {proveedores.map(
+                                    (proveedor) => (
+
+                                        <MenuItem
+                                            key={proveedor.id}
+                                            value={proveedor.id}
+                                        >
+
+                                            {proveedor.nombre}
+
+                                        </MenuItem>
+                                    )
+                                )}
+
+                            </Select>
+
+                        </FormControl>
+
+                    </Grid>
+
+                    <Grid size={{ xs: 12, md: 3 }}>
+
+                        <FormControl fullWidth>
+
+                            <InputLabel id="filtro-asociado-label">
+                                Estado
+                            </InputLabel>
+
+                            <Select
+                                labelId="filtro-asociado-label"
+                                label="Estado"
+                                value={asociadoFiltro}
+                                onChange={(e) => {
+
+                                    setAsociadoFiltro(
+                                        e.target.value as
+                                            "" | "true" | "false"
+                                    );
+
+                                    setPage(0);
+                                }}
+                            >
+
+                                <MenuItem value="">
+                                    Todos
+                                </MenuItem>
+
+                                <MenuItem value="true">
+                                    Asociados
+                                </MenuItem>
+
+                                <MenuItem value="false">
+                                    Libres
+                                </MenuItem>
+
+                            </Select>
+
+                        </FormControl>
+
+                    </Grid>
+
+                </Grid>
+
+            </Paper>
+
             <TableContainer
                 component={Paper}
             >
@@ -639,6 +831,25 @@ function RemitoPage() {
                     </TableBody>
 
                 </Table>
+
+                <TablePagination
+                    component="div"
+                    count={totalRemitos}
+                    page={page}
+                    onPageChange={(_, nuevaPagina) =>
+                        setPage(nuevaPagina)
+                    }
+                    rowsPerPage={rowsPerPage}
+                    onRowsPerPageChange={(e) => {
+
+                        setRowsPerPage(
+                            Number(e.target.value)
+                        );
+
+                        setPage(0);
+                    }}
+                    rowsPerPageOptions={[10, 25, 50]}
+                />
 
             </TableContainer>
 

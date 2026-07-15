@@ -43,12 +43,18 @@ import { useAuth } from "../../context/AuthContext";
 
 import ProveedorForm from "../../components/admin/proveedor/ProveedorForm";
 
+import BuscadorTexto
+from "../../components/common/BuscadorTexto";
+
 function ProveedorPage() {
 
     const { canWrite } = useAuth();
 
     const [proveedores, setProveedores] =
         useState<Proveedor[]>([]);
+
+    const [texto, setTexto] =
+        useState("");
 
     const [proveedorEditando, setProveedorEditando] =
         useState<Proveedor | null>(null);
@@ -149,6 +155,29 @@ function ProveedorPage() {
         );
     }
 
+    const proveedoresFiltrados =
+
+        proveedores.filter((proveedor) => {
+
+            const textoLower =
+                texto.toLowerCase();
+
+            return (
+
+                proveedor.nombre
+                    .toLowerCase()
+                    .includes(textoLower)
+
+                || proveedor.domicilio
+                    .toLowerCase()
+                    .includes(textoLower)
+
+                || proveedor.telefono
+                    .toLowerCase()
+                    .includes(textoLower)
+            );
+        });
+
     return (
 
         <Box>
@@ -181,6 +210,21 @@ function ProveedorPage() {
                     }
                 />
             )}
+
+            <Paper
+                sx={{
+                    p: 3,
+                    mb: 3
+                }}
+            >
+
+                <BuscadorTexto
+                    label="Buscar proveedor"
+                    value={texto}
+                    onChange={setTexto}
+                />
+
+            </Paper>
 
             <TableContainer
                 component={Paper}
@@ -218,7 +262,7 @@ function ProveedorPage() {
 
                     <TableBody>
 
-                        {proveedores.map(
+                        {proveedoresFiltrados.map(
                             (proveedor) => (
 
                                 <TableRow

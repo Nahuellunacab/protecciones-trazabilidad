@@ -51,6 +51,9 @@ import {
 
 import { useAuth } from "../../context/AuthContext";
 
+import BuscadorTexto
+from "../../components/common/BuscadorTexto";
+
 function DestinoPage() {
 
     const { canWrite } = useAuth();
@@ -60,6 +63,9 @@ function DestinoPage() {
 
     const [localidades, setLocalidades] =
         useState<Localidad[]>([]);
+
+    const [texto, setTexto] =
+        useState("");
 
     const [nombre, setNombre] =
         useState("");
@@ -203,6 +209,29 @@ function DestinoPage() {
         setEditandoId(null);
     }
 
+    const destinosFiltrados =
+
+        destinos.filter((destino) => {
+
+            const textoLower =
+                texto.toLowerCase();
+
+            return (
+
+                destino.nombre
+                    .toLowerCase()
+                    .includes(textoLower)
+
+                || destino.localidad
+                    .toLowerCase()
+                    .includes(textoLower)
+
+                || destino.provincia
+                    .toLowerCase()
+                    .includes(textoLower)
+            );
+        });
+
     return (
 
         <Box>
@@ -304,6 +333,21 @@ function DestinoPage() {
                 </Paper>
             )}
 
+            <Paper
+                sx={{
+                    p: 3,
+                    mb: 3
+                }}
+            >
+
+                <BuscadorTexto
+                    label="Buscar destino"
+                    value={texto}
+                    onChange={setTexto}
+                />
+
+            </Paper>
+
             <TableContainer
                 component={Paper}
             >
@@ -340,7 +384,7 @@ function DestinoPage() {
 
                     <TableBody>
 
-                        {destinos.map(
+                        {destinosFiltrados.map(
                             (destino) => (
 
                                 <TableRow

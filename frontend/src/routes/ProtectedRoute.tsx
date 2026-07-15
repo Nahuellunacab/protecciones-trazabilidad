@@ -5,10 +5,10 @@ import type { ReactNode } from "react";
 import { useAuth } from "../context/AuthContext";
 
 function ProtectedRoute(
-    { children }: { children: ReactNode }
+    { children, soloAdmin }: { children: ReactNode; soloAdmin?: boolean }
 ) {
 
-    const { token } =
+    const { token, isAdmin } =
         useAuth();
 
     const location =
@@ -20,6 +20,16 @@ function ProtectedRoute(
             <Navigate
                 to="/login"
                 state={{ from: location.pathname }}
+                replace
+            />
+        );
+    }
+
+    if (soloAdmin && !isAdmin) {
+
+        return (
+            <Navigate
+                to="/"
                 replace
             />
         );

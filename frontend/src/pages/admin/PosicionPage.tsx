@@ -51,6 +51,9 @@ import {
 
 import { useAuth } from "../../context/AuthContext";
 
+import BuscadorTexto
+from "../../components/common/BuscadorTexto";
+
 function PosicionPage() {
 
     const { canWrite } = useAuth();
@@ -60,6 +63,9 @@ function PosicionPage() {
 
     const [destinos, setDestinos] =
         useState<Destino[]>([]);
+
+    const [texto, setTexto] =
+        useState("");
 
     const [nombre, setNombre] =
         useState("");
@@ -203,6 +209,25 @@ function PosicionPage() {
         setEditandoId(null);
     }
 
+    const posicionesFiltradas =
+
+        posiciones.filter((posicion) => {
+
+            const textoLower =
+                texto.toLowerCase();
+
+            return (
+
+                posicion.nombre
+                    .toLowerCase()
+                    .includes(textoLower)
+
+                || posicion.destino
+                    .toLowerCase()
+                    .includes(textoLower)
+            );
+        });
+
     return (
 
         <Box>
@@ -302,6 +327,21 @@ function PosicionPage() {
                 </Paper>
             )}
 
+            <Paper
+                sx={{
+                    p: 3,
+                    mb: 3
+                }}
+            >
+
+                <BuscadorTexto
+                    label="Buscar posición"
+                    value={texto}
+                    onChange={setTexto}
+                />
+
+            </Paper>
+
             <TableContainer
                 component={Paper}
             >
@@ -334,7 +374,7 @@ function PosicionPage() {
 
                     <TableBody>
 
-                        {posiciones.map(
+                        {posicionesFiltradas.map(
                             (posicion) => (
 
                                 <TableRow

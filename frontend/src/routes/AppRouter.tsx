@@ -144,7 +144,11 @@ function AppRouter() {
 
                     <Route
                         path="admin/usuarios"
-                        element={<UsuarioPage />}
+                        element={
+                            <ProtectedRoute soloAdmin>
+                                <UsuarioPage />
+                            </ProtectedRoute>
+                        }
                     />
 
                 </Route>

@@ -1,5 +1,9 @@
 package protecciones.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -45,6 +49,69 @@ public class UsuarioService {
                 .stream()
                 .map(this::mapToDTO)
                 .toList();
+    }
+
+    public Page<UsuarioResponseDTO>
+    obtenerPaginados(
+
+            int page,
+            int size,
+            String sort,
+            String texto,
+            String filtroEstado,
+            String rol
+    ) {
+
+        String[] sortParams =
+                sort.split(",");
+
+        String campo =
+                sortParams[0];
+
+        Sort.Direction direccion =
+                sortParams.length > 1
+                        &&
+                        sortParams[1]
+                                .equalsIgnoreCase(
+                                        "desc"
+                                )
+                        ? Sort.Direction.DESC
+                        : Sort.Direction.ASC;
+
+        Pageable pageable =
+                PageRequest.of(
+
+                        page,
+
+                        size,
+
+                        Sort.by(
+                                direccion,
+                                campo
+                        )
+                );
+
+        Boolean activo =
+                switch (filtroEstado.toUpperCase()) {
+
+                    case "ACTIVOS" -> true;
+
+                    case "INACTIVOS" -> false;
+
+                    default -> null;
+                };
+
+        Page<Usuario> usuariosPage =
+                usuarioRepository.buscarPaginado(
+                        texto,
+                        activo,
+                        rol,
+                        pageable
+                );
+
+        return usuariosPage.map(
+                this::mapToDTO
+        );
     }
 
     public UsuarioResponseDTO guardar(

@@ -1,5 +1,6 @@
 package protecciones.controller;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -152,6 +153,40 @@ public class RemitoController {
 
         return remitoService
                 .obtenerDisponibles();
+        }
+
+        @GetMapping("/paginado")
+        public Page<RemitoResponseDTO>
+        obtenerPaginados(
+
+                @RequestParam(defaultValue = "0")
+                int page,
+
+                @RequestParam(defaultValue = "10")
+                int size,
+
+                @RequestParam(defaultValue = "fecha,desc")
+                String sort,
+
+                @RequestParam(defaultValue = "")
+                String texto,
+
+                @RequestParam(required = false)
+                Long proveedorId,
+
+                @RequestParam(required = false)
+                Boolean asociado
+        ) {
+
+        return remitoService
+                .obtenerPaginados(
+                        page,
+                        size,
+                        sort,
+                        texto,
+                        proveedorId,
+                        asociado
+                );
         }
 
     @PostMapping(

@@ -11,7 +11,8 @@ import {
     DialogContent,
     DialogContentText,
     DialogActions,
-    Button
+    Button,
+    Paper
 } from "@mui/material";
 
 import PageHeader
@@ -22,6 +23,9 @@ from "../../components/admin/marca/MarcaForm";
 
 import MarcaTable
 from "../../components/admin/marca/MarcaTable";
+
+import BuscadorTexto
+from "../../components/common/BuscadorTexto";
 
 import {
     obtenerMarcas,
@@ -43,6 +47,9 @@ function MarcaPage() {
 
     const [marcas, setMarcas] =
         useState<Marca[]>([]);
+
+    const [texto, setTexto] =
+        useState("");
 
     const [marcaEditando,
         setMarcaEditando] =
@@ -129,6 +136,17 @@ function MarcaPage() {
         setOpenDialog(true);
     };
 
+    const marcasFiltradas =
+
+        marcas.filter((marca) =>
+
+            marca.nombre
+                .toLowerCase()
+                .includes(
+                    texto.toLowerCase()
+                )
+        );
+
     const confirmarEliminar =
         async () => {
 
@@ -188,8 +206,24 @@ function MarcaPage() {
                 />
             )}
 
+            <Paper
+                sx={{
+                    p: 3,
+                    mb: 3,
+                    borderRadius: 3
+                }}
+            >
+
+                <BuscadorTexto
+                    label="Buscar marca"
+                    value={texto}
+                    onChange={setTexto}
+                />
+
+            </Paper>
+
             <MarcaTable
-                marcas={marcas}
+                marcas={marcasFiltradas}
                 canWrite={canWrite}
                 onEditar={setMarcaEditando}
                 onEliminar={abrirDialogEliminar}

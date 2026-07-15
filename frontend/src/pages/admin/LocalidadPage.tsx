@@ -51,6 +51,9 @@ import {
 
 import { useAuth } from "../../context/AuthContext";
 
+import BuscadorTexto
+from "../../components/common/BuscadorTexto";
+
 function LocalidadPage() {
 
     const { canWrite } = useAuth();
@@ -60,6 +63,9 @@ function LocalidadPage() {
 
     const [provincias, setProvincias] =
         useState<Provincia[]>([]);
+
+    const [texto, setTexto] =
+        useState("");
 
     const [nombre, setNombre] =
         useState("");
@@ -203,6 +209,25 @@ function LocalidadPage() {
         setEditandoId(null);
     }
 
+    const localidadesFiltradas =
+
+        localidades.filter((localidad) => {
+
+            const textoLower =
+                texto.toLowerCase();
+
+            return (
+
+                localidad.nombre
+                    .toLowerCase()
+                    .includes(textoLower)
+
+                || localidad.provincia
+                    .toLowerCase()
+                    .includes(textoLower)
+            );
+        });
+
     return (
 
         <Box>
@@ -301,6 +326,21 @@ function LocalidadPage() {
                 </Paper>
             )}
 
+            <Paper
+                sx={{
+                    p: 3,
+                    mb: 3
+                }}
+            >
+
+                <BuscadorTexto
+                    label="Buscar localidad"
+                    value={texto}
+                    onChange={setTexto}
+                />
+
+            </Paper>
+
             <TableContainer
                 component={Paper}
             >
@@ -333,7 +373,7 @@ function LocalidadPage() {
 
                     <TableBody>
 
-                        {localidades.map(
+                        {localidadesFiltradas.map(
                             (localidad) => (
 
                                 <TableRow
