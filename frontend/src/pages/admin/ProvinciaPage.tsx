@@ -40,6 +40,9 @@ import {
 
 } from "../../services/provinciaService";
 
+import { extraerMensajeError }
+from "../../utils/errorUtils";
+
 import { useAuth } from "../../context/AuthContext";
 
 import BuscadorTexto
@@ -73,10 +76,13 @@ function ProvinciaPage() {
 
             setProvincias(data);
 
-        } catch {
+        } catch (err) {
 
             setErrorMessage(
-                "Error al cargar provincias"
+                extraerMensajeError(
+                    err,
+                    "No se pudieron cargar las provincias. Intente nuevamente."
+                )
             );
         }
     }
@@ -122,13 +128,13 @@ function ProvinciaPage() {
 
             cargarDatos();
 
-        } catch (error: any) {
+        } catch (error) {
 
             setErrorMessage(
-
-                error.response?.data?.message ||
-
-                "Ocurrió un error"
+                extraerMensajeError(
+                    error,
+                    "Ocurrió un error"
+                )
             );
         }
     }
@@ -145,13 +151,13 @@ function ProvinciaPage() {
 
             cargarDatos();
 
-        } catch (error: any) {
+        } catch (error) {
 
             setErrorMessage(
-
-                error.response?.data?.message ||
-
-                "Ocurrió un error"
+                extraerMensajeError(
+                    error,
+                    "Ocurrió un error"
+                )
             );
         }
     }

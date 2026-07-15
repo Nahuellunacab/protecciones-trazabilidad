@@ -54,6 +54,9 @@ import {
 
 } from "../../services/ordenProvisionService";
 
+import { extraerMensajeError }
+from "../../utils/errorUtils";
+
 import { useAuth } from "../../context/AuthContext";
 
 import SelectorArchivoAdjunto
@@ -157,10 +160,13 @@ function OrdenProvisionPage() {
                 data.totalElements
             );
 
-        } catch {
+        } catch (err) {
 
             mostrarMensaje(
-                "Error al cargar órdenes",
+                extraerMensajeError(
+                    err,
+                    "No se pudieron cargar las órdenes de provisión. Intente nuevamente."
+                ),
                 "error"
             );
         }
@@ -261,28 +267,15 @@ function OrdenProvisionPage() {
 
             await cargarDatos();
 
-        } catch (error: any) {
+        } catch (error) {
 
-            if (
-
-                error.response?.status === 409 ||
-
-                error.response?.status === 400
-
-            ) {
-
-                mostrarMensaje(
-                    "Ese número de orden ya existe",
-                    "error"
-                );
-
-            } else {
-
-                mostrarMensaje(
-                    "Error al guardar orden",
-                    "error"
-                );
-            }
+            mostrarMensaje(
+                extraerMensajeError(
+                    error,
+                    "No se pudo guardar la orden de provisión. Intente nuevamente."
+                ),
+                "error"
+            );
 
         } finally {
 
@@ -314,14 +307,13 @@ function OrdenProvisionPage() {
                 "success"
             );
 
-        } catch (error: any) {
+        } catch (error) {
 
             mostrarMensaje(
-
-                error.response?.data?.message ||
-
-                "Error al eliminar orden ya que se encuentra asignada a un Relé",
-
+                extraerMensajeError(
+                    error,
+                    "No se pudo eliminar la orden. Puede que esté asignada a un relé."
+                ),
                 "error"
             );
         }

@@ -39,7 +39,8 @@ from "../../types/Usuario";
 import type { UsuarioRequest }
 from "../../types/UsuarioRequest";
 
-import axios from "axios";
+import { extraerMensajeError }
+from "../../utils/errorUtils";
 
 import { useAuth } from "../../context/AuthContext";
 
@@ -95,21 +96,33 @@ function UsuarioPage() {
 
     const cargarUsuarios = async () => {
 
-        const data =
-            await obtenerUsuariosPaginados(
-                page,
-                rowsPerPage,
-                textoDebounced,
-                filtroEstado,
-                "id,asc",
-                {
-                    rol: rol === "" ? undefined : rol
-                }
+        try {
+
+            const data =
+                await obtenerUsuariosPaginados(
+                    page,
+                    rowsPerPage,
+                    textoDebounced,
+                    filtroEstado,
+                    "id,asc",
+                    {
+                        rol: rol === "" ? undefined : rol
+                    }
+                );
+
+            setUsuarios(data.content);
+
+            setTotalUsuarios(data.totalElements);
+
+        } catch (err) {
+
+            setError(
+                extraerMensajeError(
+                    err,
+                    "No se pudieron cargar los usuarios. Intente nuevamente."
+                )
             );
-
-        setUsuarios(data.content);
-
-        setTotalUsuarios(data.totalElements);
+        }
     };
 
     useEffect(() => {
@@ -161,15 +174,12 @@ function UsuarioPage() {
 
         } catch (err) {
 
-            if (
-                axios.isAxiosError(err)
-            ) {
-
-                setError(
-                    err.response?.data?.message
-                    || "Error inesperado"
-                );
-            }
+            setError(
+                extraerMensajeError(
+                    err,
+                    "No se pudo guardar el usuario. Intente nuevamente."
+                )
+            );
         }
     };
 
@@ -205,15 +215,12 @@ function UsuarioPage() {
 
         } catch (err) {
 
-            if (
-                axios.isAxiosError(err)
-            ) {
-
-                setError(
-                    err.response?.data?.message
-                    || "Error inesperado"
-                );
-            }
+            setError(
+                extraerMensajeError(
+                    err,
+                    "No se pudo resetear la contraseña. Intente nuevamente."
+                )
+            );
         }
     };
 

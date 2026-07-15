@@ -44,6 +44,9 @@ import MovimientoTable from "../components/movimiento/MovimientoTable";
 
 import PageHeader from "../components/common/PageHeader";
 
+import { extraerMensajeError }
+from "../utils/errorUtils";
+
 import {
     exportarMovimientosExcel
 }
@@ -70,11 +73,11 @@ function MovimientoPage() {
     const [cargando, setCargando] =
         useState(true);
 
-    const [errorCargaOpen, setErrorCargaOpen] =
-        useState(false);
+    const [errorCarga, setErrorCarga] =
+        useState("");
 
-    const [errorExportOpen, setErrorExportOpen] =
-        useState(false);
+    const [errorExport, setErrorExport] =
+        useState("");
 
     type FiltroFecha =
         "HOY" | "SEMANA" | "MES" | "TODOS";
@@ -169,13 +172,16 @@ function MovimientoPage() {
 
             setMovimientos(data);
 
-            setErrorCargaOpen(false);
+            setErrorCarga("");
 
         } catch (error) {
 
-            console.error(error);
-
-            setErrorCargaOpen(true);
+            setErrorCarga(
+                extraerMensajeError(
+                    error,
+                    "No se pudo cargar el listado de movimientos. Intente nuevamente."
+                )
+            );
 
         } finally {
 
@@ -214,9 +220,12 @@ function MovimientoPage() {
 
         } catch (error) {
 
-            console.error(error);
-
-            setErrorExportOpen(true);
+            setErrorExport(
+                extraerMensajeError(
+                    error,
+                    "No se pudo generar el informe. Intentá nuevamente."
+                )
+            );
         }
     };
 
@@ -278,32 +287,32 @@ function MovimientoPage() {
             )}
 
             <Snackbar
-                open={errorCargaOpen}
+                open={!!errorCarga}
                 autoHideDuration={4000}
                 onClose={() =>
-                    setErrorCargaOpen(false)
+                    setErrorCarga("")
                 }
             >
 
                 <Alert severity="error">
 
-                    No se pudo cargar el listado de movimientos
+                    {errorCarga}
 
                 </Alert>
 
             </Snackbar>
 
             <Snackbar
-                open={errorExportOpen}
+                open={!!errorExport}
                 autoHideDuration={4000}
                 onClose={() =>
-                    setErrorExportOpen(false)
+                    setErrorExport("")
                 }
             >
 
                 <Alert severity="error">
 
-                    No se pudo generar el informe. Intentá nuevamente
+                    {errorExport}
 
                 </Alert>
 

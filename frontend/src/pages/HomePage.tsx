@@ -13,7 +13,9 @@ import {
     MenuItem,
     Button,
     Skeleton,
-    useMediaQuery
+    useMediaQuery,
+    Alert,
+    Snackbar
 
 } from "@mui/material";
 
@@ -118,6 +120,9 @@ import type { ProveedorCantidad } from "../types/ProveedorCantidad";
 
 import CopilotoIACard
 from "../components/dashboard/CopilotoIACard";
+
+import { extraerMensajeError }
+from "../utils/errorUtils";
 
 // Colores por estado operativo vigente (ver maquina de estados en
 // V20__actualizar_transiciones_estado.sql). Cualquier estado que no
@@ -257,6 +262,15 @@ function HomePage() {
 
     const [loading, setLoading] =
         useState(true);
+
+    const [error, setError] =
+        useState("");
+
+    const [errorMovimientos, setErrorMovimientos] =
+        useState("");
+
+    const [errorExportar, setErrorExportar] =
+        useState("");
 
     const [kpis, setKpis] =
         useState<DashboardKpi | null>(
@@ -400,9 +414,16 @@ function HomePage() {
 
             setProveedoresData(proveedores);
 
-        } catch (error) {
+            setError("");
 
-            console.error(error);
+        } catch (err) {
+
+            setError(
+                extraerMensajeError(
+                    err,
+                    "No se pudo cargar el resumen del dashboard. Intente nuevamente."
+                )
+            );
 
         } finally {
 
@@ -464,9 +485,16 @@ function HomePage() {
 
             setMovimientos(movimientosData);
 
-        } catch (error) {
+            setErrorMovimientos("");
 
-            console.error(error);
+        } catch (err) {
+
+            setErrorMovimientos(
+                extraerMensajeError(
+                    err,
+                    "No se pudieron cargar los últimos movimientos. Intente nuevamente."
+                )
+            );
         }
     };
 
@@ -479,9 +507,14 @@ function HomePage() {
 
             await exportarDashboardExcel();
 
-        } catch (error) {
+        } catch (err) {
 
-            console.error(error);
+            setErrorExportar(
+                extraerMensajeError(
+                    err,
+                    "No se pudo exportar el informe en Excel. Intente nuevamente."
+                )
+            );
 
         } finally {
 
@@ -498,15 +531,56 @@ function HomePage() {
 
             await exportarDashboardPdf();
 
-        } catch (error) {
+        } catch (err) {
 
-            console.error(error);
+            setErrorExportar(
+                extraerMensajeError(
+                    err,
+                    "No se pudo exportar el informe en PDF. Intente nuevamente."
+                )
+            );
 
         } finally {
 
             setExportandoPdf(false);
         }
     };
+
+    if (!loading && !kpis && error) {
+
+        return (
+
+            <Stack
+                spacing={2}
+                sx={{
+                    alignItems: "center",
+                    mt: 10
+                }}
+            >
+
+                <Alert severity="error">
+
+                    {error}
+
+                </Alert>
+
+                <Button
+                    variant="contained"
+                    onClick={() => {
+
+                        setLoading(true);
+
+                        cargarResumenGeneral();
+                    }}
+                >
+
+                    Reintentar
+
+                </Button>
+
+            </Stack>
+        );
+    }
 
     if (loading || !kpis) {
 
@@ -703,6 +777,38 @@ function HomePage() {
     return (
 
         <Stack spacing={4}>
+
+            <Snackbar
+                open={!!errorMovimientos}
+                autoHideDuration={5000}
+                onClose={() =>
+                    setErrorMovimientos("")
+                }
+            >
+
+                <Alert severity="error">
+
+                    {errorMovimientos}
+
+                </Alert>
+
+            </Snackbar>
+
+            <Snackbar
+                open={!!errorExportar}
+                autoHideDuration={5000}
+                onClose={() =>
+                    setErrorExportar("")
+                }
+            >
+
+                <Alert severity="error">
+
+                    {errorExportar}
+
+                </Alert>
+
+            </Snackbar>
 
             <Stack
                 direction={{ xs: "column", md: "row" }}

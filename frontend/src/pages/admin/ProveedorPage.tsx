@@ -39,6 +39,9 @@ import {
 
 } from "../../services/proveedorService";
 
+import { extraerMensajeError }
+from "../../utils/errorUtils";
+
 import { useAuth } from "../../context/AuthContext";
 
 import ProveedorForm from "../../components/admin/proveedor/ProveedorForm";
@@ -71,10 +74,13 @@ function ProveedorPage() {
 
             setProveedores(data);
 
-        } catch {
+        } catch (err) {
 
             setErrorMessage(
-                "Error al cargar proveedores"
+                extraerMensajeError(
+                    err,
+                    "No se pudieron cargar los proveedores. Intente nuevamente."
+                )
             );
         }
     }
@@ -112,13 +118,13 @@ function ProveedorPage() {
 
             cargarDatos();
 
-        } catch (error: any) {
+        } catch (error) {
 
             setErrorMessage(
-
-                error.response?.data?.message ||
-
-                "Ocurrió un error"
+                extraerMensajeError(
+                    error,
+                    "Ocurrió un error"
+                )
             );
         }
     }
@@ -135,13 +141,13 @@ function ProveedorPage() {
 
             cargarDatos();
 
-        } catch (error: any) {
+        } catch (error) {
 
             setErrorMessage(
-
-                error.response?.data?.message ||
-
-                "Ocurrió un error"
+                extraerMensajeError(
+                    error,
+                    "Ocurrió un error"
+                )
             );
         }
     }

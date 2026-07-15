@@ -49,6 +49,9 @@ import {
     obtenerProvincias
 } from "../../services/provinciaService";
 
+import { extraerMensajeError }
+from "../../utils/errorUtils";
+
 import { useAuth } from "../../context/AuthContext";
 
 import BuscadorTexto
@@ -101,10 +104,13 @@ function LocalidadPage() {
                 provinciasData
             );
 
-        } catch {
+        } catch (err) {
 
             setErrorMessage(
-                "Error al cargar datos"
+                extraerMensajeError(
+                    err,
+                    "No se pudieron cargar las localidades. Intente nuevamente."
+                )
             );
         }
     }
@@ -153,13 +159,13 @@ function LocalidadPage() {
 
             cargarDatos();
 
-        } catch (error: any) {
+        } catch (error) {
 
             setErrorMessage(
-
-                error.response?.data?.message ||
-
-                "Ocurrió un error"
+                extraerMensajeError(
+                    error,
+                    "Ocurrió un error"
+                )
             );
         }
     }
@@ -176,13 +182,13 @@ function LocalidadPage() {
 
             cargarDatos();
 
-        } catch (error: any) {
+        } catch (error) {
 
             setErrorMessage(
-
-                error.response?.data?.message ||
-
-                "Ocurrió un error"
+                extraerMensajeError(
+                    error,
+                    "Ocurrió un error"
+                )
             );
         }
     }

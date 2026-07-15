@@ -49,6 +49,9 @@ import {
     obtenerLocalidades
 } from "../../services/localidadService";
 
+import { extraerMensajeError }
+from "../../utils/errorUtils";
+
 import { useAuth } from "../../context/AuthContext";
 
 import BuscadorTexto
@@ -101,10 +104,13 @@ function DestinoPage() {
                 localidadesData
             );
 
-        } catch {
+        } catch (err) {
 
             setErrorMessage(
-                "Error al cargar datos"
+                extraerMensajeError(
+                    err,
+                    "No se pudieron cargar los destinos. Intente nuevamente."
+                )
             );
         }
     }
@@ -153,13 +159,13 @@ function DestinoPage() {
 
             cargarDatos();
 
-        } catch (error: any) {
+        } catch (error) {
 
             setErrorMessage(
-
-                error.response?.data?.message ||
-
-                "Ocurrió un error"
+                extraerMensajeError(
+                    error,
+                    "Ocurrió un error"
+                )
             );
         }
     }
@@ -176,13 +182,13 @@ function DestinoPage() {
 
             cargarDatos();
 
-        } catch (error: any) {
+        } catch (error) {
 
             setErrorMessage(
-
-                error.response?.data?.message ||
-
-                "Ocurrió un error"
+                extraerMensajeError(
+                    error,
+                    "Ocurrió un error"
+                )
             );
         }
     }

@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
 
+import { extraerMensajeError }
+from "../../utils/errorUtils";
+
 import type {
     MovimientoRequest
 } from "../../types/MovimientoRequest";
@@ -93,8 +96,8 @@ function MovimientoForm({
     const [successOpen, setSuccessOpen] =
         useState(false);
 
-    const [errorOpen, setErrorOpen] =
-        useState(false);
+    const [errorMovimiento, setErrorMovimiento] =
+        useState("");
 
     const [reles, setReles] =
         useState<ReleOption[]>([]);
@@ -124,7 +127,13 @@ function MovimientoForm({
         useState(false);
 
     const [catalogosError, setCatalogosError] =
-        useState(false);
+        useState("");
+
+    const [posicionesError, setPosicionesError] =
+        useState("");
+
+    const [releError, setReleError] =
+        useState("");
 
     const [formData, setFormData] =
         useState<MovimientoRequest>({
@@ -182,13 +191,16 @@ function MovimientoForm({
                 )
             );
 
-            setCatalogosError(false);
+            setCatalogosError("");
 
         } catch (error) {
 
-            console.error(error);
-
-            setCatalogosError(true);
+            setCatalogosError(
+                extraerMensajeError(
+                    error,
+                    "No se pudieron cargar los relés o destinos. Recargá la página para reintentar."
+                )
+            );
         }
     };
 
@@ -207,6 +219,8 @@ function MovimientoForm({
 
             posicionId: 0
         });
+
+        setPosicionesError("");
 
         if (!destino) {
 
@@ -235,7 +249,12 @@ function MovimientoForm({
 
         } catch (error) {
 
-            console.error(error);
+            setPosicionesError(
+                extraerMensajeError(
+                    error,
+                    "No se pudieron cargar las posiciones de este destino. Intente nuevamente."
+                )
+            );
 
             setPosiciones([]);
 
@@ -281,6 +300,8 @@ function MovimientoForm({
             estadoId: 0
         });
 
+        setReleError("");
+
         if (!value) {
 
             setReleSeleccionado(null);
@@ -312,7 +333,16 @@ function MovimientoForm({
 
         } catch (error) {
 
-            console.error(error);
+            setReleError(
+                extraerMensajeError(
+                    error,
+                    "No se pudo cargar el relé seleccionado. Intente nuevamente."
+                )
+            );
+
+            setReleSeleccionado(null);
+
+            setEstados([]);
         }
     };
 
@@ -340,6 +370,8 @@ function MovimientoForm({
 
             setLoading(true);
 
+            setErrorMovimiento("");
+
             await onCreate(formData);
 
             setSuccessOpen(true);
@@ -361,9 +393,12 @@ function MovimientoForm({
 
         } catch (error) {
 
-            console.error(error);
-
-            setErrorOpen(true);
+            setErrorMovimiento(
+                extraerMensajeError(
+                    error,
+                    "No se pudo crear el movimiento. Intente nuevamente."
+                )
+            );
 
         } finally {
 
@@ -415,16 +450,16 @@ function MovimientoForm({
             </Snackbar>
 
             <Snackbar
-                open={errorOpen}
-                autoHideDuration={3000}
+                open={!!errorMovimiento}
+                autoHideDuration={5000}
                 onClose={() =>
-                    setErrorOpen(false)
+                    setErrorMovimiento("")
                 }
             >
 
                 <Alert severity="error">
 
-                    Error al crear movimiento
+                    {errorMovimiento}
 
                 </Alert>
 
@@ -457,9 +492,18 @@ function MovimientoForm({
 
                                 <Alert severity="error">
 
-                                    No se pudieron cargar los relés o
-                                    destinos. Recargá la página para
-                                    reintentar.
+                                    {catalogosError}
+
+                                </Alert>
+                            )
+                        }
+
+                        {
+                            releError && (
+
+                                <Alert severity="error">
+
+                                    {releError}
 
                                 </Alert>
                             )
@@ -763,9 +807,22 @@ function MovimientoForm({
                             }
 
                             {
+                                posicionesError && (
+
+                                    <FormHelperText error>
+
+                                        {posicionesError}
+
+                                    </FormHelperText>
+                                )
+                            }
+
+                            {
                                 destinoSeleccionado
                                 &&
                                 !posicionesLoading
+                                &&
+                                !posicionesError
                                 &&
                                 posiciones.length === 0 && (
 

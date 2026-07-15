@@ -3,8 +3,6 @@ import {
     useState
 } from "react";
 
-import axios from "axios";
-
 import {
     Snackbar,
     Alert,
@@ -45,6 +43,9 @@ from "../../types/Modelo";
 
 import type { Marca }
 from "../../types/Marca";
+
+import { extraerMensajeError }
+from "../../utils/errorUtils";
 
 import { useAuth } from "../../context/AuthContext";
 
@@ -87,19 +88,31 @@ function ModeloPage() {
 
     const cargarDatos = async () => {
 
-        const [
-            modelosData,
-            marcasData
-        ] = await Promise.all([
+        try {
 
-            obtenerModelos(),
+            const [
+                modelosData,
+                marcasData
+            ] = await Promise.all([
 
-            obtenerMarcas()
-        ]);
+                obtenerModelos(),
 
-        setModelos(modelosData);
+                obtenerMarcas()
+            ]);
 
-        setMarcas(marcasData);
+            setModelos(modelosData);
+
+            setMarcas(marcasData);
+
+        } catch (err) {
+
+            setError(
+                extraerMensajeError(
+                    err,
+                    "No se pudieron cargar los modelos. Intente nuevamente."
+                )
+            );
+        }
     };
 
     const handleSubmit =
@@ -136,15 +149,12 @@ function ModeloPage() {
 
         } catch (err) {
 
-            if (
-                axios.isAxiosError(err)
-            ) {
-
-                setError(
-                    err.response?.data?.message
-                    || "Error inesperado"
-                );
-            }
+            setError(
+                extraerMensajeError(
+                    err,
+                    "No se pudo guardar el modelo. Intente nuevamente."
+                )
+            );
         }
     };
 
@@ -196,15 +206,12 @@ function ModeloPage() {
 
         } catch (err) {
 
-            if (
-                axios.isAxiosError(err)
-            ) {
-
-                setError(
-                    err.response?.data?.message
-                    || "No se pudo eliminar"
-                );
-            }
+            setError(
+                extraerMensajeError(
+                    err,
+                    "No se pudo eliminar el modelo. Intente nuevamente."
+                )
+            );
 
         } finally {
 

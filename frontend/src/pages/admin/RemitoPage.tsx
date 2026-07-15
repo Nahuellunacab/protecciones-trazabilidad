@@ -58,6 +58,9 @@ import {
     obtenerProveedores
 } from "../../services/proveedorService";
 
+import { extraerMensajeError }
+from "../../utils/errorUtils";
+
 import PictureAsPdfIcon
 from "@mui/icons-material/PictureAsPdf";
 
@@ -181,10 +184,13 @@ function RemitoPage() {
                 data.totalElements
             );
 
-        } catch {
+        } catch (err) {
 
             mostrarMensaje(
-                "Error al cargar remitos",
+                extraerMensajeError(
+                    err,
+                    "No se pudieron cargar los remitos. Intente nuevamente."
+                ),
                 "error"
             );
         }
@@ -192,12 +198,25 @@ function RemitoPage() {
 
     async function cargarProveedores() {
 
-        const proveedoresData =
-            await obtenerProveedores();
+        try {
 
-        setProveedores(
-            proveedoresData
-        );
+            const proveedoresData =
+                await obtenerProveedores();
+
+            setProveedores(
+                proveedoresData
+            );
+
+        } catch (err) {
+
+            mostrarMensaje(
+                extraerMensajeError(
+                    err,
+                    "No se pudieron cargar los proveedores. Intente nuevamente."
+                ),
+                "error"
+            );
+        }
     }
 
     async function cargarDatos() {
@@ -309,14 +328,13 @@ function RemitoPage() {
 
             await cargarDatos();
 
-        } catch (error: any) {
+        } catch (error) {
 
             mostrarMensaje(
-
-                error.response?.data?.message ||
-
-                "Error al guardar remito",
-
+                extraerMensajeError(
+                    error,
+                    "No se pudo guardar el remito. Intente nuevamente."
+                ),
                 "error"
             );
 
@@ -336,14 +354,13 @@ function RemitoPage() {
 
             await cargarDatos();
 
-        } catch (error: any) {
+        } catch (error) {
 
             mostrarMensaje(
-
-                error.response?.data?.message ||
-
-                "Ocurrió un error",
-
+                extraerMensajeError(
+                    error,
+                    "No se pudo eliminar el remito. Intente nuevamente."
+                ),
                 "error"
             );
         }
@@ -741,9 +758,12 @@ function RemitoPage() {
                                                     onClick={() =>
                                                         abrirArchivoRemito(
                                                             remito.id
-                                                        ).catch(() =>
+                                                        ).catch((err) =>
                                                             mostrarMensaje(
-                                                                "No se pudo abrir el PDF del remito",
+                                                                extraerMensajeError(
+                                                                    err,
+                                                                    "No se pudo abrir el PDF del remito"
+                                                                ),
                                                                 "error"
                                                             )
                                                         )

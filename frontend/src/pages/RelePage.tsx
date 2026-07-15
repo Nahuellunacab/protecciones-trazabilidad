@@ -34,6 +34,9 @@ import { obtenerDestinos } from "../services/destinoService";
 
 import { obtenerEstados } from "../services/estadoService";
 
+import { extraerMensajeError }
+from "../utils/errorUtils";
+
 // -----------------------------------Importación de tipos-----------------------------------------
 import type { Rele }
 from "../types/Rele";
@@ -167,7 +170,15 @@ function RelePage() {
                 setDestinos(destinosData);
                 setEstados(estadosData);
             }
-        );
+        ).catch((err) => {
+
+            setErrorCarga(
+                extraerMensajeError(
+                    err,
+                    "No se pudieron cargar los catálogos de marcas, modelos, destinos o estados. Recargue la página para reintentar."
+                )
+            );
+        });
 
     }, []);
 
@@ -189,6 +200,15 @@ function RelePage() {
                     top: 0,
                     behavior: "smooth"
                 });
+            })
+            .catch((err) => {
+
+                setErrorCarga(
+                    extraerMensajeError(
+                        err,
+                        "No se pudo cargar el relé a editar. Intente nuevamente."
+                    )
+                );
             });
 
         setSearchParams(
@@ -307,10 +327,13 @@ function RelePage() {
                 data.totalElements
             );
 
-        } catch {
+        } catch (err) {
 
             setErrorCarga(
-                "No se pudieron cargar los relés. Intente nuevamente."
+                extraerMensajeError(
+                    err,
+                    "No se pudieron cargar los relés. Intente nuevamente."
+                )
             );
 
             setReles([]);

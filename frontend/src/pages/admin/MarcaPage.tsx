@@ -37,7 +37,8 @@ import {
 import type { Marca }
 from "../../types/Marca";
 
-import axios from "axios";
+import { extraerMensajeError }
+from "../../utils/errorUtils";
 
 import { useAuth } from "../../context/AuthContext";
 
@@ -77,10 +78,22 @@ function MarcaPage() {
 
     const cargarMarcas = async () => {
 
-        const data =
-            await obtenerMarcas();
+        try {
 
-        setMarcas(data);
+            const data =
+                await obtenerMarcas();
+
+            setMarcas(data);
+
+        } catch (err) {
+
+            setError(
+                extraerMensajeError(
+                    err,
+                    "No se pudieron cargar las marcas. Intente nuevamente."
+                )
+            );
+        }
     };
 
     const handleSubmit =
@@ -116,15 +129,12 @@ function MarcaPage() {
 
         } catch (err) {
 
-            if (
-                axios.isAxiosError(err)
-            ) {
-
-                setError(
-                    err.response?.data?.message
-                    || "Error inesperado"
-                );
-            }
+            setError(
+                extraerMensajeError(
+                    err,
+                    "No se pudo guardar la marca. Intente nuevamente."
+                )
+            );
         }
     };
 
@@ -168,15 +178,12 @@ function MarcaPage() {
 
         } catch (err) {
 
-            if (
-                axios.isAxiosError(err)
-            ) {
-
-                setError(
-                    err.response?.data?.message
-                    || "No se pudo eliminar"
-                );
-            }
+            setError(
+                extraerMensajeError(
+                    err,
+                    "No se pudo eliminar la marca. Intente nuevamente."
+                )
+            );
 
         } finally {
 

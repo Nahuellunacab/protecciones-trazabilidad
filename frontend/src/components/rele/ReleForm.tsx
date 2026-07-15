@@ -125,6 +125,9 @@ import type {
     Proveedor
 } from "../../types/Proveedor";
 
+import { extraerMensajeError }
+from "../../utils/errorUtils";
+
 import {
     obtenerProveedores
 } from "../../services/proveedorService";
@@ -593,10 +596,13 @@ function ReleForm({
                     true
                 );
 
-            } catch {
+            } catch (err) {
 
                 setError(
-                    "La marca ya existe"
+                    extraerMensajeError(
+                        err,
+                        "No se pudo crear la marca. Intente nuevamente."
+                    )
                 );
             }
         };
@@ -627,10 +633,13 @@ function ReleForm({
                             .split("T")[0]
                 });
 
-        } catch {
+        } catch (err) {
 
             setError(
-                "Error al crear remito"
+                extraerMensajeError(
+                    err,
+                    "No se pudo crear el remito. Intente nuevamente."
+                )
             );
 
             return;
@@ -1114,10 +1123,13 @@ function ReleForm({
                     false
                 );
 
-            } catch {
+            } catch (err) {
 
                 setError(
-                    "Error al crear modelo"
+                    extraerMensajeError(
+                        err,
+                        "No se pudo crear el modelo. Intente nuevamente."
+                    )
                 );
             }
         };
@@ -1178,10 +1190,13 @@ function ReleForm({
                     false
                 );
 
-            } catch {
+            } catch (err) {
 
                 setError(
-                    "Error al crear la orden de provisión"
+                    extraerMensajeError(
+                        err,
+                        "No se pudo crear la orden de provisión. Intente nuevamente."
+                    )
                 );
             }
         };
@@ -1322,10 +1337,13 @@ function ReleForm({
                 }
             }
 
-            } catch {
+            } catch (err) {
 
                 setError(
-                    "Error al cargar datos"
+                    extraerMensajeError(
+                        err,
+                        "No se pudieron cargar los catálogos necesarios para el formulario. Intente nuevamente."
+                    )
                 );
             }
         };
