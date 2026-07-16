@@ -60,6 +60,9 @@ from "../types/Estado";
 import ReleForm
 from "../components/rele/ReleForm";
 
+import ReleAltaWizard
+from "../components/rele/wizard/ReleAltaWizard";
+
 import ReleTable
 from "../components/rele/ReleTable";
 
@@ -492,7 +495,7 @@ function RelePage() {
                     </Button>
 
                     {
-                        mostrarFormulario && (
+                        mostrarFormulario && releEditando && (
 
                             <ReleForm
                                 onCreate={handleCreate}
@@ -509,6 +512,15 @@ function RelePage() {
                                 }
                             />
 
+                        )
+                    }
+
+                    {
+                        mostrarFormulario && !releEditando && (
+
+                            <ReleAltaWizard
+                                onCreate={handleCreate}
+                            />
                         )
                     }
 
