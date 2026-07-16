@@ -360,11 +360,14 @@ function ReleDetailPage() {
                                     </Typography>
                                 </Grid>
 
-                                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                                <Grid size={{ xs: 12, sm: 12, md: 6 }}>
                                     <Typography variant="overline" color="text.secondary">
                                         Cód. Configuración
                                     </Typography>
-                                    <Typography variant="body1">
+                                    <Typography
+                                        variant="body1"
+                                        sx={{ overflowWrap: "anywhere" }}
+                                    >
                                         {rele.codigoConfiguracion || "-"}
                                     </Typography>
                                 </Grid>

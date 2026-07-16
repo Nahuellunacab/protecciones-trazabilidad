@@ -392,9 +392,18 @@ function ReleTable({
                                                     rele.codigoConfiguracion
                                                         ? (
                                                             <>
-                                                                <Typography>
-                                                                    {rele.codigoConfiguracion}
-                                                                </Typography>
+                                                                <Tooltip title={rele.codigoConfiguracion}>
+                                                                    <Typography
+                                                                        sx={{
+                                                                            maxWidth: 180,
+                                                                            overflow: "hidden",
+                                                                            textOverflow: "ellipsis",
+                                                                            whiteSpace: "nowrap"
+                                                                        }}
+                                                                    >
+                                                                        {rele.codigoConfiguracion}
+                                                                    </Typography>
+                                                                </Tooltip>
 
                                                                 <Tooltip title={copiedId === rele.id ? "Copiado" : "Copiar"}>
                                                                     <IconButton

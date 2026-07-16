@@ -2597,6 +2597,16 @@ function ReleForm({
                             }
                             autoComplete="off"
                             fullWidth
+                            multiline
+                            maxRows={3}
+                            slotProps={{
+                                htmlInput: {
+                                    maxLength: 150
+                                }
+                            }}
+                            helperText={
+                                `${formData.codigoConfiguracion.length}/150`
+                            }
                         />
 
                     </Grid>

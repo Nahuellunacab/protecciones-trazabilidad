@@ -17,6 +17,7 @@ import {
     TableCell,
     TableHead,
     TableRow,
+    Tooltip,
     Typography,
 } from "@mui/material";
 
@@ -525,7 +526,19 @@ function CargaInteligenteRemitoDialog({
                                             </TableCell>
 
                                             <TableCell>
-                                                {rele.codigoConfiguracion ?? "—"}
+                                                <Tooltip title={rele.codigoConfiguracion ?? ""}>
+                                                    <Typography
+                                                        variant="body2"
+                                                        sx={{
+                                                            maxWidth: 180,
+                                                            overflow: "hidden",
+                                                            textOverflow: "ellipsis",
+                                                            whiteSpace: "nowrap"
+                                                        }}
+                                                    >
+                                                        {rele.codigoConfiguracion ?? "—"}
+                                                    </Typography>
+                                                </Tooltip>
                                             </TableCell>
 
                                             <TableCell>

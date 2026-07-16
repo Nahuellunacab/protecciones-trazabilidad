@@ -13,7 +13,7 @@ public class Rele {
     @Column(name = "numero_serie", nullable = false, unique = true)
     private String numeroSerie;
 
-    @Column(name = "codigo_configuracion")
+    @Column(name = "codigo_configuracion", length = 500)
     private String codigoConfiguracion;
 
     @Column(name = "garantia_meses")
