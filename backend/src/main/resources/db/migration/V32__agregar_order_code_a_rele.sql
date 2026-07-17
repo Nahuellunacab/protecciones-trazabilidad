@@ -1,0 +1,2 @@
+ALTER TABLE rele
+ADD COLUMN order_code VARCHAR(500);

@@ -204,10 +204,17 @@ public class ReleService {
         );
 
         rele.setCodigoConfiguracion(
-                normalizarCodigoConfiguracion(
+                normalizarTextoOpcional(
                         dto.getCodigoConfiguracion()
                 )
         );
+
+        rele.setOrderCode(
+                normalizarTextoOpcional(
+                        dto.getOrderCode()
+                )
+        );
+
         rele.setModelo(
                 modelo
         );
@@ -283,16 +290,9 @@ public class ReleService {
                 );
 
         Estado estadoInicial =
-                estadoRepository
-                        .findByNombreIgnoreCase(
-                                "EN STOCK"
-                        )
-                        .orElseThrow(() ->
-
-                                new BusinessException(
-                                        "Estado EN STOCK no encontrado"
-                                )
-                        );
+                resolverEstadoInicial(
+                        dto.getEstadoInicialId()
+                );
 
         if (
                 dto.getPosicionInicialId() == null
@@ -498,6 +498,7 @@ public class ReleService {
 
                 rele.getNumeroSerie(),
                 rele.getCodigoConfiguracion(),
+                rele.getOrderCode(),
 
                 rele.getGarantiaMeses(),
 
@@ -808,8 +809,14 @@ public class ReleService {
         );
         
         rele.setCodigoConfiguracion(
-                normalizarCodigoConfiguracion(
+                normalizarTextoOpcional(
                         dto.getCodigoConfiguracion()
+                )
+        );
+
+        rele.setOrderCode(
+                normalizarTextoOpcional(
+                        dto.getOrderCode()
                 )
         );
 
@@ -1041,20 +1048,77 @@ public class ReleService {
         );
     }
 
-    private String normalizarCodigoConfiguracion(
-            String codigoConfiguracion
+    // Resuelve el estado con el que se crea el primer Movimiento de un
+    // relé nuevo. Por defecto sigue siendo "EN STOCK" (comportamiento
+    // historico), pero el usuario puede elegir otro estado inicial para
+    // dar de alta un relé que en la realidad ya está instalado/en
+    // servicio, sin tener que simular movimientos intermedios que nunca
+    // ocurrieron. Se acepta cualquier estado que tenga al menos una
+    // transición saliente en transicion_estado (esto excluye "BAJA", que
+    // tiene su propio flujo dedicado, y estados históricos que ya no
+    // forman parte del grafo vigente, como "INSTALADO" — permitirlos
+    // dejaría al relé sin ninguna transición válida después del alta).
+    private Estado resolverEstadoInicial(
+            Long estadoInicialId
+    ) {
+
+        if (estadoInicialId == null) {
+
+            return estadoRepository
+                    .findByNombreIgnoreCase(
+                            "EN STOCK"
+                    )
+                    .orElseThrow(() ->
+
+                            new BusinessException(
+                                    "Estado EN STOCK no encontrado"
+                            )
+                    );
+        }
+
+        Estado estado =
+                estadoRepository
+                        .findById(estadoInicialId)
+                        .orElseThrow(() ->
+
+                                new BusinessException(
+                                        "Estado inicial no encontrado"
+                                )
+                        );
+
+        boolean tieneTransicionesSalientes =
+                !transicionEstadoRepository
+                        .findByEstadoOrigenId(
+                                estado.getId()
+                        )
+                        .isEmpty();
+
+        if (!tieneTransicionesSalientes) {
+
+            throw new BusinessException(
+                    "El estado '"
+                            + estado.getNombre()
+                            + "' no puede usarse como estado inicial"
+            );
+        }
+
+        return estado;
+    }
+
+    private String normalizarTextoOpcional(
+            String valor
     ) {
 
         if (
-                codigoConfiguracion == null
+                valor == null
                 ||
-                codigoConfiguracion.isBlank()
+                valor.isBlank()
         ) {
 
             return null;
         }
 
-        return codigoConfiguracion
+        return valor
                 .trim()
                 .toUpperCase();
     }

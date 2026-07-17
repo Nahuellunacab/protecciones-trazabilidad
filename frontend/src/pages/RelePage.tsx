@@ -520,6 +520,9 @@ function RelePage() {
 
                             <ReleAltaWizard
                                 onCreate={handleCreate}
+                                onTerminarCarga={() =>
+                                    setMostrarFormulario(false)
+                                }
                             />
                         )
                     }

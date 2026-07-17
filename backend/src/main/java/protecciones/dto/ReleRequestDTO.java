@@ -20,6 +20,12 @@ public class ReleRequestDTO {
     )
     private String codigoConfiguracion;
 
+    @Size(
+            max = 150,
+            message = "El order code no puede superar los 150 caracteres"
+    )
+    private String orderCode;
+
     private Boolean cargarGarantia;
 
     @Positive(
@@ -42,6 +48,8 @@ public class ReleRequestDTO {
     private String tipoIngreso;
 
     private Long posicionInicialId;
+
+    private Long estadoInicialId;
 
     private Long ordenProvisionId;
 
@@ -80,6 +88,10 @@ public class ReleRequestDTO {
         return posicionInicialId;
     }
 
+    public Long getEstadoInicialId() {
+        return estadoInicialId;
+    }
+
     public Long getOrdenProvisionId() {
         return ordenProvisionId;
     }
@@ -87,7 +99,16 @@ public class ReleRequestDTO {
     public String getCodigoConfiguracion() {
         return codigoConfiguracion;
     }
-    
+
+    public String getOrderCode() {
+        return orderCode;
+    }
+
+    public void setOrderCode(
+            String orderCode
+    ) {
+        this.orderCode = orderCode;
+    }
 
     public void setNumeroSerie(
             String numeroSerie
@@ -151,6 +172,13 @@ public class ReleRequestDTO {
     ) {
         this.posicionInicialId =
                 posicionInicialId;
+    }
+
+    public void setEstadoInicialId(
+            Long estadoInicialId
+    ) {
+        this.estadoInicialId =
+                estadoInicialId;
     }
 
     public void setOrdenProvisionId(

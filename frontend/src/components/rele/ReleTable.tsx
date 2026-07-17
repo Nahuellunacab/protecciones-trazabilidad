@@ -91,9 +91,9 @@ function ReleTable({
     const navigate = useNavigate();
 
     const [
-        copiedId,
-        setCopiedId
-    ] = useState<number | null>(null);
+        copiedKey,
+        setCopiedKey
+    ] = useState<string | null>(null);
 
     const [
         errorDocumento,
@@ -156,7 +156,7 @@ function ReleTable({
 
     const handleCopy = async (
         texto: string | undefined,
-        id: number
+        clave: string
     ) => {
 
         if (!texto) return;
@@ -181,10 +181,10 @@ function ReleTable({
                 document.body.removeChild(ta);
             }
 
-            setCopiedId(id);
+            setCopiedKey(clave);
 
             setTimeout(
-                () => setCopiedId(null),
+                () => setCopiedKey(null),
                 1500
             );
 
@@ -256,6 +256,10 @@ function ReleTable({
                             </TableCell>
 
                             <TableCell>
+                                Order Code
+                            </TableCell>
+
+                            <TableCell>
                                 Marca
                             </TableCell>
 
@@ -311,7 +315,7 @@ function ReleTable({
 
                                             {
                                                 Array.from(
-                                                    { length: 10 }
+                                                    { length: 11 }
                                                 ).map(
                                                     (_, columna) => (
 
@@ -341,7 +345,7 @@ function ReleTable({
 
                                 <TableRow>
 
-                                    <TableCell colSpan={10}>
+                                    <TableCell colSpan={11}>
 
                                         <EmptyState
                                             titulo="No se encontraron relés"
@@ -405,18 +409,65 @@ function ReleTable({
                                                                     </Typography>
                                                                 </Tooltip>
 
-                                                                <Tooltip title={copiedId === rele.id ? "Copiado" : "Copiar"}>
+                                                                <Tooltip title={copiedKey === `cc-${rele.id}` ? "Copiado" : "Copiar"}>
                                                                     <IconButton
                                                                         size="small"
                                                                         onClick={() =>
                                                                             handleCopy(
                                                                                 rele.codigoConfiguracion ?? undefined,
-                                                                                rele.id
+                                                                                `cc-${rele.id}`
                                                                             )
                                                                         }
                                                                     >
                                                                         {
-                                                                            copiedId === rele.id
+                                                                            copiedKey === `cc-${rele.id}`
+                                                                                ? <CheckIcon fontSize="small" color="success" />
+                                                                                : <ContentCopyIcon fontSize="small" />
+                                                                        }
+                                                                    </IconButton>
+                                                                </Tooltip>
+                                                            </>
+                                                        )
+                                                        : "-"
+                                                }
+
+                                            </Box>
+
+                                        </TableCell>
+
+                                        <TableCell>
+
+                                            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+
+                                                {
+                                                    rele.orderCode
+                                                        ? (
+                                                            <>
+                                                                <Tooltip title={rele.orderCode}>
+                                                                    <Typography
+                                                                        sx={{
+                                                                            maxWidth: 180,
+                                                                            overflow: "hidden",
+                                                                            textOverflow: "ellipsis",
+                                                                            whiteSpace: "nowrap"
+                                                                        }}
+                                                                    >
+                                                                        {rele.orderCode}
+                                                                    </Typography>
+                                                                </Tooltip>
+
+                                                                <Tooltip title={copiedKey === `oc-${rele.id}` ? "Copiado" : "Copiar"}>
+                                                                    <IconButton
+                                                                        size="small"
+                                                                        onClick={() =>
+                                                                            handleCopy(
+                                                                                rele.orderCode ?? undefined,
+                                                                                `oc-${rele.id}`
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        {
+                                                                            copiedKey === `oc-${rele.id}`
                                                                                 ? <CheckIcon fontSize="small" color="success" />
                                                                                 : <ContentCopyIcon fontSize="small" />
                                                                         }

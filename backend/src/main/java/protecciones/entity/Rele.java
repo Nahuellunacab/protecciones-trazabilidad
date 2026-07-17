@@ -16,6 +16,9 @@ public class Rele {
     @Column(name = "codigo_configuracion", length = 500)
     private String codigoConfiguracion;
 
+    @Column(name = "order_code", length = 500)
+    private String orderCode;
+
     @Column(name = "garantia_meses")
     private Integer garantiaMeses;
 
@@ -123,6 +126,14 @@ public class Rele {
 
     public String getCodigoConfiguracion() {
         return codigoConfiguracion;
+    }
+
+    public String getOrderCode() {
+        return orderCode;
+    }
+
+    public void setOrderCode(String orderCode) {
+        this.orderCode = orderCode;
     }
 
     public void setId(Long id) {

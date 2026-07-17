@@ -10,7 +10,9 @@ import protecciones.repository.EstadoRepository;
 import protecciones.repository.MovimientoRepository;
 import protecciones.repository.ReleRepository;
 import protecciones.repository.TransicionEstadoRepository;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -62,6 +64,51 @@ public class EstadoService {
 
                         estado.getNombre()
                     )
+                )
+                .toList();
+    }
+
+    // Estados que se pueden ofrecer como estado inicial al dar de alta un
+    // relé: cualquier estado con al menos una transición saliente en
+    // transicion_estado. Esto excluye "BAJA" (terminal, tiene su propio
+    // flujo dedicado con reglas propias) y estados historicos como
+    // "INSTALADO" que ya no forman parte del grafo vigente (permitirlos
+    // dejaria al relé sin ninguna transición válida posterior).
+    public List<EstadoResponseDTO>
+    obtenerEstadosIniciales() {
+
+        Map<Long, Estado> estadosPorId =
+                new LinkedHashMap<>();
+
+        for (
+                TransicionEstado transicion
+                : transicionEstadoRepository.findAll()
+        ) {
+
+            Estado origen =
+                    transicion.getEstadoOrigen();
+
+            estadosPorId.putIfAbsent(
+                    origen.getId(),
+                    origen
+            );
+        }
+
+        return estadosPorId.values()
+                .stream()
+                .sorted(
+                        (a, b) ->
+                                a.getNombre()
+                                        .compareTo(b.getNombre())
+                )
+                .map(estado ->
+
+                        new EstadoResponseDTO(
+
+                                estado.getId(),
+
+                                estado.getNombre()
+                        )
                 )
                 .toList();
     }

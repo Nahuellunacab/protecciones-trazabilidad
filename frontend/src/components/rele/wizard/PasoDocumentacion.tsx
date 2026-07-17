@@ -60,6 +60,9 @@ interface Props {
     onArchivoIASeleccionado: (archivo: File) => void;
 
     onContinuar: () => void;
+    continuarDeshabilitado?: boolean;
+    textoContinuar?: string;
+    continuando?: boolean;
 }
 
 function PasoDocumentacion({
@@ -75,12 +78,18 @@ function PasoDocumentacion({
     analizando,
     errorIA,
     onArchivoIASeleccionado,
-    onContinuar
+    onContinuar,
+    continuarDeshabilitado,
+    textoContinuar,
+    continuando
 }: Props) {
 
     const [modoRemito, setModoRemito] = useState<ModoDocumento>("ninguno");
     const [numeroRemito, setNumeroRemito] = useState("");
     const [proveedorId, setProveedorId] = useState<number | "">("");
+    const [fechaRemito, setFechaRemito] = useState(
+        () => new Date().toISOString().split("T")[0]
+    );
     const [archivoRemito, setArchivoRemito] = useState<File | null>(null);
     const [creandoRemito, setCreandoRemito] = useState(false);
     const [errorRemito, setErrorRemito] = useState("");
@@ -101,7 +110,7 @@ function PasoDocumentacion({
             const nuevo = await crearRemito({
                 numeroRemito,
                 proveedorId: Number(proveedorId),
-                fecha: new Date().toISOString().split("T")[0]
+                fecha: fechaRemito
             });
 
             if (archivoRemito) {
@@ -120,6 +129,7 @@ function PasoDocumentacion({
             onRemitoIdChange(nuevo.id);
             setNumeroRemito("");
             setProveedorId("");
+            setFechaRemito(new Date().toISOString().split("T")[0]);
             setArchivoRemito(null);
 
         } catch (err) {
@@ -291,6 +301,21 @@ function PasoDocumentacion({
 
                             <Grid size={{ xs: 12, sm: 6 }}>
 
+                                <TextField
+                                    type="date"
+                                    label="Fecha"
+                                    fullWidth
+                                    slotProps={{
+                                        inputLabel: { shrink: true }
+                                    }}
+                                    value={fechaRemito}
+                                    onChange={(e) => setFechaRemito(e.target.value)}
+                                />
+
+                            </Grid>
+
+                            <Grid size={{ xs: 12, sm: 6 }}>
+
                                 <SelectorArchivoAdjunto
                                     label="Adjuntar PDF o foto (opcional)"
                                     labelSeleccionado={archivoRemito?.name ?? "Archivo listo"}
@@ -312,6 +337,8 @@ function PasoDocumentacion({
                                         !numeroRemito.trim()
                                         ||
                                         !proveedorId
+                                        ||
+                                        !fechaRemito
                                     }
                                     onClick={handleCrearRemito}
                                 >
@@ -542,11 +569,11 @@ function PasoDocumentacion({
                 variant="contained"
                 size="large"
                 endIcon={<ArrowForwardIcon />}
-                disabled={analizando}
+                disabled={analizando || continuando || continuarDeshabilitado}
                 onClick={onContinuar}
                 sx={{ alignSelf: "flex-end" }}
             >
-                Continuar
+                {textoContinuar ?? "Continuar"}
             </Button>
 
         </Stack>

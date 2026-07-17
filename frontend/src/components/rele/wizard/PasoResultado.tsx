@@ -24,13 +24,15 @@ interface Props {
     error: string;
     creados: Rele[];
     onReiniciar: () => void;
+    onTerminarCarga: () => void;
 }
 
 function PasoResultado({
     creando,
     error,
     creados,
-    onReiniciar
+    onReiniciar,
+    onTerminarCarga
 }: Props) {
 
     if (error) {
@@ -54,13 +56,25 @@ function PasoResultado({
                     )
                 }
 
-                <Button
-                    variant="contained"
-                    startIcon={<AddIcon />}
-                    onClick={onReiniciar}
-                >
-                    Volver a intentar
-                </Button>
+                <Stack direction="row" spacing={2}>
+
+                    <Button
+                        variant="contained"
+                        startIcon={<AddIcon />}
+                        onClick={onReiniciar}
+                    >
+                        Volver a intentar
+                    </Button>
+
+                    <Button
+                        variant="outlined"
+                        color="inherit"
+                        onClick={onTerminarCarga}
+                    >
+                        Terminar carga
+                    </Button>
+
+                </Stack>
 
             </Stack>
         );
@@ -141,14 +155,27 @@ function PasoResultado({
                 )
             }
 
-            <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                disabled={creando}
-                onClick={onReiniciar}
-            >
-                Registrar otro relé
-            </Button>
+            <Stack direction="row" spacing={2}>
+
+                <Button
+                    variant="contained"
+                    startIcon={<AddIcon />}
+                    disabled={creando}
+                    onClick={onReiniciar}
+                >
+                    Registrar otro relé
+                </Button>
+
+                <Button
+                    variant="outlined"
+                    color="inherit"
+                    disabled={creando}
+                    onClick={onTerminarCarga}
+                >
+                    Terminar carga
+                </Button>
+
+            </Stack>
 
         </Stack>
     );

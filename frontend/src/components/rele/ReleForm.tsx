@@ -138,6 +138,8 @@ type ReleFormData = {
 
     codigoConfiguracion: string;
 
+    orderCode: string;
+
     modeloId: number | "";
 
     tipoIngreso: "NUEVO" | "USADO";
@@ -179,6 +181,13 @@ interface Props {
     onTerminarEdicionDeLote: () => void;
 }
 
+function fechaHoy() {
+
+    return new Date()
+        .toISOString()
+        .split("T")[0];
+}
+
 function ReleForm({
     onCreate,
     onUpdate,
@@ -218,11 +227,12 @@ function ReleForm({
     const [garantiaAbierta, setGarantiaAbierta] =
         useState(true);
 
-    // Se prioriza la Carga Inteligente: el acordeón de Documentación ahora
-    // es lo primero del formulario y arranca abierto para que el botón
-    // "Cargar desde Remito con IA" quede visible de entrada.
+    // Documentación es opcional y va al final del formulario (los datos
+    // del relé en sí son lo prioritario); arranca colapsado y solo se abre
+    // solo si el relé que se está editando ya tenía remito/OP asociado
+    // (ver el useEffect que sincroniza con releEditando mas abajo).
     const [documentacionAbierta, setDocumentacionAbierta] =
-        useState(true);
+        useState(false);
 
     type ReleDelLote = {
         id: number;
@@ -265,6 +275,8 @@ function ReleForm({
             numeroSerie: "",
 
         codigoConfiguracion: "",
+
+        orderCode: "",
 
         modeloId: "",
 
@@ -312,7 +324,9 @@ function ReleForm({
 
             numeroRemito: "",
 
-            proveedorId: ""
+            proveedorId: "",
+
+            fecha: fechaHoy()
         });
 
     const [nuevaOP,
@@ -404,6 +418,9 @@ function ReleForm({
 
         codigoConfiguracion:
             releEditando.codigoConfiguracion ?? "",
+
+        orderCode:
+            releEditando.orderCode ?? "",
 
         modeloId:
             releEditando.modeloId ?? "",
@@ -628,9 +645,7 @@ function ReleForm({
                         ),
 
                     fecha:
-                        new Date()
-                            .toISOString()
-                            .split("T")[0]
+                        nuevoRemito.fecha
                 });
 
         } catch (err) {
@@ -685,7 +700,9 @@ function ReleForm({
 
             numeroRemito: "",
 
-            proveedorId: ""
+            proveedorId: "",
+
+            fecha: fechaHoy()
         });
 
         setArchivoRemito(
@@ -746,7 +763,10 @@ function ReleForm({
                         proveedorId:
                             resultado.proveedorId
                                 ? String(resultado.proveedorId)
-                                : ""
+                                : "",
+
+                        fecha:
+                            resultado.fecha ?? fechaHoy()
                     });
 
                     // Si el usuario termina creando el remito a mano desde
@@ -816,9 +836,7 @@ function ReleForm({
                         fecha:
                             analisisIA.fecha
                             ??
-                            new Date()
-                                .toISOString()
-                                .split("T")[0]
+                            fechaHoy()
                     });
 
                 remitoId =
@@ -958,6 +976,8 @@ function ReleForm({
 
                         codigoConfiguracion:
                             rele.codigoConfiguracion ?? "",
+
+                        orderCode: "",
 
                         modeloId:
                             rele.modeloId ?? "",
@@ -1357,6 +1377,8 @@ function ReleForm({
 
             codigoConfiguracion: "",
 
+            orderCode: "",
+
             modeloId: "",
 
             tipoIngreso: "NUEVO",
@@ -1382,7 +1404,7 @@ function ReleForm({
 
         setGarantiaAbierta(true);
 
-        setDocumentacionAbierta(true);
+        setDocumentacionAbierta(false);
 
         if (editandoDesdeLote) {
 
@@ -1455,6 +1477,9 @@ function ReleForm({
 
                 codigoConfiguracion:
                     formData.codigoConfiguracion,
+
+                orderCode:
+                    formData.orderCode,
 
                 modeloId:
                     formData.modeloId,
@@ -1536,7 +1561,9 @@ function ReleForm({
 
                     numeroSerie: "",
 
-                    codigoConfiguracion: ""
+                    codigoConfiguracion: "",
+
+                    orderCode: ""
                 }));
 
                 numeroSerieInputRef.current?.focus();
@@ -1746,6 +1773,475 @@ function ReleForm({
                     container
                     spacing={2}
                 >
+
+                    <Grid size={12}>
+
+                        <Typography
+                            variant="overline"
+                            color="text.secondary"
+                        >
+                            Datos del Relé
+                        </Typography>
+
+                    </Grid>
+
+                    <Grid size={12}>
+
+                        <FormControl
+                        
+                            fullWidth
+                        >
+
+                            <InputLabel
+                                id="marca-select-label"
+                            >
+                                Marca
+                            </InputLabel>
+
+                            <Select
+                                labelId="marca-select-label"
+                                value={marcaId}
+                                label="Marca"
+                                onChange={(e) => {
+
+                                    setMarcaId(
+                                        Number(
+                                            e.target.value
+                                        )
+                                    );
+
+                                    setFormData(
+                                        (prev) => ({
+                                            ...prev,
+                                            modeloId: 0
+                                        })
+                                    );
+                                }}
+                            >
+
+                                {
+                                    marcas.map(
+                                        (marca) => (
+
+                                        <MenuItem
+                                            key={marca.id}
+                                            value={marca.id}
+                                        >
+
+                                            {marca.nombre}
+
+                                        </MenuItem>
+                                    ))
+                                }
+
+                            </Select>
+
+                        </FormControl>
+
+                        <Button
+                            size="small"
+                            sx={{
+                                mt: 1,
+                                alignSelf: "flex-start"
+                            }}
+                            onClick={() =>
+                                setOpenMarcaDialog(true)
+                            }
+                        >
+
+                            + Nueva Marca
+
+                        </Button>
+
+                    </Grid>
+
+                    <Grid size={12}>
+
+                        <FormControl
+                            fullWidth
+                        >
+
+                            <InputLabel
+                                id="modelo-select-label"
+                            >
+                                Modelo
+                            </InputLabel>
+
+                            <Select
+                                labelId="modelo-select-label"
+                                name="modeloId"
+                                value={
+                                    formData.modeloId
+                                }
+                                label="Modelo"
+                                onChange={
+                                    handleChange
+                                }
+                            >
+
+                                {
+                                    modelosFiltrados.map(
+                                        (modelo) => (
+
+                                        <MenuItem
+                                            key={modelo.id}
+                                            value={modelo.id}
+                                        >
+
+                                            {modelo.nombre}
+
+                                        </MenuItem>
+                                    ))
+                                }
+
+                            </Select>
+
+                        </FormControl>
+
+                        <Button
+                            size="small"
+                            sx={{
+                                mt: 1,
+                                alignSelf: "flex-start"
+                            }}
+                            onClick={() => {
+
+                                setMostrarModeloInline(
+                                    true
+                                );
+
+                                setOpenMarcaDialog(
+                                    true
+                                );
+                            }}
+                        >
+
+                            + Nuevo Modelo
+
+                        </Button>
+
+                    </Grid>
+
+                    <Grid size={12}>
+
+                        <TextField
+                            label="Número Serie"
+                            name="numeroSerie"
+                            value={
+                                formData.numeroSerie
+                            }
+                            onChange={
+                                handleChange
+                            }
+                            inputRef={
+                                numeroSerieInputRef
+                            }
+                            autoComplete="off"
+                            fullWidth
+                            required
+                            error={
+                                Boolean(duplicadoDetectado)
+                            }
+                            helperText={
+                                duplicadoDetectado
+                                    ? `Ya existe un relé con esta serie: ${duplicadoDetectado.modelo} — estado ${duplicadoDetectado.estadoActual}${duplicadoDetectado.activo ? "" : " (dado de baja)"}.`
+                                    : verificandoSerie
+                                        ? "Verificando disponibilidad..."
+                                        : " "
+                            }
+                        />
+
+                    </Grid>
+
+                    <Grid size={12}>
+
+                        <TextField
+                            label="Cod. Configuración"
+                            name="codigoConfiguracion"
+                            value={
+                                formData.codigoConfiguracion
+                            }
+                            onChange={
+                                handleChange
+                            }
+                            autoComplete="off"
+                            fullWidth
+                            multiline
+                            maxRows={3}
+                            slotProps={{
+                                htmlInput: {
+                                    maxLength: 150
+                                }
+                            }}
+                            helperText={
+                                `${formData.codigoConfiguracion.length}/150`
+                            }
+                        />
+
+                    </Grid>
+
+                    <Grid size={12}>
+
+                        <TextField
+                            label="Order Code"
+                            name="orderCode"
+                            value={
+                                formData.orderCode
+                            }
+                            onChange={
+                                handleChange
+                            }
+                            autoComplete="off"
+                            fullWidth
+                            slotProps={{
+                                htmlInput: {
+                                    maxLength: 150
+                                }
+                            }}
+                            helperText={
+                                `${formData.orderCode.length}/150`
+                            }
+                        />
+
+                    </Grid>
+
+                        {
+                        !releEditando && (
+
+                            <Grid size={12}>
+
+                                <FormControl fullWidth>
+
+                                    <InputLabel
+                                        id="posicion-inicial-select-label"
+                                    >
+                                        Posición Inicial
+                                    </InputLabel>
+
+                                    <Select
+                                        labelId="posicion-inicial-select-label"
+                                        value={
+                                            formData.posicionInicialId
+                                            ?? ""
+                                        }
+                                        label="Posición Inicial"
+                                        onChange={(e) =>
+                                            setFormData((prev) => ({
+                                                ...prev,
+                                                posicionInicialId:
+                                                    Number(
+                                                        e.target.value
+                                                    )
+                                            }))
+                                        }
+                                    >
+
+                                        {
+                                            posicionesIniciales.map(
+                                                (posicion) => (
+
+                                                    <MenuItem
+                                                        key={
+                                                            posicion.id
+                                                        }
+                                                        value={
+                                                            posicion.id
+                                                        }
+                                                    >
+                                                        {
+                                                            posicion.nombre
+                                                        }
+                                                    </MenuItem>
+                                                )
+                                            )
+                                        }
+
+                                    </Select>
+
+                                </FormControl>
+
+                            </Grid>
+
+                        )
+                    }
+
+                    <Grid size={12}>
+
+                        <Accordion
+                            expanded={garantiaAbierta}
+                            onChange={(_, expandida) =>
+                                setGarantiaAbierta(expandida)
+                            }
+                        >
+
+                            <AccordionSummary
+                                expandIcon={<ExpandMoreIcon />}
+                            >
+
+                                <Box
+                                    sx={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: 2,
+                                        width: "100%"
+                                    }}
+                                >
+
+                                    <Typography
+                                        sx={{ fontWeight: 600 }}
+                                    >
+                                        Garantía
+                                    </Typography>
+
+                                    <Typography
+                                        variant="body2"
+                                        color="text.secondary"
+                                    >
+
+                                        {
+                                            formData.cargarGarantia
+                                            &&
+                                            formData.garantiaMeses
+                                                ? `${formData.garantiaMeses} meses`
+                                                : "Sin garantía cargada"
+                                        }
+
+                                    </Typography>
+
+                                </Box>
+
+                            </AccordionSummary>
+
+                            <AccordionDetails>
+
+                                <Grid
+                                    container
+                                    spacing={2}
+                                >
+
+                                    <Grid size={12}>
+
+                                        <FormControlLabel
+                                            control={
+
+                                                <Checkbox
+                                                    checked={formData.cargarGarantia}
+                                                    onChange={(e) =>
+                                                        setFormData((prev) => ({
+                                                            ...prev,
+                                                            cargarGarantia:
+                                                                e.target.checked
+                                                        }))
+                                                    }
+                                                />
+                                            }
+                                            label="Cargar garantía"
+                                        />
+
+                                    </Grid>
+
+                                    {
+                                        formData.cargarGarantia && (
+
+                                            <>
+
+                                                <Grid size={{ xs: 12, sm: 6 }}>
+
+                                                    <TextField
+                                                        type="number"
+                                                        label="Meses Garantía"
+                                                        value={
+                                                            formData.garantiaMeses || ""
+                                                        }
+                                                        onChange={(e) =>
+                                                            setFormData((prev) => ({
+                                                                ...prev,
+                                                                garantiaMeses:
+                                                                    Number(
+                                                                        e.target.value
+                                                                    )
+                                                            }))
+                                                        }
+                                                        fullWidth
+                                                    />
+
+                                                </Grid>
+
+                                                <Grid size={{ xs: 12, sm: 6 }}>
+
+                                                    <ToggleButtonGroup
+                                                        exclusive
+                                                        value={
+                                                            formData.usarFechaActual
+                                                                ? "AUTO"
+                                                                : "MANUAL"
+                                                        }
+                                                        onChange={(_, value) => {
+
+                                                            if (!value) return;
+
+                                                            setFormData((prev) => ({
+                                                                ...prev,
+                                                                usarFechaActual:
+                                                                    value === "AUTO"
+                                                            }));
+                                                        }}
+                                                        fullWidth
+                                                    >
+
+                                                        <ToggleButton value="AUTO">
+                                                            Fecha actual
+                                                        </ToggleButton>
+
+                                                        <ToggleButton value="MANUAL">
+                                                            Fecha manual
+                                                        </ToggleButton>
+
+                                                    </ToggleButtonGroup>
+
+                                                </Grid>
+
+                                                {
+                                                    !formData.usarFechaActual && (
+
+                                                        <Grid size={12}>
+
+                                                            <TextField
+                                                                type="date"
+                                                                fullWidth
+                                                                label="Inicio Garantía"
+                                                                value={
+                                                                    formData.inicioGarantia || ""
+                                                                }
+                                                                slotProps={{
+                                                                    inputLabel: {
+                                                                        shrink: true
+                                                                    }
+                                                                }}
+                                                                onChange={(e) =>
+                                                                    setFormData((prev) => ({
+                                                                        ...prev,
+                                                                        inicioGarantia:
+                                                                            e.target.value
+                                                                    }))
+                                                                }
+                                                            />
+
+                                                        </Grid>
+                                                    )
+                                                }
+
+                                            </>
+                                        )
+                                    }
+
+                                </Grid>
+
+                            </AccordionDetails>
+
+                        </Accordion>
+
+                    </Grid>
 
                     <Grid size={12}>
 
@@ -2318,6 +2814,31 @@ function ReleForm({
 
                                                         <Grid size={{ xs: 12, sm: 6 }}>
 
+                                                            <TextField
+                                                                type="date"
+                                                                label="Fecha"
+                                                                fullWidth
+                                                                slotProps={{
+                                                                    inputLabel: { shrink: true }
+                                                                }}
+                                                                value={
+                                                                    nuevoRemito.fecha
+                                                                }
+                                                                onChange={(e) =>
+                                                                    setNuevoRemito(
+                                                                        (prev) => ({
+                                                                            ...prev,
+                                                                            fecha:
+                                                                                e.target.value
+                                                                        })
+                                                                    )
+                                                                }
+                                                            />
+
+                                                        </Grid>
+
+                                                        <Grid size={{ xs: 12, sm: 6 }}>
+
                                                             <SelectorArchivoAdjunto
                                                                 label="Seleccionar PDF"
                                                                 labelSeleccionado="PDF/foto listo"
@@ -2429,428 +2950,6 @@ function ReleForm({
 
                     <Grid size={12}>
 
-                        <Typography
-                            variant="overline"
-                            color="text.secondary"
-                        >
-                            Datos del Relé
-                        </Typography>
-
-                    </Grid>
-
-                    <Grid size={12}>
-
-                        <FormControl
-                        
-                            fullWidth
-                        >
-
-                            <InputLabel
-                                id="marca-select-label"
-                            >
-                                Marca
-                            </InputLabel>
-
-                            <Select
-                                labelId="marca-select-label"
-                                value={marcaId}
-                                label="Marca"
-                                onChange={(e) => {
-
-                                    setMarcaId(
-                                        Number(
-                                            e.target.value
-                                        )
-                                    );
-
-                                    setFormData(
-                                        (prev) => ({
-                                            ...prev,
-                                            modeloId: 0
-                                        })
-                                    );
-                                }}
-                            >
-
-                                {
-                                    marcas.map(
-                                        (marca) => (
-
-                                        <MenuItem
-                                            key={marca.id}
-                                            value={marca.id}
-                                        >
-
-                                            {marca.nombre}
-
-                                        </MenuItem>
-                                    ))
-                                }
-
-                            </Select>
-
-                        </FormControl>
-
-                        <Button
-                            size="small"
-                            sx={{
-                                mt: 1,
-                                alignSelf: "flex-start"
-                            }}
-                            onClick={() =>
-                                setOpenMarcaDialog(true)
-                            }
-                        >
-
-                            + Nueva Marca
-
-                        </Button>
-
-                    </Grid>
-
-                    <Grid size={12}>
-
-                        <FormControl
-                            fullWidth
-                        >
-
-                            <InputLabel
-                                id="modelo-select-label"
-                            >
-                                Modelo
-                            </InputLabel>
-
-                            <Select
-                                labelId="modelo-select-label"
-                                name="modeloId"
-                                value={
-                                    formData.modeloId
-                                }
-                                label="Modelo"
-                                onChange={
-                                    handleChange
-                                }
-                            >
-
-                                {
-                                    modelosFiltrados.map(
-                                        (modelo) => (
-
-                                        <MenuItem
-                                            key={modelo.id}
-                                            value={modelo.id}
-                                        >
-
-                                            {modelo.nombre}
-
-                                        </MenuItem>
-                                    ))
-                                }
-
-                            </Select>
-
-                        </FormControl>
-
-                    </Grid>
-
-                    <Grid size={12}>
-
-                        <TextField
-                            label="Número Serie"
-                            name="numeroSerie"
-                            value={
-                                formData.numeroSerie
-                            }
-                            onChange={
-                                handleChange
-                            }
-                            inputRef={
-                                numeroSerieInputRef
-                            }
-                            autoComplete="off"
-                            fullWidth
-                            required
-                            error={
-                                Boolean(duplicadoDetectado)
-                            }
-                            helperText={
-                                duplicadoDetectado
-                                    ? `Ya existe un relé con esta serie: ${duplicadoDetectado.modelo} — estado ${duplicadoDetectado.estadoActual}${duplicadoDetectado.activo ? "" : " (dado de baja)"}.`
-                                    : verificandoSerie
-                                        ? "Verificando disponibilidad..."
-                                        : " "
-                            }
-                        />
-
-                    </Grid>
-
-                    <Grid size={12}>
-
-                        <TextField
-                            label="Cod. Configuración"
-                            name="codigoConfiguracion"
-                            value={
-                                formData.codigoConfiguracion
-                            }
-                            onChange={
-                                handleChange
-                            }
-                            autoComplete="off"
-                            fullWidth
-                            multiline
-                            maxRows={3}
-                            slotProps={{
-                                htmlInput: {
-                                    maxLength: 150
-                                }
-                            }}
-                            helperText={
-                                `${formData.codigoConfiguracion.length}/150`
-                            }
-                        />
-
-                    </Grid>
-
-                    <Grid size={12}>
-
-                        <Accordion
-                            expanded={garantiaAbierta}
-                            onChange={(_, expandida) =>
-                                setGarantiaAbierta(expandida)
-                            }
-                        >
-
-                            <AccordionSummary
-                                expandIcon={<ExpandMoreIcon />}
-                            >
-
-                                <Box
-                                    sx={{
-                                        display: "flex",
-                                        alignItems: "center",
-                                        gap: 2,
-                                        width: "100%"
-                                    }}
-                                >
-
-                                    <Typography
-                                        sx={{ fontWeight: 600 }}
-                                    >
-                                        Garantía
-                                    </Typography>
-
-                                    <Typography
-                                        variant="body2"
-                                        color="text.secondary"
-                                    >
-
-                                        {
-                                            formData.cargarGarantia
-                                            &&
-                                            formData.garantiaMeses
-                                                ? `${formData.garantiaMeses} meses`
-                                                : "Sin garantía cargada"
-                                        }
-
-                                    </Typography>
-
-                                </Box>
-
-                            </AccordionSummary>
-
-                            <AccordionDetails>
-
-                                <Grid
-                                    container
-                                    spacing={2}
-                                >
-
-                                    <Grid size={12}>
-
-                                        <FormControlLabel
-                                            control={
-
-                                                <Checkbox
-                                                    checked={formData.cargarGarantia}
-                                                    onChange={(e) =>
-                                                        setFormData((prev) => ({
-                                                            ...prev,
-                                                            cargarGarantia:
-                                                                e.target.checked
-                                                        }))
-                                                    }
-                                                />
-                                            }
-                                            label="Cargar garantía"
-                                        />
-
-                                    </Grid>
-
-                                    {
-                                        formData.cargarGarantia && (
-
-                                            <>
-
-                                                <Grid size={{ xs: 12, sm: 6 }}>
-
-                                                    <TextField
-                                                        type="number"
-                                                        label="Meses Garantía"
-                                                        value={
-                                                            formData.garantiaMeses || ""
-                                                        }
-                                                        onChange={(e) =>
-                                                            setFormData((prev) => ({
-                                                                ...prev,
-                                                                garantiaMeses:
-                                                                    Number(
-                                                                        e.target.value
-                                                                    )
-                                                            }))
-                                                        }
-                                                        fullWidth
-                                                    />
-
-                                                </Grid>
-
-                                                <Grid size={{ xs: 12, sm: 6 }}>
-
-                                                    <ToggleButtonGroup
-                                                        exclusive
-                                                        value={
-                                                            formData.usarFechaActual
-                                                                ? "AUTO"
-                                                                : "MANUAL"
-                                                        }
-                                                        onChange={(_, value) => {
-
-                                                            if (!value) return;
-
-                                                            setFormData((prev) => ({
-                                                                ...prev,
-                                                                usarFechaActual:
-                                                                    value === "AUTO"
-                                                            }));
-                                                        }}
-                                                        fullWidth
-                                                    >
-
-                                                        <ToggleButton value="AUTO">
-                                                            Fecha actual
-                                                        </ToggleButton>
-
-                                                        <ToggleButton value="MANUAL">
-                                                            Fecha manual
-                                                        </ToggleButton>
-
-                                                    </ToggleButtonGroup>
-
-                                                </Grid>
-
-                                                {
-                                                    !formData.usarFechaActual && (
-
-                                                        <Grid size={12}>
-
-                                                            <TextField
-                                                                type="date"
-                                                                fullWidth
-                                                                label="Inicio Garantía"
-                                                                value={
-                                                                    formData.inicioGarantia || ""
-                                                                }
-                                                                slotProps={{
-                                                                    inputLabel: {
-                                                                        shrink: true
-                                                                    }
-                                                                }}
-                                                                onChange={(e) =>
-                                                                    setFormData((prev) => ({
-                                                                        ...prev,
-                                                                        inicioGarantia:
-                                                                            e.target.value
-                                                                    }))
-                                                                }
-                                                            />
-
-                                                        </Grid>
-                                                    )
-                                                }
-
-                                            </>
-                                        )
-                                    }
-
-                                </Grid>
-
-                            </AccordionDetails>
-
-                        </Accordion>
-
-                    </Grid>
-
-                        {
-                        !releEditando && (
-
-                            <Grid size={12}>
-
-                                <FormControl fullWidth>
-
-                                    <InputLabel
-                                        id="posicion-inicial-select-label"
-                                    >
-                                        Posición Inicial
-                                    </InputLabel>
-
-                                    <Select
-                                        labelId="posicion-inicial-select-label"
-                                        value={
-                                            formData.posicionInicialId
-                                            ?? ""
-                                        }
-                                        label="Posición Inicial"
-                                        onChange={(e) =>
-                                            setFormData((prev) => ({
-                                                ...prev,
-                                                posicionInicialId:
-                                                    Number(
-                                                        e.target.value
-                                                    )
-                                            }))
-                                        }
-                                    >
-
-                                        {
-                                            posicionesIniciales.map(
-                                                (posicion) => (
-
-                                                    <MenuItem
-                                                        key={
-                                                            posicion.id
-                                                        }
-                                                        value={
-                                                            posicion.id
-                                                        }
-                                                    >
-                                                        {
-                                                            posicion.nombre
-                                                        }
-                                                    </MenuItem>
-                                                )
-                                            )
-                                        }
-
-                                    </Select>
-
-                                </FormControl>
-
-                            </Grid>
-
-                        )
-                    }
-
-                    <Grid size={12}>
-
                         <Box
                             sx={{ display: "flex", gap: 2 }}
                         >
@@ -2928,7 +3027,11 @@ function ReleForm({
 
                 <DialogTitle>
 
-                    Nueva Marca
+                    {
+                        mostrarModeloInline
+                            ? "Nuevo Modelo"
+                            : "Nueva Marca"
+                    }
 
                 </DialogTitle>
 
@@ -2949,9 +3052,7 @@ function ReleForm({
                     }
 
                     {
-                        mostrarModeloInline
-                        &&
-                        marcaCreadaId && (
+                        mostrarModeloInline && (
 
                             <ModeloForm
 
@@ -2970,13 +3071,20 @@ function ReleForm({
                                     setOpenMarcaDialog(
                                         false
                                     );
+
+                                    setMarcaCreadaId(
+                                        null
+                                    );
                                 }}
 
                                 marcaPreseleccionada={
                                     marcaCreadaId
+                                    ?? (marcaId || undefined)
                                 }
 
-                                bloquearMarca={true}
+                                bloquearMarca={
+                                    Boolean(marcaCreadaId)
+                                }
                             />
                         )
                     }

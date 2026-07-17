@@ -7,10 +7,12 @@ import {
 import {
     Alert,
     Button,
+    Chip,
     Dialog,
     DialogActions,
     DialogContent,
     DialogTitle,
+    Divider,
     Grid,
     MenuItem,
     Stack,
@@ -20,6 +22,12 @@ import {
 
 import AddIcon
 from "@mui/icons-material/Add";
+
+import ArrowForwardIcon
+from "@mui/icons-material/ArrowForward";
+
+import PlaylistAddIcon
+from "@mui/icons-material/PlaylistAdd";
 
 import type { Marca } from "../../../types/Marca";
 import type { Modelo } from "../../../types/Modelo";
@@ -35,7 +43,13 @@ export interface DatosReleManual {
 
     numeroSerie: string;
     codigoConfiguracion: string;
+    orderCode: string;
     modeloId: number;
+
+    // Se completa con la posición por defecto recién al pasar por "Datos y
+    // garantía" (ver stampearPosicionPorDefecto en ReleAltaWizard); hasta
+    // entonces queda sin definir. Se puede corregir por ítem en "Revisión".
+    posicionId?: number;
 }
 
 interface Props {
@@ -43,16 +57,22 @@ interface Props {
     marcas: Marca[];
     modelos: Modelo[];
     onCatalogosActualizados: () => Promise<void>;
-    enviando: boolean;
-    onSubmit: (datos: DatosReleManual) => void;
+    lote: DatosReleManual[];
+    onAgregarRele: (datos: DatosReleManual) => void;
+    onQuitarDeLote: (indice: number) => void;
+    onContinuar: () => void;
+    onOmitir: () => void;
 }
 
 function PasoCargaManual({
     marcas,
     modelos,
     onCatalogosActualizados,
-    enviando,
-    onSubmit
+    lote,
+    onAgregarRele,
+    onQuitarDeLote,
+    onContinuar,
+    onOmitir
 }: Props) {
 
     const [marcaId, setMarcaId] =
@@ -74,6 +94,9 @@ function PasoCargaManual({
     };
 
     const [codigoConfiguracion, setCodigoConfiguracion] =
+        useState("");
+
+    const [orderCode, setOrderCode] =
         useState("");
 
     const [verificandoSerie, setVerificandoSerie] =
@@ -173,16 +196,42 @@ function PasoCargaManual({
         setMarcaCreadaId(null);
     };
 
-    const puedeEnviar =
+    const duplicadoEnLote =
+        lote.some(
+            (rele) =>
+                rele.numeroSerie.toUpperCase()
+                ===
+                numeroSerie.trim().toUpperCase()
+        );
+
+    const puedeAgregar =
         Boolean(numeroSerie.trim())
         &&
         Boolean(modeloId)
         &&
         !duplicadoDetectado
         &&
-        !verificandoSerie
+        !duplicadoEnLote
         &&
-        !enviando;
+        !verificandoSerie;
+
+    const handleAgregarRele = () => {
+
+        onAgregarRele({
+            numeroSerie: numeroSerie.trim(),
+            codigoConfiguracion,
+            orderCode,
+            modeloId: Number(modeloId)
+        });
+
+        setNumeroSerie("");
+        setCodigoConfiguracion("");
+        setOrderCode("");
+    };
+
+    const nombreModelo = (modeloId: number) =>
+        modelos.find((m) => m.id === modeloId)?.nombre
+        ?? "Modelo eliminado";
 
     return (
 
@@ -264,6 +313,19 @@ function PasoCargaManual({
 
                     </TextField>
 
+                    <Button
+                        size="small"
+                        startIcon={<AddIcon fontSize="small" />}
+                        sx={{ mt: 0.5 }}
+                        onClick={() => {
+
+                            setMostrarModeloInline(true);
+                            setOpenMarcaDialog(true);
+                        }}
+                    >
+                        Nuevo modelo
+                    </Button>
+
                 </Grid>
 
                 <Grid size={12}>
@@ -273,13 +335,15 @@ function PasoCargaManual({
                         fullWidth
                         required
                         value={numeroSerie}
-                        error={duplicadoDetectado}
+                        error={duplicadoDetectado || duplicadoEnLote}
                         helperText={
                             duplicadoDetectado
                                 ? "Ya existe un relé con este número de serie"
-                                : verificandoSerie
-                                    ? "Verificando..."
-                                    : " "
+                                : duplicadoEnLote
+                                    ? "Ya agregaste este número de serie a la carga"
+                                    : verificandoSerie
+                                        ? "Verificando..."
+                                        : " "
                         }
                         onChange={(e) =>
                             setNumeroSerie(e.target.value.toUpperCase())
@@ -309,27 +373,96 @@ function PasoCargaManual({
 
                 </Grid>
 
+                <Grid size={12}>
+
+                    <TextField
+                        label="Order Code"
+                        fullWidth
+                        value={orderCode}
+                        slotProps={{
+                            htmlInput: { maxLength: 150 }
+                        }}
+                        helperText={`${orderCode.length}/150`}
+                        onChange={(e) =>
+                            setOrderCode(
+                                e.target.value.toUpperCase()
+                            )
+                        }
+                    />
+
+                </Grid>
+
             </Grid>
 
             <Button
                 variant="contained"
                 size="large"
-                disabled={!puedeEnviar}
-                onClick={() =>
-                    onSubmit({
-                        numeroSerie: numeroSerie.trim(),
-                        codigoConfiguracion,
-                        modeloId: Number(modeloId)
-                    })
-                }
+                startIcon={<PlaylistAddIcon />}
+                disabled={!puedeAgregar}
+                onClick={handleAgregarRele}
             >
+                Agregar a la carga
+            </Button>
 
+            {
+                lote.length > 0 && (
+
+                    <Stack spacing={1}>
+
+                        <Divider />
+
+                        <Typography variant="subtitle2">
+                            Relés cargados en este lote ({lote.length})
+                        </Typography>
+
+                        <Stack
+                            direction="row"
+                            spacing={1}
+                            useFlexGap
+                            sx={{ flexWrap: "wrap" }}
+                        >
+
+                            {
+                                lote.map((rele, indice) => (
+
+                                    <Chip
+                                        key={`${rele.numeroSerie}-${indice}`}
+                                        label={
+                                            `${nombreModelo(rele.modeloId)} · ${rele.numeroSerie}`
+                                        }
+                                        onDelete={
+                                            () => onQuitarDeLote(indice)
+                                        }
+                                    />
+                                ))
+                            }
+
+                        </Stack>
+
+                    </Stack>
+                )
+            }
+
+            <Button
+                variant={lote.length > 0 ? "contained" : "outlined"}
+                size="large"
+                endIcon={<ArrowForwardIcon />}
+                disabled={lote.length === 0}
+                onClick={onContinuar}
+            >
                 {
-                    enviando
-                        ? "Creando..."
-                        : "Crear relé"
+                    lote.length > 0
+                        ? `Continuar con ${lote.length} relé(s)`
+                        : "Continuar"
                 }
+            </Button>
 
+            <Button
+                size="small"
+                color="inherit"
+                onClick={onOmitir}
+            >
+                ¿Vas a cargar varios relés desde un remito? Omití este paso e importá con IA
             </Button>
 
             <Dialog
@@ -369,8 +502,10 @@ function PasoCargaManual({
 
                             <ModeloForm
                                 marcas={marcas}
-                                marcaPreseleccionada={marcaCreadaId ?? undefined}
-                                bloquearMarca
+                                marcaPreseleccionada={
+                                    marcaCreadaId ?? (marcaId || undefined)
+                                }
+                                bloquearMarca={Boolean(marcaCreadaId)}
                                 onSubmit={handleCrearModeloInline}
                                 cancelarEdicion={() => {
 
@@ -412,8 +547,8 @@ function PasoCargaManual({
             }
 
             <Typography variant="caption" color="text.secondary">
-                Podés seguir cargando más relés con "Registrar otro relé" al
-                terminar.
+                Cargá los relés de a uno con "Agregar a la carga". Vas a
+                poder revisar todo el lote antes de confirmarlo.
             </Typography>
 
         </Stack>

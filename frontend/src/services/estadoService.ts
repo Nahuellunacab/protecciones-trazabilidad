@@ -13,6 +13,15 @@ Promise<Estado[]> {
     return response.data;
 }
 
+export async function obtenerEstadosIniciales():
+Promise<Estado[]> {
+
+    const response =
+        await api.get("/estados/iniciales");
+
+    return response.data;
+}
+
 export async function
 obtenerEstadosPermitidos(
     releId: number

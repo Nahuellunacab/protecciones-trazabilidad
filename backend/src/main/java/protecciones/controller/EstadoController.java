@@ -31,6 +31,14 @@ public class EstadoController {
                 .obtenerTodos();
     }
 
+    @GetMapping("/iniciales")
+    public List<EstadoResponseDTO>
+    obtenerEstadosIniciales() {
+
+        return estadoService
+                .obtenerEstadosIniciales();
+    }
+
     @GetMapping("/transiciones/{releId}")
     public List<EstadoResponseDTO>
     obtenerEstadosPermitidos(

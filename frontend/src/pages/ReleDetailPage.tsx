@@ -374,6 +374,18 @@ function ReleDetailPage() {
 
                                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                                     <Typography variant="overline" color="text.secondary">
+                                        Order Code
+                                    </Typography>
+                                    <Typography
+                                        variant="body1"
+                                        sx={{ overflowWrap: "anywhere" }}
+                                    >
+                                        {rele.orderCode || "-"}
+                                    </Typography>
+                                </Grid>
+
+                                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                                    <Typography variant="overline" color="text.secondary">
                                         Marca
                                     </Typography>
                                     <Typography variant="body1">

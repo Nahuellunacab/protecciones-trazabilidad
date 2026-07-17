@@ -4,6 +4,8 @@ export interface ReleRequest {
 
     codigoConfiguracion: string;
 
+    orderCode: string;
+
     modeloId: number | "";
 
     tipoIngreso: "NUEVO" | "USADO";
@@ -13,6 +15,8 @@ export interface ReleRequest {
     ordenProvisionId: number | null;
 
     posicionInicialId: number | undefined;
+
+    estadoInicialId?: number;
 
     cargarGarantia: boolean;
 
