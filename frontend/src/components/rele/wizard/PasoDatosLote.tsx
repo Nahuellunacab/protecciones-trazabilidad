@@ -36,6 +36,9 @@ import type { DestinoRequest } from "../../../types/DestinoRequest";
 import type { Posicion } from "../../../types/Posicion";
 import type { PosicionRequest } from "../../../types/PosicionRequest";
 import type { Localidad } from "../../../types/Localidad";
+import type { LocalidadRequest } from "../../../types/LocalidadRequest";
+import type { Provincia } from "../../../types/Provincia";
+import type { ProvinciaRequest } from "../../../types/ProvinciaRequest";
 import type { Estado } from "../../../types/Estado";
 
 interface Props {
@@ -57,6 +60,9 @@ interface Props {
     onDestinoChange: (destino: Destino | null) => void;
     localidades: Localidad[];
     onCrearDestino: (data: DestinoRequest) => Promise<Destino | null>;
+    provincias: Provincia[];
+    onCrearProvincia: (data: ProvinciaRequest) => Promise<Provincia | null>;
+    onCrearLocalidad: (data: LocalidadRequest) => Promise<Localidad | null>;
 
     posiciones: Posicion[];
     posicionesLoading: boolean;
@@ -84,6 +90,9 @@ function PasoDatosLote({
     onDestinoChange,
     localidades,
     onCrearDestino,
+    provincias,
+    onCrearProvincia,
+    onCrearLocalidad,
     posiciones,
     posicionesLoading,
     posicionesError,
@@ -102,6 +111,23 @@ function PasoDatosLote({
     const [creandoDestino, setCreandoDestino] = useState(false);
     const [errorDestino, setErrorDestino] = useState("");
 
+    // Mini-formulario "+ Nueva localidad" dentro del diálogo de destino:
+    // hace falta cuando la base todavía no tiene ninguna localidad cargada
+    // (típico con la base recién limpiada) y el select de localidades
+    // quedaría vacío sin forma de avanzar.
+    const [mostrarNuevaLocalidad, setMostrarNuevaLocalidad] = useState(false);
+    const [nuevaLocalidadNombre, setNuevaLocalidadNombre] = useState("");
+    const [nuevaLocalidadProvinciaId, setNuevaLocalidadProvinciaId] =
+        useState<number | "">("");
+    const [creandoLocalidad, setCreandoLocalidad] = useState(false);
+    const [errorLocalidad, setErrorLocalidad] = useState("");
+
+    // Mini-formulario "+ Nueva provincia" anidado dentro del anterior, por
+    // la misma razón (la base puede no tener ninguna provincia cargada).
+    const [mostrarNuevaProvincia, setMostrarNuevaProvincia] = useState(false);
+    const [nuevaProvinciaNombre, setNuevaProvinciaNombre] = useState("");
+    const [creandoProvincia, setCreandoProvincia] = useState(false);
+
     const [openPosicionDialog, setOpenPosicionDialog] = useState(false);
     const [nuevaPosicionNombre, setNuevaPosicionNombre] = useState("");
     const [creandoPosicion, setCreandoPosicion] = useState(false);
@@ -113,6 +139,75 @@ function PasoDatosLote({
         setNuevoDestinoNombre("");
         setNuevoDestinoLocalidadId("");
         setErrorDestino("");
+        setMostrarNuevaLocalidad(false);
+        setNuevaLocalidadNombre("");
+        setNuevaLocalidadProvinciaId("");
+        setErrorLocalidad("");
+        setMostrarNuevaProvincia(false);
+        setNuevaProvinciaNombre("");
+    };
+
+    const handleCrearProvincia = async () => {
+
+        setCreandoProvincia(true);
+
+        try {
+
+            const creada = await onCrearProvincia({
+                nombre: nuevaProvinciaNombre.trim()
+            });
+
+            if (creada) {
+                setNuevaLocalidadProvinciaId(creada.id);
+            }
+
+            setMostrarNuevaProvincia(false);
+            setNuevaProvinciaNombre("");
+
+        } catch {
+
+            setErrorLocalidad(
+                "No se pudo crear la provincia. Intente nuevamente."
+            );
+
+        } finally {
+
+            setCreandoProvincia(false);
+        }
+    };
+
+    const handleCrearLocalidad = async () => {
+
+        if (!nuevaLocalidadProvinciaId) return;
+
+        setCreandoLocalidad(true);
+        setErrorLocalidad("");
+
+        try {
+
+            const creada = await onCrearLocalidad({
+                nombre: nuevaLocalidadNombre.trim(),
+                provinciaId: Number(nuevaLocalidadProvinciaId)
+            });
+
+            if (creada) {
+                setNuevoDestinoLocalidadId(creada.id);
+            }
+
+            setMostrarNuevaLocalidad(false);
+            setNuevaLocalidadNombre("");
+            setNuevaLocalidadProvinciaId("");
+
+        } catch {
+
+            setErrorLocalidad(
+                "No se pudo crear la localidad. Intente nuevamente."
+            );
+
+        } finally {
+
+            setCreandoLocalidad(false);
+        }
     };
 
     const handleCrearDestino = async () => {
@@ -421,10 +516,10 @@ function PasoDatosLote({
                             color="text.secondary"
                             sx={{ display: "block", mt: 0.5 }}
                         >
-                            Por defecto "EN STOCK". Si el relé que estás
-                            cargando ya está instalado o en servicio,
-                            elegí ese estado para no dejarlo registrado
-                            como si estuviera en depósito.
+                            Por defecto "EN_STOCK". Si el relé que estás
+                            cargando ya está instalado, elegí ese estado
+                            para no dejarlo registrado como si estuviera
+                            en depósito.
                         </Typography>
 
                     </Grid>
@@ -517,6 +612,154 @@ function PasoDatosLote({
                             }
 
                         </TextField>
+
+                        <Button
+                            size="small"
+                            startIcon={<AddIcon fontSize="small" />}
+                            sx={{ alignSelf: "flex-start" }}
+                            onClick={() =>
+                                setMostrarNuevaLocalidad(
+                                    (valor) => !valor
+                                )
+                            }
+                        >
+                            Nueva localidad
+                        </Button>
+
+                        {
+                            mostrarNuevaLocalidad && (
+
+                                <Paper
+                                    variant="outlined"
+                                    sx={{ p: 2, borderRadius: 2 }}
+                                >
+
+                                    <Stack spacing={2}>
+
+                                        <TextField
+                                            label="Nombre de la localidad"
+                                            fullWidth
+                                            value={nuevaLocalidadNombre}
+                                            onChange={(e) =>
+                                                setNuevaLocalidadNombre(
+                                                    e.target.value
+                                                )
+                                            }
+                                        />
+
+                                        <TextField
+                                            select
+                                            label="Provincia"
+                                            fullWidth
+                                            value={nuevaLocalidadProvinciaId}
+                                            onChange={(e) =>
+                                                setNuevaLocalidadProvinciaId(
+                                                    e.target.value
+                                                        ? Number(e.target.value)
+                                                        : ""
+                                                )
+                                            }
+                                        >
+
+                                            {
+                                                provincias.map((provincia) => (
+
+                                                    <MenuItem
+                                                        key={provincia.id}
+                                                        value={provincia.id}
+                                                    >
+                                                        {provincia.nombre}
+                                                    </MenuItem>
+                                                ))
+                                            }
+
+                                        </TextField>
+
+                                        <Button
+                                            size="small"
+                                            startIcon={<AddIcon fontSize="small" />}
+                                            sx={{ alignSelf: "flex-start" }}
+                                            onClick={() =>
+                                                setMostrarNuevaProvincia(
+                                                    (valor) => !valor
+                                                )
+                                            }
+                                        >
+                                            Nueva provincia
+                                        </Button>
+
+                                        {
+                                            mostrarNuevaProvincia && (
+
+                                                <Stack
+                                                    direction="row"
+                                                    spacing={1}
+                                                >
+
+                                                    <TextField
+                                                        size="small"
+                                                        fullWidth
+                                                        label="Nombre de la provincia"
+                                                        value={nuevaProvinciaNombre}
+                                                        onChange={(e) =>
+                                                            setNuevaProvinciaNombre(
+                                                                e.target.value
+                                                            )
+                                                        }
+                                                    />
+
+                                                    <Button
+                                                        variant="outlined"
+                                                        disabled={
+                                                            creandoProvincia
+                                                            ||
+                                                            !nuevaProvinciaNombre.trim()
+                                                        }
+                                                        onClick={handleCrearProvincia}
+                                                    >
+                                                        {
+                                                            creandoProvincia
+                                                                ? "Creando..."
+                                                                : "Crear"
+                                                        }
+                                                    </Button>
+
+                                                </Stack>
+                                            )
+                                        }
+
+                                        <Button
+                                            variant="contained"
+                                            size="small"
+                                            disabled={
+                                                creandoLocalidad
+                                                ||
+                                                !nuevaLocalidadNombre.trim()
+                                                ||
+                                                !nuevaLocalidadProvinciaId
+                                            }
+                                            onClick={handleCrearLocalidad}
+                                        >
+                                            {
+                                                creandoLocalidad
+                                                    ? "Creando..."
+                                                    : "Crear localidad"
+                                            }
+                                        </Button>
+
+                                        {
+                                            errorLocalidad && (
+                                                <Alert severity="error">
+                                                    {errorLocalidad}
+                                                </Alert>
+                                            )
+                                        }
+
+                                    </Stack>
+
+                                </Paper>
+                            )
+                        }
 
                         {
                             errorDestino && (

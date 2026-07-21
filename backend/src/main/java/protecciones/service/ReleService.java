@@ -1049,15 +1049,14 @@ public class ReleService {
     }
 
     // Resuelve el estado con el que se crea el primer Movimiento de un
-    // relé nuevo. Por defecto sigue siendo "EN STOCK" (comportamiento
+    // relé nuevo. Por defecto sigue siendo "EN_STOCK" (comportamiento
     // historico), pero el usuario puede elegir otro estado inicial para
     // dar de alta un relé que en la realidad ya está instalado/en
     // servicio, sin tener que simular movimientos intermedios que nunca
     // ocurrieron. Se acepta cualquier estado que tenga al menos una
     // transición saliente en transicion_estado (esto excluye "BAJA", que
-    // tiene su propio flujo dedicado, y estados históricos que ya no
-    // forman parte del grafo vigente, como "INSTALADO" — permitirlos
-    // dejaría al relé sin ninguna transición válida después del alta).
+    // tiene su propio flujo dedicado — permitir un estado sin transiciones
+    // salientes dejaría al relé sin ningún movimiento válido después del alta).
     private Estado resolverEstadoInicial(
             Long estadoInicialId
     ) {
@@ -1066,12 +1065,12 @@ public class ReleService {
 
             return estadoRepository
                     .findByNombreIgnoreCase(
-                            "EN STOCK"
+                            "EN_STOCK"
                     )
                     .orElseThrow(() ->
 
                             new BusinessException(
-                                    "Estado EN STOCK no encontrado"
+                                    "Estado EN_STOCK no encontrado"
                             )
                     );
         }

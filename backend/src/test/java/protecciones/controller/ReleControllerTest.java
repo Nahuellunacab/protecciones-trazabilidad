@@ -79,7 +79,7 @@ class ReleControllerTest {
 
         return new ReleResponseDTO(
                 1L, "SN-001", null, null, null, null, null,
-                "Modelo X", "Marca X", "EN STOCK", "Estante 1", "Deposito Central",
+                "Modelo X", "Marca X", "EN_STOCK", "Estante 1", "Deposito Central",
                 1L, null, null, "NUEVO", "SIN GARANTIA", null, true, null, null
         );
     }
@@ -125,7 +125,7 @@ class ReleControllerTest {
                 )
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.numeroSerie").value("SN-001"))
-                .andExpect(jsonPath("$.estadoActual").value("EN STOCK"));
+                .andExpect(jsonPath("$.estadoActual").value("EN_STOCK"));
     }
 
     @Test

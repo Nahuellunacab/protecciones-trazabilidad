@@ -125,18 +125,20 @@ import { extraerMensajeError }
 from "../utils/errorUtils";
 
 // Colores por estado operativo vigente (ver maquina de estados en
-// V20__actualizar_transiciones_estado.sql). Cualquier estado que no
-// figure aca (legado o nuevo, agregado por una migracion futura) cae
-// en el color por defecto en vez de romper o mostrarse "sin color".
+// docs/maquina-estados.md y V33__redefinir_maquina_estados.sql). Cualquier
+// estado que no figure aca (legado o nuevo, agregado por una migracion
+// futura) cae en el color por defecto en vez de romper o mostrarse "sin color".
 const COLOR_POR_ESTADO: Record<string, "default" | "primary" | "secondary" | "success" | "warning" | "error" | "info"> = {
 
-    "EN STOCK": "info",
-    "ENSAYO": "secondary",
+    "EN_STOCK": "info",
+    "EN_ENSAYO": "secondary",
+    "RECHAZADO": "error",
     "GARANTIA_PROVEEDOR": "warning",
     "APROBADO": "success",
     "RESERVA": "info",
-    "EN_SERVICIO": "primary",
-    "EN REPARACION": "warning",
+    "PRESTADO": "default",
+    "INSTALADO": "primary",
+    "EN_REPARACION": "warning",
     "BAJA": "error"
 };
 
@@ -586,17 +588,104 @@ function HomePage() {
 
         return (
 
-            <Box
-                sx={{
-                    display: "flex",
-                    justifyContent: "center",
-                    mt: 10
-                }}
-            >
+            <Stack spacing={4}>
 
-                <CircularProgress />
+                <Box
+                    sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        flexWrap: "wrap",
+                        gap: 2
+                    }}
+                >
 
-            </Box>
+                    <Skeleton
+                        variant="text"
+                        width={220}
+                        height={48}
+                    />
+
+                    <Stack direction="row" spacing={1}>
+
+                        <Skeleton
+                            variant="rounded"
+                            width={110}
+                            height={36}
+                        />
+
+                        <Skeleton
+                            variant="rounded"
+                            width={110}
+                            height={36}
+                        />
+
+                    </Stack>
+
+                </Box>
+
+                <Skeleton
+                    variant="rounded"
+                    height={140}
+                />
+
+                <Skeleton
+                    variant="rounded"
+                    height={220}
+                />
+
+                <Grid container spacing={2}>
+
+                    {
+                        Array.from({ length: 5 }).map(
+                            (_, indice) => (
+
+                                <Grid
+                                    key={`kpi-skeleton-${indice}`}
+                                    size={{ xs: 12, sm: 6, md: 2.4 }}
+                                >
+
+                                    <Skeleton
+                                        variant="rounded"
+                                        height={120}
+                                    />
+
+                                </Grid>
+                            )
+                        )
+                    }
+
+                </Grid>
+
+                <Grid container spacing={2}>
+
+                    {
+                        Array.from({ length: 5 }).map(
+                            (_, indice) => (
+
+                                <Grid
+                                    key={`chart-skeleton-${indice}`}
+                                    size={{ xs: 12, md: 6, lg: 4 }}
+                                >
+
+                                    <Skeleton
+                                        variant="rounded"
+                                        height={380}
+                                    />
+
+                                </Grid>
+                            )
+                        )
+                    }
+
+                </Grid>
+
+                <Skeleton
+                    variant="rounded"
+                    height={300}
+                />
+
+            </Stack>
         );
     }
 

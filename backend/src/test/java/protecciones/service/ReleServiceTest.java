@@ -94,7 +94,7 @@ class ReleServiceTest {
         destino.setNombre("Deposito Central");
         posicion = new Posicion(10L, "Estante 1", destino);
 
-        enStock = new Estado(1L, "EN STOCK", null);
+        enStock = new Estado(1L, "EN_STOCK", null);
 
         usuario = new Usuario(1L, "Ana", "Perez", "ana@epec.com");
 
@@ -110,7 +110,7 @@ class ReleServiceTest {
                     return rele;
                 });
 
-        lenient().when(estadoRepository.findByNombreIgnoreCase("EN STOCK"))
+        lenient().when(estadoRepository.findByNombreIgnoreCase("EN_STOCK"))
                 .thenReturn(Optional.of(enStock));
 
         lenient().when(posicionRepository.findById(10L))
@@ -191,7 +191,7 @@ class ReleServiceTest {
         ReleResponseDTO resultado =
                 releService.guardar(dtoValido());
 
-        assertThat(resultado.getEstadoActual()).isEqualTo("EN STOCK");
+        assertThat(resultado.getEstadoActual()).isEqualTo("EN_STOCK");
         assertThat(resultado.getPosicionActual()).isEqualTo("Estante 1");
         assertThat(resultado.getLocalidadActual()).isEqualTo("Deposito Central");
 

@@ -64,13 +64,13 @@ class EstadoControllerTest {
 
         when(estadoService.obtenerEstadosPermitidos(1L))
                 .thenReturn(List.of(
-                        new EstadoResponseDTO(2L, "ENSAYO"),
+                        new EstadoResponseDTO(2L, "EN_ENSAYO"),
                         new EstadoResponseDTO(3L, "APROBADO")
                 ));
 
         mockMvc.perform(get("/api/estados/transiciones/1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].nombre").value("ENSAYO"))
+                .andExpect(jsonPath("$[0].nombre").value("EN_ENSAYO"))
                 .andExpect(jsonPath("$[1].nombre").value("APROBADO"));
     }
 
@@ -92,13 +92,13 @@ class EstadoControllerTest {
 
         when(estadoService.obtenerTodos())
                 .thenReturn(List.of(
-                        new EstadoResponseDTO(1L, "EN STOCK"),
+                        new EstadoResponseDTO(1L, "EN_STOCK"),
                         new EstadoResponseDTO(2L, "BAJA")
                 ));
 
         mockMvc.perform(get("/api/estados"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
-                .andExpect(jsonPath("$[0].nombre").value("EN STOCK"));
+                .andExpect(jsonPath("$[0].nombre").value("EN_STOCK"));
     }
 }

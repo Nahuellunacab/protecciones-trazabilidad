@@ -121,7 +121,7 @@ class MovimientoServiceTest {
     @Test
     void guardar_releSinMovimientosPrevios_noValidaTransicionYGuarda() {
 
-        Estado ensayo = new Estado(2L, "ENSAYO", null);
+        Estado ensayo = new Estado(2L, "EN_ENSAYO", null);
 
         when(estadoRepository.findById(2L))
                 .thenReturn(Optional.of(ensayo));
@@ -139,7 +139,7 @@ class MovimientoServiceTest {
         MovimientoResponseDTO resultado =
                 movimientoService.guardar(dto(2L));
 
-        assertThat(resultado.getEstado()).isEqualTo("ENSAYO");
+        assertThat(resultado.getEstado()).isEqualTo("EN_ENSAYO");
 
         verify(transicionEstadoRepository, never())
                 .existsByEstadoOrigenIdAndEstadoDestinoId(any(), any());
@@ -148,8 +148,8 @@ class MovimientoServiceTest {
     @Test
     void guardar_transicionNoPermitida_lanzaBusinessException() {
 
-        Estado enStock = new Estado(1L, "EN STOCK", null);
-        Estado enServicio = new Estado(5L, "EN SERVICIO", null);
+        Estado enStock = new Estado(1L, "EN_STOCK", null);
+        Estado enServicio = new Estado(5L, "INSTALADO", null);
 
         Movimiento ultimoMovimiento = new Movimiento();
         ultimoMovimiento.setEstado(enStock);
@@ -175,8 +175,8 @@ class MovimientoServiceTest {
     @Test
     void guardar_transicionPermitida_guardaElMovimiento() {
 
-        Estado enStock = new Estado(1L, "EN STOCK", null);
-        Estado ensayo = new Estado(2L, "ENSAYO", null);
+        Estado enStock = new Estado(1L, "EN_STOCK", null);
+        Estado ensayo = new Estado(2L, "EN_ENSAYO", null);
 
         Movimiento ultimoMovimiento = new Movimiento();
         ultimoMovimiento.setEstado(enStock);
@@ -201,7 +201,7 @@ class MovimientoServiceTest {
         MovimientoResponseDTO resultado =
                 movimientoService.guardar(dto(2L));
 
-        assertThat(resultado.getEstado()).isEqualTo("ENSAYO");
+        assertThat(resultado.getEstado()).isEqualTo("EN_ENSAYO");
         assertThat(resultado.getPosicion()).isEqualTo("Tablero 1");
 
         verify(releBajaService, never()).aplicarBaja(any(), any());
@@ -211,7 +211,7 @@ class MovimientoServiceTest {
     @Test
     void guardar_destinoBaja_aplicaBajaAlRele() {
 
-        Estado enStock = new Estado(1L, "EN STOCK", null);
+        Estado enStock = new Estado(1L, "EN_STOCK", null);
         Estado baja = new Estado(9L, "BAJA", null);
 
         Movimiento ultimoMovimiento = new Movimiento();
@@ -277,7 +277,7 @@ class MovimientoServiceTest {
     @Test
     void guardar_posicionInexistente_lanzaBusinessException() {
 
-        Estado ensayo = new Estado(2L, "ENSAYO", null);
+        Estado ensayo = new Estado(2L, "EN_ENSAYO", null);
 
         when(estadoRepository.findById(2L))
                 .thenReturn(Optional.of(ensayo));

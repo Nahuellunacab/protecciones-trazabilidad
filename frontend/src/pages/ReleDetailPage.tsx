@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 
 import {
     useNavigate,
-    useParams
+    useParams,
+    Link as RouterLink
 } from "react-router-dom";
 
 import {
@@ -24,11 +25,16 @@ import {
     Alert,
     Snackbar,
     Stack,
-    Divider
+    Divider,
+    Breadcrumbs,
+    Link
 } from "@mui/material";
 
 import ArrowBackIcon
 from "@mui/icons-material/ArrowBack";
+
+import NavigateNextIcon
+from "@mui/icons-material/NavigateNext";
 
 import PictureAsPdfIcon
 from "@mui/icons-material/PictureAsPdf";
@@ -60,6 +66,9 @@ from "../types/Rele";
 import type { Movimiento }
 from "../types/Movimiento";
 
+import { registrarReleVisitado }
+from "../utils/relesRecientesStorage";
+
 import { obtenerRelePorId }
 from "../services/releService";
 
@@ -84,20 +93,32 @@ function getEstadoColor(estado: string) {
 
     switch (estado?.toUpperCase()) {
 
-        case "EN STOCK":
+        case "EN_STOCK":
             return "success" as const;
 
-        case "ENSAYO":
+        case "EN_ENSAYO":
             return "info" as const;
+
+        case "RECHAZADO":
+            return "error" as const;
+
+        case "GARANTIA_PROVEEDOR":
+            return "warning" as const;
 
         case "APROBADO":
             return "primary" as const;
 
-        case "REPARACION":
-            return "warning" as const;
+        case "RESERVA":
+            return "info" as const;
+
+        case "PRESTADO":
+            return "secondary" as const;
 
         case "INSTALADO":
             return "secondary" as const;
+
+        case "EN_REPARACION":
+            return "warning" as const;
 
         case "BAJA":
             return "error" as const;
@@ -167,6 +188,13 @@ function ReleDetailPage() {
                 setRele(releData);
 
                 setHistorial(historialData);
+
+                registrarReleVisitado({
+                    id: releData.id,
+                    numeroSerie: releData.numeroSerie,
+                    modelo: releData.modelo,
+                    marca: releData.marca
+                });
             })
             .catch(() => {
 
@@ -224,6 +252,35 @@ function ReleDetailPage() {
     return (
 
         <div>
+
+            <Breadcrumbs
+                separator={<NavigateNextIcon fontSize="small" />}
+                sx={{ mb: 2 }}
+            >
+
+                <Link
+                    component={RouterLink}
+                    to="/"
+                    underline="hover"
+                    color="inherit"
+                >
+                    Inicio
+                </Link>
+
+                <Link
+                    component={RouterLink}
+                    to="/reles"
+                    underline="hover"
+                    color="inherit"
+                >
+                    Relés
+                </Link>
+
+                <Typography color="text.primary">
+                    {rele.numeroSerie}
+                </Typography>
+
+            </Breadcrumbs>
 
             <Box
                 sx={{

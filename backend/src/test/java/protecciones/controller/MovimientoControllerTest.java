@@ -73,7 +73,7 @@ class MovimientoControllerTest {
     private MovimientoResponseDTO respuesta() {
 
         return new MovimientoResponseDTO(
-                10L, 1L, "SN-001", "Modelo X", "Marca X", "ENSAYO",
+                10L, 1L, "SN-001", "Modelo X", "Marca X", "EN_ENSAYO",
                 null, null, "Deposito Central", "Banco 1", "Ana Perez",
                 LocalDateTime.of(2026, 7, 14, 10, 0), "Pasa a ensayo"
         );
@@ -119,7 +119,7 @@ class MovimientoControllerTest {
                                 .content(objectMapper.writeValueAsString(dtoValido()))
                 )
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.estado").value("ENSAYO"))
+                .andExpect(jsonPath("$.estado").value("EN_ENSAYO"))
                 .andExpect(jsonPath("$.rele").value("SN-001"));
     }
 
@@ -145,7 +145,7 @@ class MovimientoControllerTest {
     void guardar_transicionNoPermitida_devuelve400ConMensajeDeNegocio() throws Exception {
 
         when(movimientoService.guardar(any()))
-                .thenThrow(new BusinessException("Transición de estado no permitida: EN STOCK -> EN SERVICIO"));
+                .thenThrow(new BusinessException("Transición de estado no permitida: EN_STOCK -> INSTALADO"));
 
         mockMvc.perform(
                         post("/api/movimientos")
@@ -153,7 +153,7 @@ class MovimientoControllerTest {
                                 .content(objectMapper.writeValueAsString(dtoValido()))
                 )
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("Transición de estado no permitida: EN STOCK -> EN SERVICIO"));
+                .andExpect(jsonPath("$.message").value("Transición de estado no permitida: EN_STOCK -> INSTALADO"));
     }
 
     @Test
@@ -166,7 +166,7 @@ class MovimientoControllerTest {
         mockMvc.perform(get("/api/movimientos"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].rele").value("SN-001"))
-                .andExpect(jsonPath("$[0].estado").value("ENSAYO"));
+                .andExpect(jsonPath("$[0].estado").value("EN_ENSAYO"));
     }
 
     @Test

@@ -71,7 +71,7 @@ class EstadoServiceTest {
     @Test
     void obtenerEstadosPermitidos_releSinMovimientos_devuelveTodosLosEstados() {
 
-        Estado enStock = new Estado(1L, "EN STOCK", null);
+        Estado enStock = new Estado(1L, "EN_STOCK", null);
         Estado baja = new Estado(2L, "BAJA", null);
 
         when(releRepository.findById(1L))
@@ -88,7 +88,7 @@ class EstadoServiceTest {
 
         assertThat(resultado)
                 .extracting(EstadoResponseDTO::getNombre)
-                .containsExactlyInAnyOrder("EN STOCK", "BAJA");
+                .containsExactlyInAnyOrder("EN_STOCK", "BAJA");
 
         verify(transicionEstadoRepository, never())
                 .findByEstadoOrigenId(anyLong());
@@ -97,8 +97,8 @@ class EstadoServiceTest {
     @Test
     void obtenerEstadosPermitidos_releConMovimiento_devuelveSoloLasTransicionesValidas() {
 
-        Estado enStock = new Estado(1L, "EN STOCK", null);
-        Estado ensayo = new Estado(2L, "ENSAYO", null);
+        Estado enStock = new Estado(1L, "EN_STOCK", null);
+        Estado ensayo = new Estado(2L, "EN_ENSAYO", null);
         Estado aprobado = new Estado(3L, "APROBADO", null);
 
         Movimiento ultimoMovimiento = new Movimiento();
@@ -126,7 +126,7 @@ class EstadoServiceTest {
 
         assertThat(resultado)
                 .extracting(EstadoResponseDTO::getNombre)
-                .containsExactlyInAnyOrder("ENSAYO", "APROBADO");
+                .containsExactlyInAnyOrder("EN_ENSAYO", "APROBADO");
 
         verify(estadoRepository, never()).findAll();
     }

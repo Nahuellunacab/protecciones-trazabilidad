@@ -30,6 +30,9 @@ import type { DestinoRequest } from "../../../types/DestinoRequest";
 import type { Posicion } from "../../../types/Posicion";
 import type { PosicionRequest } from "../../../types/PosicionRequest";
 import type { Localidad } from "../../../types/Localidad";
+import type { LocalidadRequest } from "../../../types/LocalidadRequest";
+import type { Provincia } from "../../../types/Provincia";
+import type { ProvinciaRequest } from "../../../types/ProvinciaRequest";
 import type { Estado } from "../../../types/Estado";
 import type { Proveedor } from "../../../types/Proveedor";
 import type { Remito } from "../../../types/Remito";
@@ -49,7 +52,15 @@ import {
     crearPosicion
 } from "../../../services/posicionService";
 
-import { obtenerLocalidades } from "../../../services/localidadService";
+import {
+    obtenerLocalidades,
+    crearLocalidad
+} from "../../../services/localidadService";
+
+import {
+    obtenerProvincias,
+    crearProvincia
+} from "../../../services/provinciaService";
 import { obtenerEstadosIniciales } from "../../../services/estadoService";
 import { obtenerProveedores } from "../../../services/proveedorService";
 
@@ -120,6 +131,7 @@ function ReleAltaWizard({ onCreate, onTerminarCarga }: Props) {
     const [modelos, setModelos] = useState<Modelo[]>([]);
     const [destinos, setDestinos] = useState<Destino[]>([]);
     const [localidades, setLocalidades] = useState<Localidad[]>([]);
+    const [provincias, setProvincias] = useState<Provincia[]>([]);
     const [estadosIniciales, setEstadosIniciales] = useState<Estado[]>([]);
     const [posiciones, setPosiciones] = useState<Posicion[]>([]);
     const [posicionesLoading, setPosicionesLoading] = useState(false);
@@ -262,6 +274,7 @@ function ReleAltaWizard({ onCreate, onTerminarCarga }: Props) {
             obtenerModelos(),
             obtenerDestinos(),
             obtenerLocalidades(),
+            obtenerProvincias(),
             obtenerEstadosIniciales(),
             obtenerProveedores(),
             obtenerRemitosDisponibles(),
@@ -271,6 +284,7 @@ function ReleAltaWizard({ onCreate, onTerminarCarga }: Props) {
             modelosData,
             destinosData,
             localidadesData,
+            provinciasData,
             estadosInicialesData,
             proveedoresData,
             remitosDisponiblesData,
@@ -281,6 +295,7 @@ function ReleAltaWizard({ onCreate, onTerminarCarga }: Props) {
             setModelos(modelosData);
             setDestinos(destinosData);
             setLocalidades(localidadesData);
+            setProvincias(provinciasData);
             setEstadosIniciales(estadosInicialesData);
             setProveedores(proveedoresData);
             setRemitosDisponibles(remitosDisponiblesData);
@@ -288,7 +303,7 @@ function ReleAltaWizard({ onCreate, onTerminarCarga }: Props) {
 
             const estadoStockDefault =
                 estadosInicialesData.find(
-                    (e) => e.nombre === "EN STOCK"
+                    (e) => e.nombre === "EN_STOCK"
                 );
 
             if (estadoStockDefault) {
@@ -353,6 +368,38 @@ function ReleAltaWizard({ onCreate, onTerminarCarga }: Props) {
         }
     };
 
+    // Crea una provincia nueva desde el mini-formulario inline del diálogo
+    // "Nuevo destino" (usado cuando todavía no existe ninguna localidad
+    // cargada, típicamente con la base recién limpiada).
+    const handleCrearProvinciaInline = async (
+        data: ProvinciaRequest
+    ): Promise<Provincia | null> => {
+
+        const creada = await crearProvincia(data);
+
+        const provinciasActualizadas = await obtenerProvincias();
+
+        setProvincias(provinciasActualizadas);
+
+        return provinciasActualizadas.find((p) => p.id === creada.id) ?? null;
+    };
+
+    // Crea una localidad nueva desde el mini-formulario inline del diálogo
+    // "Nuevo destino" y la deja disponible en el select de localidades para
+    // que el destino recién creado la pueda usar.
+    const handleCrearLocalidadInline = async (
+        data: LocalidadRequest
+    ): Promise<Localidad | null> => {
+
+        const creada = await crearLocalidad(data);
+
+        const localidadesActualizadas = await obtenerLocalidades();
+
+        setLocalidades(localidadesActualizadas);
+
+        return localidadesActualizadas.find((l) => l.id === creada.id) ?? null;
+    };
+
     // Crea un destino nuevo desde el mini-formulario inline de "Datos y
     // garantía" y lo deja seleccionado (reutiliza handleDestinoChange para
     // que también dispare la carga de sus posiciones, igual que si el
@@ -398,6 +445,25 @@ function ReleAltaWizard({ onCreate, onTerminarCarga }: Props) {
         }
 
         return posicionCreada;
+    };
+
+    // Misma creación de posición que handleCrearPosicionInline, pero usada
+    // desde "Revisión" para un relé puntual del lote: a diferencia de
+    // aquella, no toca posicionInicialId (el default del lote), porque eso
+    // pisaría silenciosamente la posición de los demás relés que todavía
+    // dependen del default (ver value en la tabla de PasoRevision).
+    const handleCrearPosicionParaRele = async (
+        data: PosicionRequest
+    ): Promise<Posicion | null> => {
+
+        const creada = await crearPosicion(data);
+
+        const posicionesActualizadas =
+            await obtenerPosicionesPorDestino(data.destinoId);
+
+        setPosiciones(posicionesActualizadas);
+
+        return posicionesActualizadas.find((p) => p.id === creada.id) ?? null;
     };
 
     const puedeAvanzarDesdeDatosLote =
@@ -746,6 +812,9 @@ function ReleAltaWizard({ onCreate, onTerminarCarga }: Props) {
                             onDestinoChange={handleDestinoChange}
                             localidades={localidades}
                             onCrearDestino={handleCrearDestinoInline}
+                            provincias={provincias}
+                            onCrearProvincia={handleCrearProvinciaInline}
+                            onCrearLocalidad={handleCrearLocalidadInline}
                             posiciones={posiciones}
                             posicionesLoading={posicionesLoading}
                             posicionesError={posicionesError}
@@ -794,6 +863,7 @@ function ReleAltaWizard({ onCreate, onTerminarCarga }: Props) {
                             destinoSeleccionado={destinoSeleccionado}
                             posicionInicialId={posicionInicialId}
                             posiciones={posiciones}
+                            onCrearPosicion={handleCrearPosicionParaRele}
                             estadoInicialId={estadoInicialId}
                             estadosIniciales={estadosIniciales}
                             cargarGarantia={cargarGarantia}

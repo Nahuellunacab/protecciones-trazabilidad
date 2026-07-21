@@ -77,6 +77,12 @@ interface Props {
     ) => void;
 
     canWrite: boolean;
+
+    // Resalta transitoriamente todas las filas visibles cuando el
+    // resultado viene de un filtro aplicado por el Copiloto IA del
+    // dashboard (ver CopilotoIACard / RelePage), para que quede claro
+    // que la tabla se filtro sola y no es la lista completa de relés.
+    destacarFilas?: boolean;
 }
 
 function ReleTable({
@@ -85,7 +91,8 @@ function ReleTable({
     onEditar,
     filtroEstado,
     setFiltroEstado,
-    canWrite
+    canWrite,
+    destacarFilas = false
 }: Props) {
 
     const navigate = useNavigate();
@@ -128,20 +135,32 @@ function ReleTable({
 
         switch (estado?.toUpperCase()) {
 
-            case "EN STOCK":
+            case "EN_STOCK":
                 return "success";
 
-            case "ENSAYO":
+            case "EN_ENSAYO":
                 return "info";
+
+            case "RECHAZADO":
+                return "error";
+
+            case "GARANTIA_PROVEEDOR":
+                return "warning";
 
             case "APROBADO":
                 return "primary";
 
-            case "REPARACION":
-                return "warning";
+            case "RESERVA":
+                return "info";
+
+            case "PRESTADO":
+                return "secondary";
 
             case "INSTALADO":
                 return "secondary";
+
+            case "EN_REPARACION":
+                return "warning";
 
             case "BAJA":
                 return "error";
@@ -372,7 +391,15 @@ function ReleTable({
                                             opacity:
                                                 rele.activo
                                                     ? 1
-                                                    : 0.55
+                                                    : 0.55,
+
+                                            transition:
+                                                "background-color 0.6s ease",
+
+                                            backgroundColor:
+                                                destacarFilas
+                                                    ? "rgba(0, 105, 92, 0.12)"
+                                                    : "transparent"
                                         }}
                                     >
 

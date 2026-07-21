@@ -71,9 +71,9 @@ public class EstadoService {
     // Estados que se pueden ofrecer como estado inicial al dar de alta un
     // relé: cualquier estado con al menos una transición saliente en
     // transicion_estado. Esto excluye "BAJA" (terminal, tiene su propio
-    // flujo dedicado con reglas propias) y estados historicos como
-    // "INSTALADO" que ya no forman parte del grafo vigente (permitirlos
-    // dejaria al relé sin ninguna transición válida posterior).
+    // flujo dedicado con reglas propias) — permitir un estado sin
+    // transiciones salientes dejaria al relé sin ningún movimiento válido
+    // posterior.
     public List<EstadoResponseDTO>
     obtenerEstadosIniciales() {
 
