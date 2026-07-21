@@ -26,4 +26,12 @@ public interface UltimoMovimientoRepository
             ORDER BY COUNT(u) DESC
             """)
     List<Object[]> contarPorDestino();
+
+    @Query("""
+            SELECT u.posicion.destino.id, COUNT(u)
+            FROM UltimoMovimiento u
+            WHERE u.rele.activo = true
+            GROUP BY u.posicion.destino.id
+            """)
+    List<Object[]> contarPorDestinoId();
 }

@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import protecciones.dto.DestinoRequestDTO;
 import protecciones.dto.DestinoResponseDTO;
+import protecciones.dto.DestinoSimilarDTO;
 
 import protecciones.service.DestinoService;
 
@@ -48,6 +49,20 @@ public class DestinoController {
                         localidadId
                 );
         }
+
+    @GetMapping("/similares")
+    public List<DestinoSimilarDTO>
+    buscarSimilares(
+
+            @RequestParam
+            String nombre
+    ) {
+
+        return destinoService
+                .buscarSimilares(
+                        nombre
+                );
+    }
 
     @PostMapping
     public ResponseEntity<

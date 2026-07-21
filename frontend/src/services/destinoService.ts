@@ -6,6 +6,9 @@ from "../types/Destino";
 import type { DestinoRequest }
 from "../types/DestinoRequest";
 
+import type { DestinoSimilar }
+from "../types/DestinoSimilar";
+
 export async function obtenerDestinos() {
 
     const response =
@@ -24,6 +27,21 @@ export async function obtenerDestinosPorLocalidad(
         await api.get<Destino[]>(
 
             `/destinos/localidad/${localidadId}`
+        );
+
+    return response.data;
+}
+
+export async function buscarDestinosSimilares(
+    nombre: string
+) {
+
+    const response =
+        await api.get<DestinoSimilar[]>(
+
+            "/destinos/similares",
+
+            { params: { nombre } }
         );
 
     return response.data;

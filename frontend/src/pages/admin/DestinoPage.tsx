@@ -33,15 +33,24 @@ import type {
 } from "../../types/DestinoRequest";
 
 import type {
+    DestinoSimilar
+} from "../../types/DestinoSimilar";
+
+import type {
     Localidad
 } from "../../types/Localidad";
+
+import type {
+    RegistroSimilar
+} from "../../types/RegistroSimilar";
 
 import {
 
     obtenerDestinos,
     crearDestino,
     actualizarDestino,
-    eliminarDestino
+    eliminarDestino,
+    buscarDestinosSimilares
 
 } from "../../services/destinoService";
 
@@ -56,6 +65,38 @@ import { useAuth } from "../../context/AuthContext";
 
 import BuscadorTexto
 from "../../components/common/BuscadorTexto";
+
+import RegistrosSimilaresAlert
+from "../../components/common/RegistrosSimilaresAlert";
+
+import useDebouncedValue
+from "../../hooks/useDebouncedValue";
+
+// Debajo de esta cantidad de caracteres no vale la pena consultar
+// /destinos/similares: da resultados ruidosos y consume llamadas de
+// mas mientras el usuario recien empieza a escribir.
+const LONGITUD_MINIMA_BUSQUEDA_SIMILARES = 3;
+
+function mapDestinoSimilarARegistro(
+    destino: DestinoSimilar
+): RegistroSimilar {
+
+    return {
+
+        id: destino.id,
+
+        nombre: destino.nombre,
+
+        descripcion: `${destino.provincia} / ${destino.localidad}`,
+
+        detalle:
+            destino.cantidadReles === 1
+                ? "1 relé asociado"
+                : `${destino.cantidadReles} relés asociados`,
+
+        similitud: destino.similitud
+    };
+}
 
 function DestinoPage() {
 
@@ -81,6 +122,18 @@ function DestinoPage() {
 
     const [errorMessage, setErrorMessage] =
         useState("");
+
+    const [similares, setSimilares] =
+        useState<DestinoSimilar[]>([]);
+
+    // Nombre que el usuario ya "resolvió" (usó un existente o eligió
+    // crear igualmente) para no volver a mostrarle la misma alerta
+    // mientras no cambie el texto del campo.
+    const [nombreConfirmado, setNombreConfirmado] =
+        useState("");
+
+    const nombreDebounced =
+        useDebouncedValue(nombre, 400);
 
     async function cargarDatos() {
 
@@ -120,6 +173,83 @@ function DestinoPage() {
         cargarDatos();
 
     }, []);
+
+    // Solo advierte durante el alta (no al editar, donde el destino se
+    // compararía contra sí mismo). Se apaga si el usuario ya resolvió
+    // este mismo texto (usó un existente o eligió "crear igualmente").
+    useEffect(() => {
+
+        const nombreTrim =
+            nombreDebounced.trim();
+
+        if (
+            editandoId
+            || nombreTrim.length < LONGITUD_MINIMA_BUSQUEDA_SIMILARES
+            || nombreTrim.toLowerCase()
+                === nombreConfirmado.trim().toLowerCase()
+        ) {
+
+            setSimilares([]);
+
+            return;
+        }
+
+        let vigente = true;
+
+        buscarDestinosSimilares(nombreTrim)
+            .then((resultado) => {
+
+                if (vigente) {
+
+                    setSimilares(resultado);
+                }
+            })
+            .catch(() => {
+
+                if (vigente) {
+
+                    setSimilares([]);
+                }
+            });
+
+        return () => {
+
+            vigente = false;
+        };
+
+    }, [nombreDebounced, editandoId, nombreConfirmado]);
+
+    function handleUsarSimilar(
+        registro: RegistroSimilar
+    ) {
+
+        const destino =
+            similares.find(
+                (item) => item.id === registro.id
+            );
+
+        if (!destino) {
+
+            return;
+        }
+
+        setNombre(destino.nombre);
+
+        setLocalidadId(
+            String(destino.localidadId)
+        );
+
+        setNombreConfirmado(destino.nombre);
+
+        setSimilares([]);
+    }
+
+    function handleCrearIgualmente() {
+
+        setNombreConfirmado(nombre);
+
+        setSimilares([]);
+    }
 
     async function handleSubmit(
         e: React.FormEvent
@@ -213,6 +343,10 @@ function DestinoPage() {
         setLocalidadId("");
 
         setEditandoId(null);
+
+        setNombreConfirmado("");
+
+        setSimilares([]);
     }
 
     const destinosFiltrados =
@@ -335,6 +469,15 @@ function DestinoPage() {
                         </Button>
 
                     </Box>
+
+                    <RegistrosSimilaresAlert
+                        registros={similares.map(
+                            mapDestinoSimilarARegistro
+                        )}
+                        etiquetaEntidad="destinos"
+                        onSeleccionar={handleUsarSimilar}
+                        onCrearIgualmente={handleCrearIgualmente}
+                    />
 
                 </Paper>
             )}
