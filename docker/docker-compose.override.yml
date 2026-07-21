@@ -1,0 +1,15 @@
+# Se auto-aplica cuando se corre "docker compose up" (o cualquier comando)
+# SIN pasar "-f" explícitamente, junto a docker-compose.yml, en el mismo
+# directorio. Es el flujo de desarrollo local documentado en el README:
+# publica los mismos puertos que se usaban antes de separar dev/prod, para
+# no romper ese flujo. En producción NO se incluye este archivo (se invoca
+# "-f docker-compose.yml -f docker-compose.prod.yml" a mano), así que estos
+# puertos no quedan expuestos ahí.
+services:
+  backend:
+    ports:
+      - "8080:8080"
+
+  frontend:
+    ports:
+      - "5173:8080"

@@ -17,10 +17,12 @@ RUN npm run build:docker
 
 # Etapa 2: runtime
 # nginx solo sirve los archivos estáticos generados (dist/); no necesita
-# Node ni nada del toolchain de build.
-FROM nginx:1.27-alpine
+# Node ni nada del toolchain de build. Usamos la variante "unprivileged":
+# corre como usuario sin privilegios de fábrica (no root) y escucha en 8080
+# en vez de 80, que no requiere privilegios para bindear.
+FROM nginxinc/nginx-unprivileged:1.27-alpine
 
 COPY --from=build /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-EXPOSE 80
+EXPOSE 8080

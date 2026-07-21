@@ -1,0 +1,48 @@
+# Overlay de producción. Se invoca EXPLÍCITAMENTE junto con el compose base
+# (no se auto-aplica como docker-compose.override.yml):
+#
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+#
+# Al no incluir docker-compose.override.yml, backend y frontend no publican
+# puertos directo al host: el único punto de entrada es "proxy" (TLS, 80/443).
+# Ver README.md, sección "Producción", para el paso a paso completo
+# (generar el certificado antes de levantar esto).
+services:
+  backend:
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+
+  proxy:
+    image: nginxinc/nginx-unprivileged:1.27-alpine
+    container_name: protecciones-proxy
+    restart: unless-stopped
+    volumes:
+      - ./nginx/proxy.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./certs:/etc/nginx/certs:ro
+    ports:
+      - "80:8080"
+      - "443:8443"
+    depends_on:
+      - frontend
+
+  backup:
+    image: postgres:${POSTGRES_VERSION:-16}
+    container_name: protecciones-backup
+    restart: unless-stopped
+    environment:
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      PGPASSWORD: ${DB_PASSWORD}
+      # Cantidad de días que se conservan los dumps antes de borrarlos.
+      BACKUP_RETENTION_DIAS: ${BACKUP_RETENTION_DIAS:-14}
+    volumes:
+      - ./backup/backup.sh:/backup.sh:ro
+      - ./backups:/backups
+    entrypoint: ["sh", "/backup.sh"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+# No se declaran volúmenes nombrados nuevos acá: "backups" y "certs" son
+# carpetas del host (bind mount), a propósito, para poder revisarlas/
+# copiarlas sin pasar por "docker volume" (ver README, sección "Producción").

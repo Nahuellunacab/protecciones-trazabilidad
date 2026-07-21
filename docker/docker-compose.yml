@@ -1,7 +1,14 @@
+# Este archivo es la base común a dev y producción: NO publica puertos de
+# backend/frontend al host (eso lo decide cada entorno) y no incluye TLS ni
+# backups. Para desarrollo, "docker compose up" sin -f auto-aplica también
+# docker-compose.override.yml (publica 8080/5173). Para producción, se invoca
+# explícitamente junto con docker-compose.prod.yml (agrega proxy TLS + backup),
+# que no incluye el override y por lo tanto no expone esos puertos directo.
 services:
   postgres:
     image: postgres:${POSTGRES_VERSION:-16}
     container_name: protecciones-db
+    restart: unless-stopped
     environment:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USER}
@@ -23,6 +30,7 @@ services:
     build:
       context: ../backend
     container_name: protecciones-backend
+    restart: unless-stopped
     environment:
       # Dentro de la red de Docker, Postgres se resuelve por el nombre del
       # servicio ("postgres") y su puerto interno (5432), no por localhost
@@ -30,6 +38,9 @@ services:
       DB_URL: jdbc:postgresql://postgres:5432/${DB_NAME}
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
+      # dev en local/docker-compose.override.yml, prod en docker-compose.prod.yml.
+      # Controla spring.jpa.show-sql y el nivel de logging (ver application-{perfil}.properties).
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
       # Secreto de firma de los JWT de login. Obligatorio (sin default): definir
       # uno propio, largo y aleatorio, en docker/.env antes de levantar el stack.
       JWT_SECRET: ${JWT_SECRET:?Definí JWT_SECRET en docker/.env con un valor largo y aleatorio}
@@ -43,8 +54,6 @@ services:
       # localhost/127.0.0.1 (dev y build dockerizado). Setear en docker/.env
       # con el dominio real al desplegar en un servidor de producción.
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:*,http://127.0.0.1:*}
-    ports:
-      - "8080:8080"
     volumes:
       # Los PDF de remitos/órdenes de provisión se guardan en uploads/ con
       # ruta relativa; sin este volumen se perderían al recrear el contenedor.
@@ -57,10 +66,7 @@ services:
     build:
       context: ../frontend
     container_name: protecciones-frontend
-    ports:
-      # Mismo puerto que usa "npm run dev" (5173), así no hace falta tocar
-      # CorsConfig.java: el backend ya permite ese origen.
-      - "5173:80"
+    restart: unless-stopped
     depends_on:
       - backend
 

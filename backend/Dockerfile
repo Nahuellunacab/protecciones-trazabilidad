@@ -31,6 +31,16 @@ COPY --from=build /app/target/*.jar app.jar
 # pierdan si se recrea el contenedor.
 RUN mkdir -p /app/uploads
 
+# Corremos como usuario sin privilegios, no como root (buena práctica de
+# hardening de contenedores). El chown va antes de crear el volumen nombrado
+# "uploads_data": Docker copia el contenido/permisos existentes de /app/uploads
+# al volumen la primera vez, así que el ownership correcto se preserva.
+RUN groupadd -r protecciones && \
+    useradd -r -g protecciones -d /app -s /usr/sbin/nologin protecciones && \
+    chown -R protecciones:protecciones /app
+
+USER protecciones
+
 EXPOSE 8080
 
 ENTRYPOINT ["java", "-jar", "app.jar"]

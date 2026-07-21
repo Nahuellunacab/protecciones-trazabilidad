@@ -725,6 +725,75 @@ Swagger:  http://localhost:8080/swagger-ui/index.html
 
 ---
 
+# Producción
+
+Pensado para un servidor dentro de la red interna de EPEC (sin dominio público). A
+diferencia del `docker compose up` de desarrollo, en producción:
+
+- Solo se expone al host un proxy nginx con TLS (puertos 80/443); backend y frontend
+  dejan de publicar sus puertos directo.
+- El certificado es autofirmado (no hay dominio público para validar con Let's
+  Encrypt) — los navegadores van a mostrar una advertencia de "no confiable" la
+  primera vez, salvo que se instale el certificado como confiable en cada máquina
+  cliente.
+- Corre un servicio adicional que hace un dump diario de Postgres a
+  `docker/backups/` (carpeta del servidor, fuera de los volúmenes de Docker).
+- El backend corre con el perfil `prod` (sin loguear SQL, logging menos verboso).
+
+## Primera vez en el servidor
+
+```bash
+cd docker
+cp .env.example .env
+# Editar .env: DB_PASSWORD y JWT_SECRET propios (nunca los del ejemplo).
+```
+
+Generar el certificado autofirmado, con el hostname o IP real del servidor como CN:
+
+```bash
+cd docker/certs
+./generate-self-signed.sh protecciones.epec.local   # o la IP del servidor
+```
+
+## Levantar todo
+
+```bash
+cd docker
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+```
+
+- Esta combinación de `-f` es la que hace la diferencia con el `docker compose up`
+  de desarrollo: no incluye `docker-compose.override.yml` (que es el que publica
+  8080/5173 directo), y sí incluye `docker-compose.prod.yml` (proxy TLS + backups +
+  perfil `prod`).
+- `docker compose ps` no debería listar el puerto 8080 ni 5173 publicados — solo
+  `proxy` con 80/443.
+
+Para bajar todo, agregar el mismo par de `-f` a `docker compose down`.
+
+## Backups
+
+Se generan solos, una vez por día, en `docker/backups/protecciones_AAAAMMDD_HHMMSS.sql.gz`
+(se conservan los últimos `BACKUP_RETENTION_DIAS` días, default 14 — configurable en
+`docker/.env`). Restaurar uno:
+
+```bash
+gunzip -c docker/backups/protecciones_20260721_030000.sql.gz | \
+  docker compose exec -T postgres psql -U postgres -d protecciones
+```
+
+## Renovar el certificado
+
+Cuando falte poco para que expire (825 días desde que se generó) o cambie el
+hostname/IP del servidor, volver a correr `generate-self-signed.sh` y reiniciar el
+proxy:
+
+```bash
+cd docker && docker compose -f docker-compose.yml -f docker-compose.prod.yml restart proxy
+```
+
+---
+
 # Ejecución Local (sin Docker)
 
 Alternativa para desarrollar sin reconstruir imágenes cada vez (hot reload de Vite y

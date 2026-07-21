@@ -6,6 +6,13 @@
 # Docker
 docker/.env
 
+# Certificado TLS autofirmado de producción (docker/certs/generate-self-signed.sh)
+docker/certs/*.crt
+docker/certs/*.key
+
+# Backups de Postgres generados en producción (docker-compose.prod.yml)
+docker/backups/
+
 # IDE
 .vscode/
 .idea/
