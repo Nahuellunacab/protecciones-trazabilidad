@@ -31,6 +31,12 @@ COPY --from=build /app/target/*.jar app.jar
 # pierdan si se recrea el contenedor.
 RUN mkdir -p /app/uploads
 
+# curl lo necesita el healthcheck de docker-compose contra /actuator/health;
+# la imagen base "jre-jammy" no lo trae instalado.
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends curl && \
+    rm -rf /var/lib/apt/lists/*
+
 # Corremos como usuario sin privilegios, no como root (buena práctica de
 # hardening de contenedores). El chown va antes de crear el volumen nombrado
 # "uploads_data": Docker copia el contenido/permisos existentes de /app/uploads

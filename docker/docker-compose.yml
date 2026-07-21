@@ -61,6 +61,14 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    # /actuator/health es público (ver SecurityConfig) y no da detalle
+    # (show-details=never), pensado justo para este healthcheck.
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
 
   frontend:
     build:
@@ -68,7 +76,8 @@ services:
     container_name: protecciones-frontend
     restart: unless-stopped
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
 
 volumes:
   postgres_data:
