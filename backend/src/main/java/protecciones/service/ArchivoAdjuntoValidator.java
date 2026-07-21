@@ -224,8 +224,12 @@ final class ArchivoAdjuntoValidator {
             return "archivo.pdf";
         }
 
+        // Normalizamos "\" a "/" antes de extraer el nombre: Path.of() solo
+        // reconoce "\" como separador de directorio en Windows, así que sin
+        // esto una ruta estilo Windows (ej. "C:\Windows\System32\x.pdf") no
+        // se recortaba al correr en Linux (como en el contenedor de Docker).
         String limpio =
-                Path.of(nombreOriginal)
+                Path.of(nombreOriginal.replace('\\', '/'))
                         .getFileName()
                         .toString();
 
