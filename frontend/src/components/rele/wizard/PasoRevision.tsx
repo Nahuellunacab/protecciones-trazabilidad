@@ -1,7 +1,13 @@
+import { useState } from "react";
+
 import {
     Alert,
     Button,
     Chip,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
     IconButton,
     MenuItem,
     Paper,
@@ -22,14 +28,20 @@ from "@mui/icons-material/Delete";
 import CheckCircleIcon
 from "@mui/icons-material/CheckCircle";
 
+import AddIcon
+from "@mui/icons-material/Add";
+
 import type { Marca } from "../../../types/Marca";
 import type { Modelo } from "../../../types/Modelo";
 import type { Destino } from "../../../types/Destino";
 import type { Posicion } from "../../../types/Posicion";
+import type { PosicionRequest } from "../../../types/PosicionRequest";
 import type { Estado } from "../../../types/Estado";
 import type { Remito } from "../../../types/Remito";
 import type { OrdenProvision } from "../../../types/OrdenProvision";
 import type { DatosReleManual } from "./PasoCargaManual";
+
+const OPCION_NUEVA_POSICION = "__nueva__";
 
 interface Props {
 
@@ -43,6 +55,7 @@ interface Props {
     destinoSeleccionado: Destino | null;
     posicionInicialId: number | undefined;
     posiciones: Posicion[];
+    onCrearPosicion: (data: PosicionRequest) => Promise<Posicion | null>;
 
     estadoInicialId: number | undefined;
     estadosIniciales: Estado[];
@@ -71,6 +84,7 @@ function PasoRevision({
     destinoSeleccionado,
     posicionInicialId,
     posiciones,
+    onCrearPosicion,
     estadoInicialId,
     estadosIniciales,
     cargarGarantia,
@@ -85,6 +99,70 @@ function PasoRevision({
     error,
     onConfirmar
 }: Props) {
+
+    // Índice del relé para el que se abrió "+ Nueva posición..." desde su
+    // fila; null cuando el diálogo está cerrado. Se necesita para saber a
+    // qué relé asignarle la posición recién creada (no al lote entero).
+    const [indiceNuevaPosicion, setIndiceNuevaPosicion] =
+        useState<number | null>(null);
+
+    const [nuevaPosicionNombre, setNuevaPosicionNombre] = useState("");
+    const [creandoPosicion, setCreandoPosicion] = useState(false);
+    const [errorPosicion, setErrorPosicion] = useState("");
+
+    const cerrarDialogoPosicion = () => {
+
+        setIndiceNuevaPosicion(null);
+        setNuevaPosicionNombre("");
+        setErrorPosicion("");
+    };
+
+    const handleSeleccionarPosicion = (
+        indice: number,
+        valor: string
+    ) => {
+
+        if (valor === OPCION_NUEVA_POSICION) {
+
+            setIndiceNuevaPosicion(indice);
+
+            return;
+        }
+
+        onCambiarPosicion(indice, Number(valor));
+    };
+
+    const handleCrearPosicion = async () => {
+
+        if (!destinoSeleccionado || indiceNuevaPosicion === null) return;
+
+        setCreandoPosicion(true);
+        setErrorPosicion("");
+
+        try {
+
+            const creada = await onCrearPosicion({
+                nombre: nuevaPosicionNombre.trim(),
+                destinoId: destinoSeleccionado.id
+            });
+
+            if (creada) {
+                onCambiarPosicion(indiceNuevaPosicion, creada.id);
+            }
+
+            cerrarDialogoPosicion();
+
+        } catch {
+
+            setErrorPosicion(
+                "No se pudo crear la posición. Intente nuevamente."
+            );
+
+        } finally {
+
+            setCreandoPosicion(false);
+        }
+    };
 
     const nombreModelo = (modeloId: number) =>
         modelos.find((m) => m.id === modeloId)?.nombre
@@ -250,9 +328,9 @@ function PasoRevision({
                                                             ?? ""
                                                         }
                                                         onChange={(e) =>
-                                                            onCambiarPosicion(
+                                                            handleSeleccionarPosicion(
                                                                 indice,
-                                                                Number(e.target.value)
+                                                                e.target.value
                                                             )
                                                         }
                                                     >
@@ -268,6 +346,14 @@ function PasoRevision({
                                                                 </MenuItem>
                                                             ))
                                                         }
+
+                                                        <MenuItem value={OPCION_NUEVA_POSICION}>
+                                                            <AddIcon
+                                                                fontSize="small"
+                                                                sx={{ mr: 0.5 }}
+                                                            />
+                                                            Nueva posición...
+                                                        </MenuItem>
 
                                                     </TextField>
 
@@ -327,6 +413,65 @@ function PasoRevision({
                         : `Confirmar carga de ${lote.length} relé(s)`
                 }
             </Button>
+
+            <Dialog
+                open={indiceNuevaPosicion !== null}
+                onClose={cerrarDialogoPosicion}
+                maxWidth="sm"
+                fullWidth
+            >
+
+                <DialogTitle>
+                    Nueva posición
+                    {
+                        destinoSeleccionado
+                            ? ` en ${destinoSeleccionado.nombre}`
+                            : ""
+                    }
+                </DialogTitle>
+
+                <DialogContent>
+
+                    <Stack spacing={2} sx={{ mt: 1 }}>
+
+                        <TextField
+                            label="Nombre"
+                            fullWidth
+                            value={nuevaPosicionNombre}
+                            onChange={(e) =>
+                                setNuevaPosicionNombre(e.target.value)
+                            }
+                        />
+
+                        {
+                            errorPosicion && (
+                                <Alert severity="error">{errorPosicion}</Alert>
+                            )
+                        }
+
+                    </Stack>
+
+                </DialogContent>
+
+                <DialogActions>
+
+                    <Button onClick={cerrarDialogoPosicion}>
+                        Cancelar
+                    </Button>
+
+                    <Button
+                        variant="contained"
+                        disabled={
+                            creandoPosicion || !nuevaPosicionNombre.trim()
+                        }
+                        onClick={handleCrearPosicion}
+                    >
+                        {creandoPosicion ? "Creando..." : "Crear"}
+                    </Button>
+
+                </DialogActions>
+
+            </Dialog>
 
         </Stack>
     );

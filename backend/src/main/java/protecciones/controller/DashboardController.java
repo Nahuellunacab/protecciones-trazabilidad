@@ -10,6 +10,7 @@ import java.time.LocalDate;
 import java.util.List;
 import protecciones.dto.dashboard.DestinoCantidadDTO;
 import protecciones.dto.dashboard.EstadoCantidadDTO;
+import protecciones.dto.dashboard.EstadoSistemaDTO;
 import protecciones.dto.dashboard.MarcaCantidadDTO;
 import protecciones.dto.dashboard.ModeloCantidadDTO;
 import protecciones.dto.dashboard.ProveedorCantidadDTO;
@@ -37,6 +38,14 @@ public class DashboardController {
 
         return dashboardService
                 .obtenerKpis();
+    }
+
+    @GetMapping("/estado-sistema")
+    public EstadoSistemaDTO
+    obtenerEstadoSistema() {
+
+        return dashboardService
+                .obtenerEstadoSistema();
     }
 
     @GetMapping("/resumen-ia")

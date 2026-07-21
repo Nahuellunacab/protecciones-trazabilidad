@@ -10,6 +10,9 @@ from "../layouts/MainLayout";
 import HomePage
 from "../pages/HomePage";
 
+import InicioPage
+from "../pages/InicioPage";
+
 import RelePage
 from "../pages/RelePage";
 
@@ -79,6 +82,11 @@ function AppRouter() {
 
                     <Route
                         index
+                        element={<InicioPage />}
+                    />
+
+                    <Route
+                        path="dashboard"
                         element={<HomePage />}
                     />
 

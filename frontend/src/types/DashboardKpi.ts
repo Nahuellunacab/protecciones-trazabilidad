@@ -8,6 +8,8 @@ export interface DashboardKpi {
 
     garantiasVencidas: number;
 
+    garantiasProximasAVencer: number;
+
     relesSinDocumentacion: number;
 
     relesDocumentacionSinArchivo: number;

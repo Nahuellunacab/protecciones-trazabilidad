@@ -1,7 +1,7 @@
 // -----------------------------------Importación de librerías-----------------------------------
 import { useEffect, useState } from "react";
 
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useLocation } from "react-router-dom";
 
 import {
     TextField,
@@ -79,6 +79,11 @@ function RelePage() {
 
     const [searchParams, setSearchParams] =
         useSearchParams();
+
+    const location = useLocation();
+
+    const [destacarFilas, setDestacarFilas] =
+        useState(false);
 
     const [reles, setReles] =
         useState<Rele[]>([]);
@@ -221,6 +226,27 @@ function RelePage() {
 
     }, [searchParams]);
 
+    // Permite abrir el formulario de alta vacío directamente desde un
+    // link externo (ej. la acción rápida "Nuevo Relé" de Inicio),
+    // navegando a /reles?nuevo=true. Mismo mecanismo que "editar" arriba.
+    useEffect(() => {
+
+        if (!searchParams.get("nuevo")) return;
+
+        setMostrarFormulario(true);
+
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+
+        setSearchParams(
+            {},
+            { replace: true }
+        );
+
+    }, [searchParams]);
+
     // Permite que otras partes de la app (por ahora, la accion
     // FILTRAR_RELES del Copiloto IA del dashboard) apliquen los mismos
     // filtros que ya existen en esta pantalla navegando a
@@ -279,12 +305,36 @@ function RelePage() {
 
         setPage(0);
 
+        // Si la navegacion vino del Copiloto IA (ver CopilotoIACard,
+        // accion FILTRAR_RELES), resalta transitoriamente los resultados
+        // para que quede claro que la tabla se filtro sola.
+        if ((location.state as { resaltarFiltrado?: boolean } | null)?.resaltarFiltrado) {
+
+            setDestacarFilas(true);
+        }
+
         setSearchParams(
             {},
             { replace: true }
         );
 
-    }, [destinos, searchParams]);
+    }, [destinos, searchParams, location.state]);
+
+    useEffect(() => {
+
+        if (!destacarFilas) {
+
+            return;
+        }
+
+        const timeout = setTimeout(
+            () => setDestacarFilas(false),
+            2500
+        );
+
+        return () => clearTimeout(timeout);
+
+    }, [destacarFilas]);
 
     const cargarReles = async () => {
 
@@ -782,6 +832,7 @@ function RelePage() {
                     setPage(0);
                 }}
                 canWrite={canWrite}
+                destacarFilas={destacarFilas}
             />
 
             <TablePagination

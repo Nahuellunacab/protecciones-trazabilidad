@@ -85,6 +85,11 @@ public interface ReleRepository
             LocalDate fecha
     );
 
+    long countByActivoTrueAndFinGarantiaBetween(
+            LocalDate desde,
+            LocalDate hasta
+    );
+
     long countByRemitoId(
             Long remitoId
     );
@@ -141,6 +146,7 @@ public interface ReleRepository
                 :texto IS NULL
                 OR :texto = ''
                 OR LOWER(r.numeroSerie) LIKE LOWER(CONCAT('%', :texto, '%'))
+                OR (r.codigoConfiguracion IS NOT NULL AND LOWER(r.codigoConfiguracion) LIKE LOWER(CONCAT('%', :texto, '%')))
                 OR LOWER(m.nombre) LIKE LOWER(CONCAT('%', :texto, '%'))
                 OR LOWER(ma.nombre) LIKE LOWER(CONCAT('%', :texto, '%'))
                 OR (prov.nombre IS NOT NULL AND LOWER(prov.nombre) LIKE LOWER(CONCAT('%', :texto, '%')))

@@ -22,6 +22,8 @@ import type { UsuarioCantidad } from "../types/UsuarioCantidad";
 
 import type { ResumenIA } from "../types/ResumenIA";
 
+import type { EstadoSistema } from "../types/EstadoSistema";
+
 export async function
 obtenerDashboardKpis():
 Promise<DashboardKpi> {
@@ -29,6 +31,18 @@ Promise<DashboardKpi> {
     const response =
         await api.get(
             "/dashboard/kpis"
+        );
+
+    return response.data;
+}
+
+export async function
+obtenerEstadoSistema():
+Promise<EstadoSistema> {
+
+    const response =
+        await api.get(
+            "/dashboard/estado-sistema"
         );
 
     return response.data;

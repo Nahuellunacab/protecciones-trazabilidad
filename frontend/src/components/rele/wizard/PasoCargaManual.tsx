@@ -361,12 +361,14 @@ function PasoCargaManual({
                         maxRows={3}
                         value={codigoConfiguracion}
                         slotProps={{
-                            htmlInput: { maxLength: 150 }
+                            htmlInput: { maxLength: 400 }
                         }}
-                        helperText={`${codigoConfiguracion.length}/150`}
+                        helperText={`${codigoConfiguracion.length}/400`}
                         onChange={(e) =>
                             setCodigoConfiguracion(
-                                e.target.value.toUpperCase()
+                                e.target.value
+                                    .replace(/[\r\n]+/g, "")
+                                    .toUpperCase()
                             )
                         }
                     />

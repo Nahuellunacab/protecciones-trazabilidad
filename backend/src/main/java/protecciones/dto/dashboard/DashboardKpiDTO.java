@@ -10,6 +10,8 @@ public class DashboardKpiDTO {
 
     private long garantiasVencidas;
 
+    private long garantiasProximasAVencer;
+
     private long relesSinDocumentacion;
 
     private long relesDocumentacionSinArchivo;
@@ -25,6 +27,7 @@ public class DashboardKpiDTO {
             long relesActivos,
             long relesBaja,
             long garantiasVencidas,
+            long garantiasProximasAVencer,
             long relesSinDocumentacion,
             long relesDocumentacionSinArchivo,
             long remitosPendientes,
@@ -43,6 +46,9 @@ public class DashboardKpiDTO {
 
         this.garantiasVencidas =
                 garantiasVencidas;
+
+        this.garantiasProximasAVencer =
+                garantiasProximasAVencer;
 
         this.relesSinDocumentacion =
                 relesSinDocumentacion;
@@ -74,6 +80,10 @@ public class DashboardKpiDTO {
 
     public long getGarantiasVencidas() {
         return garantiasVencidas;
+    }
+
+    public long getGarantiasProximasAVencer() {
+        return garantiasProximasAVencer;
     }
 
     public long getRelesSinDocumentacion() {

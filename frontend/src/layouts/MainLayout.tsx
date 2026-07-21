@@ -22,7 +22,12 @@ import {
     Alert,
     Avatar,
     Chip,
+    Fab,
+    Zoom,
 } from "@mui/material";
+
+import KeyboardArrowUpIcon
+from "@mui/icons-material/KeyboardArrowUp";
 
 import LogoutIcon
 from "@mui/icons-material/Logout";
@@ -48,10 +53,22 @@ from "@mui/icons-material/Brightness4";
 import Brightness7Icon
 from "@mui/icons-material/Brightness7";
 
+import FiberManualRecordIcon
+from "@mui/icons-material/FiberManualRecord";
+
+import Tooltip
+from "@mui/material/Tooltip";
+
+import { obtenerEstadoSistema }
+from "../services/dashboardService";
+
+import type { EstadoSistema }
+from "../types/EstadoSistema";
+
 import epecLogo
     from "../assets/epec-logo.png";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import {
     Link,
@@ -235,6 +252,58 @@ function MainLayout() {
         ? `${usuario.nombre.charAt(0)}${usuario.apellido.charAt(0)}`.toUpperCase()
         : "";
 
+    const [estadoSistema, setEstadoSistema] =
+        useState<EstadoSistema | null>(
+            null
+        );
+
+    useEffect(() => {
+
+        const cargarEstadoSistema = () => {
+
+            obtenerEstadoSistema()
+                .then(setEstadoSistema)
+                .catch(() =>
+                    setEstadoSistema({
+                        baseDatosOnline: false,
+                        iaDisponible: false
+                    })
+                );
+        };
+
+        cargarEstadoSistema();
+
+        const intervalo = setInterval(
+            cargarEstadoSistema,
+            2 * 60 * 1000
+        );
+
+        return () => clearInterval(intervalo);
+
+    }, []);
+
+    const [conScroll, setConScroll] =
+        useState(false);
+
+    const [mostrarBotonSubir, setMostrarBotonSubir] =
+        useState(false);
+
+    useEffect(() => {
+
+        const handleScroll = () => {
+
+            setConScroll(window.scrollY > 4);
+
+            setMostrarBotonSubir(window.scrollY > 400);
+        };
+
+        window.addEventListener("scroll", handleScroll);
+
+        return () =>
+            window.removeEventListener("scroll", handleScroll);
+
+    }, []);
+
     const [drawerOpen, setDrawerOpen] =
         useState(false);
 
@@ -258,12 +327,19 @@ function MainLayout() {
         >
 
             <AppBar
-                position="static"
+                position="sticky"
                 color="primary"
-                elevation={2}
+                elevation={conScroll ? 6 : 2}
                 sx={{
+                    top: 0,
+                    zIndex: (theme) => theme.zIndex.drawer + 1,
                     background:
-                        "linear-gradient(90deg, #00695C 0%, #004D40 100%)"
+                        "linear-gradient(90deg, #00695C 0%, #004D40 100%)",
+                    transition: "box-shadow 0.2s ease",
+                    boxShadow:
+                        conScroll
+                            ? "0px 4px 14px rgba(0,0,0,0.35)"
+                            : "0px 2px 8px rgba(0,0,0,0.15)"
                 }}
             >
 
@@ -358,6 +434,33 @@ function MainLayout() {
 
                                 backgroundColor:
                                     isActive("/")
+                                        ? "rgba(255,255,255,0.18)"
+                                        : "transparent",
+
+                                "&:hover": {
+                                    backgroundColor:
+                                        "rgba(255,255,255,0.12)"
+                                }
+                            }}
+                        >
+                            Inicio
+                        </Button>
+
+                        <Button
+                            color="inherit"
+                            component={Link}
+                            to="/dashboard"
+                            sx={{
+                                fontWeight:
+                                    isActive("/dashboard")
+                                        ? 700
+                                        : 500,
+
+                                borderRadius: 2,
+                                px: 1.5,
+
+                                backgroundColor:
+                                    isActive("/dashboard")
                                         ? "rgba(255,255,255,0.18)"
                                         : "transparent",
 
@@ -592,6 +695,133 @@ function MainLayout() {
 
                     </Box>
 
+                    <Tooltip
+                        title={
+                            <Box>
+
+                                <Typography variant="caption" component="div">
+                                    Backend: Online
+                                </Typography>
+
+                                <Typography variant="caption" component="div">
+                                    Base de Datos:{" "}
+                                    {
+                                        estadoSistema === null
+                                            ? "Verificando..."
+                                            : estadoSistema.baseDatosOnline
+                                                ? "Online"
+                                                : "No disponible"
+                                    }
+                                </Typography>
+
+                                <Typography variant="caption" component="div">
+                                    IA:{" "}
+                                    {
+                                        estadoSistema === null
+                                            ? "Verificando..."
+                                            : estadoSistema.iaDisponible
+                                                ? "Disponible"
+                                                : "No disponible"
+                                    }
+                                </Typography>
+
+                            </Box>
+                        }
+                    >
+
+                        <Chip
+                            size="small"
+                            icon={
+                                <FiberManualRecordIcon
+                                    sx={{
+                                        fontSize: "12px !important",
+                                        color:
+                                            estadoSistema?.baseDatosOnline
+                                            &&
+                                            estadoSistema?.iaDisponible
+                                                ? "#4CAF50 !important"
+                                                : "#FFC107 !important"
+                                    }}
+                                />
+                            }
+                            label="Estado"
+                            sx={{
+                                display: {
+                                    xs: "flex",
+                                    sm: "none"
+                                },
+                                color: "#fff",
+                                borderColor: "rgba(255,255,255,0.4)",
+                                mr: 0.5
+                            }}
+                            variant="outlined"
+                        />
+
+                    </Tooltip>
+
+                    <Box
+                        sx={{
+                            display: {
+                                xs: "none",
+                                sm: "flex"
+                            },
+                            alignItems: "center",
+                            gap: 1.5,
+                            mr: 1
+                        }}
+                    >
+
+                        <Tooltip title="Backend Online">
+                            <FiberManualRecordIcon
+                                sx={{
+                                    fontSize: 12,
+                                    color: "#4CAF50"
+                                }}
+                            />
+                        </Tooltip>
+
+                        <Tooltip
+                            title={
+                                estadoSistema === null
+                                    ? "Verificando base de datos..."
+                                    : estadoSistema.baseDatosOnline
+                                        ? "Base de Datos Online"
+                                        : "Base de Datos no disponible"
+                            }
+                        >
+                            <FiberManualRecordIcon
+                                sx={{
+                                    fontSize: 12,
+                                    color:
+                                        estadoSistema?.baseDatosOnline
+                                            ? "#4CAF50"
+                                            : "rgba(255,255,255,0.4)"
+                                }}
+                            />
+                        </Tooltip>
+
+                        <Tooltip
+                            title={
+                                estadoSistema === null
+                                    ? "Verificando IA..."
+                                    : estadoSistema.iaDisponible
+                                        ? "IA Disponible"
+                                        : "IA no disponible"
+                            }
+                        >
+                            <FiberManualRecordIcon
+                                sx={{
+                                    fontSize: 12,
+                                    color:
+                                        estadoSistema?.iaDisponible
+                                            ? "#4CAF50"
+                                            : "rgba(255,255,255,0.4)"
+                                }}
+                            />
+                        </Tooltip>
+
+                    </Box>
+
                     <IconButton
                         color="inherit"
                         onClick={toggleColorMode}
@@ -815,6 +1045,19 @@ function MainLayout() {
                             component={Link}
                             to="/"
                             selected={isActive("/")}
+                            onClick={cerrarDrawer}
+                        >
+
+                            <ListItemText
+                                primary="Inicio"
+                            />
+
+                        </ListItemButton>
+
+                        <ListItemButton
+                            component={Link}
+                            to="/dashboard"
+                            selected={isActive("/dashboard")}
                             onClick={cerrarDrawer}
                         >
 
@@ -1103,6 +1346,29 @@ function MainLayout() {
                 </DialogActions>
 
             </Dialog>
+
+            <Zoom in={mostrarBotonSubir}>
+
+                <Fab
+                    color="primary"
+                    size="medium"
+                    aria-label="Volver arriba"
+                    onClick={() =>
+                        window.scrollTo({ top: 0, behavior: "smooth" })
+                    }
+                    sx={{
+                        position: "fixed",
+                        bottom: 32,
+                        right: 32,
+                        zIndex: (theme) => theme.zIndex.speedDial
+                    }}
+                >
+
+                    <KeyboardArrowUpIcon />
+
+                </Fab>
+
+            </Zoom>
 
         </Box>
     );

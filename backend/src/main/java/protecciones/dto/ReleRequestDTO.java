@@ -15,8 +15,8 @@ public class ReleRequestDTO {
     private String numeroSerie;
 
     @Size(
-            max = 150,
-            message = "El código de configuración no puede superar los 150 caracteres"
+            max = 400,
+            message = "El código de configuración no puede superar los 400 caracteres"
     )
     private String codigoConfiguracion;
 

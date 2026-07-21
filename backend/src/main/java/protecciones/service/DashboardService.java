@@ -23,6 +23,7 @@ import protecciones.dto.MovimientoResponseDTO;
 import protecciones.dto.dashboard.DashboardKpiDTO;
 import protecciones.dto.dashboard.DestinoCantidadDTO;
 import protecciones.dto.dashboard.EstadoCantidadDTO;
+import protecciones.dto.dashboard.EstadoSistemaDTO;
 import protecciones.dto.dashboard.MarcaCantidadDTO;
 import protecciones.dto.dashboard.ModeloCantidadDTO;
 import protecciones.dto.dashboard.ProveedorCantidadDTO;
@@ -177,6 +178,16 @@ public class DashboardService {
                                 LocalDate.now()
                         );
 
+        // Ventana de 30 dias hacia adelante: garantias que todavia no
+        // vencieron pero van a vencer pronto, para poder anticiparse en
+        // vez de enterarse cuando ya estan vencidas.
+        long garantiasProximasAVencer =
+                releRepository
+                        .countByActivoTrueAndFinGarantiaBetween(
+                                LocalDate.now(),
+                                LocalDate.now().plusDays(30)
+                        );
+
         long relesSinDocumentacion =
                 releRepository
                         .countSinDocumentacion();
@@ -207,6 +218,8 @@ public class DashboardService {
 
                 garantiasVencidas,
 
+                garantiasProximasAVencer,
+
                 relesSinDocumentacion,
 
                 relesDocumentacionSinArchivo,
@@ -216,6 +229,32 @@ public class DashboardService {
                 ordenesPendientes,
 
                 relesSinHistorial
+        );
+    }
+
+    // Chequeo liviano para los indicadores de salud del sistema en el
+    // header: "backend online" es implicito (si esto responde, ya lo esta),
+    // asi que solo hace falta confirmar que la base de datos responda y si
+    // la IA esta configurada.
+    public EstadoSistemaDTO
+    obtenerEstadoSistema() {
+
+        boolean baseDatosOnline;
+
+        try {
+
+            releRepository.count();
+
+            baseDatosOnline = true;
+
+        } catch (Exception e) {
+
+            baseDatosOnline = false;
+        }
+
+        return new EstadoSistemaDTO(
+                baseDatosOnline,
+                llmService.estaDisponible()
         );
     }
 

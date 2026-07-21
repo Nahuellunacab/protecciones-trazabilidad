@@ -11,6 +11,7 @@ import {
     Dialog,
     DialogTitle,
     DialogContent,
+    DialogActions,
     Divider,
     FormControl,
     Grid,
@@ -82,13 +83,29 @@ import {
 import MarcaForm from "../admin/marca/MarcaForm";
 import ModeloForm from "../admin/modelo/ModeloForm";
 import type { Posicion } from "../../types/Posicion";
+import type { Provincia } from "../../types/Provincia";
+import type { Localidad } from "../../types/Localidad";
+import type { Destino } from "../../types/Destino";
+
 import {
-    obtenerDestinos
+    obtenerDestinosPorLocalidad,
+    crearDestino
 } from "../../services/destinoService";
 
 import {
-    obtenerPosicionesPorDestino
+    obtenerPosiciones,
+    crearPosicion
 } from "../../services/posicionService";
+
+import {
+    obtenerProvincias,
+    crearProvincia
+} from "../../services/provinciaService";
+
+import {
+    obtenerLocalidadesPorProvincia,
+    crearLocalidad
+} from "../../services/localidadService";
 
 import {
     obtenerRemitos,
@@ -303,6 +320,59 @@ function ReleForm({
     const [posicionesIniciales,
         setPosicionesIniciales] =
             useState<Posicion[]>([]);
+
+    // Diálogo "Nueva Posición": permite crear en cadena Provincia →
+    // Localidad → Destino → Posición sin salir del alta de relé, para el
+    // caso (típico con la base recién limpiada) en que todavía no existe
+    // ninguna ubicación cargada y el select de "Posición Inicial" (campo
+    // obligatorio) quedaría vacío.
+    const [openUbicacionDialog,
+        setOpenUbicacionDialog] =
+        useState(false);
+
+    const [provincias,
+        setProvincias] =
+        useState<Provincia[]>([]);
+
+    const [localidadesCascada,
+        setLocalidadesCascada] =
+        useState<Localidad[]>([]);
+
+    const [destinosCascada,
+        setDestinosCascada] =
+        useState<Destino[]>([]);
+
+    const [ubProvinciaId,
+        setUbProvinciaId] =
+        useState<number | "">("");
+
+    const [ubLocalidadId,
+        setUbLocalidadId] =
+        useState<number | "">("");
+
+    const [ubDestinoId,
+        setUbDestinoId] =
+        useState<number | "">("");
+
+    const [ubNuevaProvinciaNombre,
+        setUbNuevaProvinciaNombre] =
+        useState("");
+
+    const [ubNuevaLocalidadNombre,
+        setUbNuevaLocalidadNombre] =
+        useState("");
+
+    const [ubNuevoDestinoNombre,
+        setUbNuevoDestinoNombre] =
+        useState("");
+
+    const [ubNuevaPosicionNombre,
+        setUbNuevaPosicionNombre] =
+        useState("");
+
+    const [ubGuardando,
+        setUbGuardando] =
+        useState(false);
 
     const [remitos, setRemitos] =
         useState<Remito[]>([]);
@@ -1221,6 +1291,248 @@ function ReleForm({
             }
         };
 
+    const handleAbrirDialogoUbicacion =
+        async () => {
+
+            setError("");
+
+            try {
+
+                const provinciasData =
+                    await obtenerProvincias();
+
+                setProvincias(
+                    provinciasData
+                );
+
+            } catch (err) {
+
+                setError(
+                    extraerMensajeError(
+                        err,
+                        "No se pudieron cargar las provincias. Intente nuevamente."
+                    )
+                );
+
+                return;
+            }
+
+            setUbProvinciaId("");
+            setUbLocalidadId("");
+            setUbDestinoId("");
+            setUbNuevaProvinciaNombre("");
+            setUbNuevaLocalidadNombre("");
+            setUbNuevoDestinoNombre("");
+            setUbNuevaPosicionNombre("");
+            setLocalidadesCascada([]);
+            setDestinosCascada([]);
+
+            setOpenUbicacionDialog(true);
+        };
+
+    const handleCrearProvinciaEnCadena =
+        async () => {
+
+            if (!ubNuevaProvinciaNombre.trim()) {
+
+                return;
+            }
+
+            setUbGuardando(true);
+
+            try {
+
+                const nuevaProvincia =
+                    await crearProvincia({
+                        nombre: ubNuevaProvinciaNombre.trim()
+                    });
+
+                const provinciasActualizadas =
+                    await obtenerProvincias();
+
+                setProvincias(
+                    provinciasActualizadas
+                );
+
+                setUbProvinciaId(
+                    nuevaProvincia.id
+                );
+
+                setUbNuevaProvinciaNombre("");
+
+            } catch (err) {
+
+                setError(
+                    extraerMensajeError(
+                        err,
+                        "No se pudo crear la provincia. Intente nuevamente."
+                    )
+                );
+
+            } finally {
+
+                setUbGuardando(false);
+            }
+        };
+
+    const handleCrearLocalidadEnCadena =
+        async () => {
+
+            if (
+                !ubProvinciaId
+                ||
+                !ubNuevaLocalidadNombre.trim()
+            ) {
+
+                return;
+            }
+
+            setUbGuardando(true);
+
+            try {
+
+                const nuevaLocalidad =
+                    await crearLocalidad({
+                        nombre: ubNuevaLocalidadNombre.trim(),
+                        provinciaId: Number(ubProvinciaId)
+                    });
+
+                const localidadesActualizadas =
+                    await obtenerLocalidadesPorProvincia(
+                        Number(ubProvinciaId)
+                    );
+
+                setLocalidadesCascada(
+                    localidadesActualizadas
+                );
+
+                setUbLocalidadId(
+                    nuevaLocalidad.id
+                );
+
+                setUbNuevaLocalidadNombre("");
+
+            } catch (err) {
+
+                setError(
+                    extraerMensajeError(
+                        err,
+                        "No se pudo crear la localidad. Intente nuevamente."
+                    )
+                );
+
+            } finally {
+
+                setUbGuardando(false);
+            }
+        };
+
+    const handleCrearDestinoEnCadena =
+        async () => {
+
+            if (
+                !ubLocalidadId
+                ||
+                !ubNuevoDestinoNombre.trim()
+            ) {
+
+                return;
+            }
+
+            setUbGuardando(true);
+
+            try {
+
+                const nuevoDestino =
+                    await crearDestino({
+                        nombre: ubNuevoDestinoNombre.trim(),
+                        localidadId: Number(ubLocalidadId)
+                    });
+
+                const destinosActualizados =
+                    await obtenerDestinosPorLocalidad(
+                        Number(ubLocalidadId)
+                    );
+
+                setDestinosCascada(
+                    destinosActualizados
+                );
+
+                setUbDestinoId(
+                    nuevoDestino.id
+                );
+
+                setUbNuevoDestinoNombre("");
+
+            } catch (err) {
+
+                setError(
+                    extraerMensajeError(
+                        err,
+                        "No se pudo crear el destino. Intente nuevamente."
+                    )
+                );
+
+            } finally {
+
+                setUbGuardando(false);
+            }
+        };
+
+    const handleCrearPosicionEnCadena =
+        async () => {
+
+            if (
+                !ubDestinoId
+                ||
+                !ubNuevaPosicionNombre.trim()
+            ) {
+
+                return;
+            }
+
+            setUbGuardando(true);
+
+            try {
+
+                const nuevaPosicion =
+                    await crearPosicion({
+                        nombre: ubNuevaPosicionNombre.trim(),
+                        destinoId: Number(ubDestinoId)
+                    });
+
+                const posicionesActualizadas =
+                    await obtenerPosiciones();
+
+                setPosicionesIniciales(
+                    posicionesActualizadas
+                );
+
+                setFormData((prev) => ({
+
+                    ...prev,
+
+                    posicionInicialId:
+                        nuevaPosicion.id
+                }));
+
+                setOpenUbicacionDialog(false);
+
+            } catch (err) {
+
+                setError(
+                    extraerMensajeError(
+                        err,
+                        "No se pudo crear la posición. Intente nuevamente."
+                    )
+                );
+
+            } finally {
+
+                setUbGuardando(false);
+            }
+        };
+
     useEffect(() => {
 
         if (marcaId) {
@@ -1242,6 +1554,40 @@ function ReleForm({
         }
 
     }, [marcaId, modelos]);
+
+    const handleSeleccionarUbProvincia = (
+        id: number
+    ) => {
+
+        setUbProvinciaId(id);
+
+        setUbLocalidadId("");
+
+        setUbDestinoId("");
+
+        setDestinosCascada([]);
+
+        obtenerLocalidadesPorProvincia(
+            id
+        ).then(
+            setLocalidadesCascada
+        );
+    };
+
+    const handleSeleccionarUbLocalidad = (
+        id: number
+    ) => {
+
+        setUbLocalidadId(id);
+
+        setUbDestinoId("");
+
+        obtenerDestinosPorLocalidad(
+            id
+        ).then(
+            setDestinosCascada
+        );
+    };
 
     const cargarDatos = async () => {
 
@@ -1308,53 +1654,42 @@ function ReleForm({
                 opsDisponiblesData
             );
 
-            const destinos =
-                await obtenerDestinos();
+            // Se trae el catálogo completo de posiciones (no solo las de un
+            // destino fijo): si la base está recién limpiada no hay ningún
+            // destino/posición todavía, y restringir a un nombre hardcodeado
+            // dejaba el select vacío y bloqueaba el alta (el campo es
+            // obligatorio). El usuario puede crear la cadena completa
+            // Provincia → Localidad → Destino → Posición sin salir del
+            // formulario con el botón "+ Nueva ubicación".
+            const posiciones =
+                await obtenerPosiciones();
 
-            // El destino de stock real se llama "Area Protecciones" (ver
-            // migracion V29, que reemplazo los datos de prueba por los
-            // datos operativos reales); "Depósito Central" era el nombre
-            // de prueba y ya no existe, por lo que este catalogo quedaba
-            // vacio y bloqueaba la carga de relés (el campo es obligatorio).
-            const depositoAreaProtecciones =
-                destinos.find(
-                    (d) =>
-                        d.nombre ===
-                        "Area Protecciones"
+            setPosicionesIniciales(
+                posiciones
+            );
+
+            // Por ahora, todo relé nuevo se carga por defecto en la
+            // posición "Depósito" de "Area Protecciones" si ese catálogo ya
+            // existe (dato operativo real, ver migracion V29); el usuario
+            // puede cambiarla en el selector si hace falta otra.
+            const posicionDeposito =
+                posiciones.find(
+                    (p) =>
+                        p.destino === "Area Protecciones"
+                        &&
+                        p.nombre === "Depósito"
                 );
 
-            if (depositoAreaProtecciones) {
+            if (posicionDeposito) {
 
-                const posiciones =
-                    await obtenerPosicionesPorDestino(
-                        depositoAreaProtecciones.id
-                    );
-
-                setPosicionesIniciales(
-                    posiciones
+                setFormData(
+                    (prev) => ({
+                        ...prev,
+                        posicionInicialId:
+                            prev.posicionInicialId
+                            ?? posicionDeposito.id
+                    })
                 );
-
-                // Por ahora, todo relé nuevo se carga por defecto en la
-                // posición "Depósito" de Área de Protecciones; el usuario
-                // puede cambiarla en el selector si hace falta otra.
-                const posicionDeposito =
-                    posiciones.find(
-                        (p) =>
-                            p.nombre ===
-                            "Depósito"
-                    );
-
-                if (posicionDeposito) {
-
-                    setFormData(
-                        (prev) => ({
-                            ...prev,
-                            posicionInicialId:
-                                prev.posicionInicialId
-                                ?? posicionDeposito.id
-                        })
-                    );
-                }
             }
 
             } catch (err) {
@@ -1439,7 +1774,11 @@ function ReleForm({
                 type === "checkbox"
                     ? checked
                     : typeof value === "string"
-                        ? value.toUpperCase()
+                        ? (
+                            name === "codigoConfiguracion"
+                                ? value.replace(/[\r\n]+/g, "")
+                                : value
+                        ).toUpperCase()
                         : value
         }));
     };
@@ -1970,11 +2309,11 @@ function ReleForm({
                             maxRows={3}
                             slotProps={{
                                 htmlInput: {
-                                    maxLength: 150
+                                    maxLength: 400
                                 }
                             }}
                             helperText={
-                                `${formData.codigoConfiguracion.length}/150`
+                                `${formData.codigoConfiguracion.length}/400`
                             }
                         />
 
@@ -2049,7 +2388,7 @@ function ReleForm({
                                                         }
                                                     >
                                                         {
-                                                            posicion.nombre
+                                                            `${posicion.destino} · ${posicion.nombre}`
                                                         }
                                                     </MenuItem>
                                                 )
@@ -2059,6 +2398,21 @@ function ReleForm({
                                     </Select>
 
                                 </FormControl>
+
+                                <Button
+                                    size="small"
+                                    sx={{
+                                        mt: 1,
+                                        alignSelf: "flex-start"
+                                    }}
+                                    onClick={
+                                        handleAbrirDialogoUbicacion
+                                    }
+                                >
+
+                                    + Nueva ubicación
+
+                                </Button>
 
                             </Grid>
 
@@ -3109,6 +3463,347 @@ function ReleForm({
                     handleCatalogosActualizadosDesdeIA
                 }
             />
+
+            <Dialog
+                open={openUbicacionDialog}
+                onClose={() =>
+                    setOpenUbicacionDialog(false)
+                }
+                maxWidth="sm"
+                fullWidth
+            >
+
+                <DialogTitle>
+                    Nueva ubicación
+                </DialogTitle>
+
+                <DialogContent>
+
+                    <Alert
+                        severity="info"
+                        sx={{ mb: 2 }}
+                    >
+                        Complete la cadena Provincia → Localidad → Destino →
+                        Posición. Puede seleccionar una ya existente en cada
+                        paso, o crear una nueva.
+                    </Alert>
+
+                    <Stack spacing={3}>
+
+                        <Box>
+
+                            <Typography
+                                variant="subtitle2"
+                                sx={{ mb: 1 }}
+                            >
+                                1. Provincia
+                            </Typography>
+
+                            <FormControl fullWidth>
+
+                                <InputLabel id="ub-provincia-label">
+                                    Provincia
+                                </InputLabel>
+
+                                <Select
+                                    labelId="ub-provincia-label"
+                                    label="Provincia"
+                                    value={ubProvinciaId}
+                                    onChange={(e) =>
+                                        handleSeleccionarUbProvincia(
+                                            Number(e.target.value)
+                                        )
+                                    }
+                                >
+
+                                    {
+                                        provincias.map(
+                                            (provincia) => (
+
+                                                <MenuItem
+                                                    key={provincia.id}
+                                                    value={provincia.id}
+                                                >
+                                                    {provincia.nombre}
+                                                </MenuItem>
+                                            )
+                                        )
+                                    }
+
+                                </Select>
+
+                            </FormControl>
+
+                            <Stack
+                                direction="row"
+                                spacing={1}
+                                sx={{ mt: 1 }}
+                            >
+
+                                <TextField
+                                    size="small"
+                                    fullWidth
+                                    label="O crear provincia nueva"
+                                    value={ubNuevaProvinciaNombre}
+                                    onChange={(e) =>
+                                        setUbNuevaProvinciaNombre(
+                                            e.target.value
+                                        )
+                                    }
+                                />
+
+                                <Button
+                                    variant="outlined"
+                                    disabled={
+                                        ubGuardando
+                                        ||
+                                        !ubNuevaProvinciaNombre.trim()
+                                    }
+                                    onClick={
+                                        handleCrearProvinciaEnCadena
+                                    }
+                                >
+                                    Crear
+                                </Button>
+
+                            </Stack>
+
+                        </Box>
+
+                        <Divider />
+
+                        <Box>
+
+                            <Typography
+                                variant="subtitle2"
+                                sx={{ mb: 1 }}
+                            >
+                                2. Localidad
+                            </Typography>
+
+                            <FormControl
+                                fullWidth
+                                disabled={!ubProvinciaId}
+                            >
+
+                                <InputLabel id="ub-localidad-label">
+                                    Localidad
+                                </InputLabel>
+
+                                <Select
+                                    labelId="ub-localidad-label"
+                                    label="Localidad"
+                                    value={ubLocalidadId}
+                                    onChange={(e) =>
+                                        handleSeleccionarUbLocalidad(
+                                            Number(e.target.value)
+                                        )
+                                    }
+                                >
+
+                                    {
+                                        localidadesCascada.map(
+                                            (localidad) => (
+
+                                                <MenuItem
+                                                    key={localidad.id}
+                                                    value={localidad.id}
+                                                >
+                                                    {localidad.nombre}
+                                                </MenuItem>
+                                            )
+                                        )
+                                    }
+
+                                </Select>
+
+                            </FormControl>
+
+                            <Stack
+                                direction="row"
+                                spacing={1}
+                                sx={{ mt: 1 }}
+                            >
+
+                                <TextField
+                                    size="small"
+                                    fullWidth
+                                    disabled={!ubProvinciaId}
+                                    label="O crear localidad nueva"
+                                    value={ubNuevaLocalidadNombre}
+                                    onChange={(e) =>
+                                        setUbNuevaLocalidadNombre(
+                                            e.target.value
+                                        )
+                                    }
+                                />
+
+                                <Button
+                                    variant="outlined"
+                                    disabled={
+                                        ubGuardando
+                                        ||
+                                        !ubProvinciaId
+                                        ||
+                                        !ubNuevaLocalidadNombre.trim()
+                                    }
+                                    onClick={
+                                        handleCrearLocalidadEnCadena
+                                    }
+                                >
+                                    Crear
+                                </Button>
+
+                            </Stack>
+
+                        </Box>
+
+                        <Divider />
+
+                        <Box>
+
+                            <Typography
+                                variant="subtitle2"
+                                sx={{ mb: 1 }}
+                            >
+                                3. Destino
+                            </Typography>
+
+                            <FormControl
+                                fullWidth
+                                disabled={!ubLocalidadId}
+                            >
+
+                                <InputLabel id="ub-destino-label">
+                                    Destino
+                                </InputLabel>
+
+                                <Select
+                                    labelId="ub-destino-label"
+                                    label="Destino"
+                                    value={ubDestinoId}
+                                    onChange={(e) =>
+                                        setUbDestinoId(
+                                            Number(e.target.value)
+                                        )
+                                    }
+                                >
+
+                                    {
+                                        destinosCascada.map(
+                                            (destino) => (
+
+                                                <MenuItem
+                                                    key={destino.id}
+                                                    value={destino.id}
+                                                >
+                                                    {destino.nombre}
+                                                </MenuItem>
+                                            )
+                                        )
+                                    }
+
+                                </Select>
+
+                            </FormControl>
+
+                            <Stack
+                                direction="row"
+                                spacing={1}
+                                sx={{ mt: 1 }}
+                            >
+
+                                <TextField
+                                    size="small"
+                                    fullWidth
+                                    disabled={!ubLocalidadId}
+                                    label="O crear destino nuevo"
+                                    value={ubNuevoDestinoNombre}
+                                    onChange={(e) =>
+                                        setUbNuevoDestinoNombre(
+                                            e.target.value
+                                        )
+                                    }
+                                />
+
+                                <Button
+                                    variant="outlined"
+                                    disabled={
+                                        ubGuardando
+                                        ||
+                                        !ubLocalidadId
+                                        ||
+                                        !ubNuevoDestinoNombre.trim()
+                                    }
+                                    onClick={
+                                        handleCrearDestinoEnCadena
+                                    }
+                                >
+                                    Crear
+                                </Button>
+
+                            </Stack>
+
+                        </Box>
+
+                        <Divider />
+
+                        <Box>
+
+                            <Typography
+                                variant="subtitle2"
+                                sx={{ mb: 1 }}
+                            >
+                                4. Posición
+                            </Typography>
+
+                            <TextField
+                                fullWidth
+                                disabled={!ubDestinoId}
+                                label="Nombre de la posición"
+                                value={ubNuevaPosicionNombre}
+                                onChange={(e) =>
+                                    setUbNuevaPosicionNombre(
+                                        e.target.value
+                                    )
+                                }
+                            />
+
+                        </Box>
+
+                    </Stack>
+
+                </DialogContent>
+
+                <DialogActions>
+
+                    <Button
+                        onClick={() =>
+                            setOpenUbicacionDialog(false)
+                        }
+                    >
+                        Cancelar
+                    </Button>
+
+                    <Button
+                        variant="contained"
+                        disabled={
+                            ubGuardando
+                            ||
+                            !ubDestinoId
+                            ||
+                            !ubNuevaPosicionNombre.trim()
+                        }
+                        onClick={
+                            handleCrearPosicionEnCadena
+                        }
+                    >
+                        Crear y usar como posición inicial
+                    </Button>
+
+                </DialogActions>
+
+            </Dialog>
 
             <Snackbar
                 open={Boolean(successMsg)}

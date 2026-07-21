@@ -102,7 +102,9 @@ async function ejecutarAccion(
                 params.set("destino", accion.destino);
             }
 
-            navigate(`/reles?${params.toString()}`);
+            navigate(`/reles?${params.toString()}`, {
+                state: { resaltarFiltrado: true }
+            });
 
             const criterios =
                 [
