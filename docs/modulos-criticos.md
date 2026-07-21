@@ -154,8 +154,8 @@ flowchart TD
     B5 --> B6["releBajaService.aplicarBaja(rele, motivo)"]
     B6 --> B7[releRepository.save]
 
-    A6 --> End([Rele.activo = false,\nfechaBaja, motivoBaja seteados])
-    B7 --> End
+    A6 --> Fin([Rele.activo = false,\nfechaBaja, motivoBaja seteados])
+    B7 --> Fin
 ```
 
 **Diferencias reales entre A y B** (no cosméticas):
@@ -273,7 +273,7 @@ sequenceDiagram
     RIS->>Gem: estaDisponible()
     Gem-->>RIS: true (si no, BusinessException)
     RIS->>Gem: generarTextoConArchivo(PROMPT_SISTEMA, bytes, contentType, maxTokens=4096)
-    Gem-->>RIS: texto JSON (lista de reles extraidos, o con fences ```)
+    Gem-->>RIS: texto JSON (lista de reles extraidos, a veces envuelto en bloque de codigo)
     RIS->>RIS: parsearJson() (limpia fences, valida estructura)
     RIS->>RIS: mapearDatos() -> RemitoDatosExtraidosDTO
 
