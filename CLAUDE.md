@@ -2,6 +2,8 @@
 
 Documento de referencia arquitectónica para futuras conversaciones sobre este proyecto. Léelo completo antes de proponer o escribir código. Refleja el estado real del código al momento del análisis (no es un documento de diseño aspiracional).
 
+Documentación complementaria en `docs/`: `docs/autenticacion.md` (login/JWT/roles), `docs/seguridad.md` (superficie de seguridad completa: qué está implementado, por qué, y qué falta), `docs/performance.md` (decisiones de performance y oportunidades de mejora), `docs/maquina-estados.md` (estados y transiciones del Relé), `docs/frontend-desarrollo.md` (scripts y convenciones del frontend). Antes de proponer un cambio con implicancias de seguridad o performance, revisar el documento correspondiente para no repetir un gap ya conocido y priorizado ahí.
+
 ---
 
 # Objetivo del sistema

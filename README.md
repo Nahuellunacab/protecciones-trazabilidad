@@ -17,7 +17,22 @@ La aplicación permite administrar:
 - proveedores
 - usuarios responsables
 
-mediante una arquitectura desacoplada React + Spring Boot + PostgreSQL.
+mediante una arquitectura desacoplada React + Spring Boot + PostgreSQL, con autenticación JWT y control de acceso por rol.
+
+---
+
+# Documentación
+
+Este `README.md` da la visión general y las instrucciones para levantar el sistema. El resto de la documentación técnica vive en `docs/`:
+
+| Documento | Contenido |
+|---|---|
+| [`CLAUDE.md`](CLAUDE.md) | Referencia arquitectónica completa del sistema (raíz del repo) |
+| [`docs/autenticacion.md`](docs/autenticacion.md) | Login, JWT, roles (`ADMIN`/`OPERADOR`/`AUDITOR`), flujos de autorización |
+| [`docs/seguridad.md`](docs/seguridad.md) | Qué mecanismos de seguridad están implementados, por qué, y qué falta |
+| [`docs/performance.md`](docs/performance.md) | Decisiones de performance tomadas y oportunidades de mejora identificadas |
+| [`docs/maquina-estados.md`](docs/maquina-estados.md) | Máquina de estados operativos del Relé (estados y transiciones válidas) |
+| [`docs/frontend-desarrollo.md`](docs/frontend-desarrollo.md) | Scripts, stack y convenciones específicas del frontend |
 
 ---
 
@@ -105,6 +120,16 @@ Actualmente el sistema ya posee:
 ## API Docs
 
 - Swagger/OpenAPI
+
+## Seguridad
+
+- Autenticación JWT stateless (sin sesión de servidor)
+- 3 roles: `ADMIN`, `OPERADOR`, `AUDITOR`
+- Passwords con BCrypt
+- Rate limiting de intentos fallidos de login
+- Validación de archivos adjuntos por firma binaria (no por extensión)
+
+Detalle completo en [`docs/autenticacion.md`](docs/autenticacion.md) y [`docs/seguridad.md`](docs/seguridad.md).
 
 ---
 
@@ -509,7 +534,30 @@ y constituyen:
 
 ---
 
+# Autenticación y Usuarios
+
+## Funcionalidades implementadas
+
+- Login por email o número de sobre (legajo)
+- Token JWT (8hs de validez por defecto), sin cookies ni sesión de servidor
+- 3 roles con permisos diferenciados:
+  - **ADMIN**: lectura + escritura + gestión de usuarios
+  - **OPERADOR**: lectura + escritura operativa (sin gestión de usuarios)
+  - **AUDITOR**: solo lectura
+- Autogestión de la propia contraseña (cualquier rol, sin depender de ADMIN)
+- Bloqueo temporal tras varios intentos fallidos de login
+- Soft delete de usuarios (`activo`), preservando su firma en el historial de movimientos
+
+Detalle de flujos, diagramas y credencial de bootstrap en [`docs/autenticacion.md`](docs/autenticacion.md).
+
+---
+
 # APIs REST Implementadas
+
+## Autenticación
+
+- /api/auth/login
+- /api/auth/password
 
 ## Catálogos
 
@@ -524,12 +572,20 @@ y constituyen:
 
 - /api/proveedores
 - /api/remitos
+- /api/remitos/analizar (carga inteligente por IA)
+- /api/ordenes-provision
 
 ## Dominio principal
 
 - /api/modelos
 - /api/reles
 - /api/movimientos
+
+## Dashboard e IA
+
+- /api/dashboard
+- /api/dashboard/resumen-ia
+- /api/copiloto/consultar
 
 ## Usuarios
 
@@ -629,24 +685,19 @@ PATCH /api/reles/{id}/baja
 
 # Próximos Pasos
 
-## Operación
-
-- auditoría automática
-
 ## Frontend
 
-- Dashboard operativo avanzado
-- DataGrid avanzado
-- KPIs operativos
-- filtros visuales
+- DataGrid avanzado con virtualización (tabla de movimientos, ver `docs/performance.md`)
+- filtros visuales avanzados
 - timeline visual
-- búsqueda avanzada
+- code splitting por ruta
 
-## Backend
+## Backend / Seguridad / Performance
 
-- Soft delete global
-- Auditoría automática
-- Optimización de queries
+El backlog priorizado de mejoras técnicas ya no se lleva en este README para no desactualizarse — vive en:
+
+- [`docs/seguridad.md`](docs/seguridad.md) (sección "Resumen — qué falta"): rate limiting detrás de proxy, política de contraseñas, headers HTTP de seguridad, logging de auditoría, dependency scanning, revocación de JWT.
+- [`docs/performance.md`](docs/performance.md) (sección "Resumen — oportunidades de mejora"): índices de FK faltantes, paginación de `/api/movimientos`, N+1 puntuales, code splitting, cache/compresión de Nginx.
 
 ## Integraciones futuras
 
@@ -840,6 +891,21 @@ npm run dev
 cd frontend
 npm run build
 ```
+
+---
+
+# Tests y CI
+
+```bash
+cd backend
+./mvnw test        # tests backend (JUnit + Testcontainers, levantan su propio Postgres)
+
+cd frontend
+npm run test        # tests frontend (Vitest + Testing Library)
+npm run lint         # ESLint (no bloqueante en CI por errores preexistentes, ver docs/frontend-desarrollo.md)
+```
+
+El workflow de GitHub Actions (`.github/workflows/ci.yml`) corre ambas suites en cada push y en los PRs contra `main`, además del build de producción del frontend.
 
 ---
 

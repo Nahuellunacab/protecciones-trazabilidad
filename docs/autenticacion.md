@@ -1,6 +1,6 @@
 # Autenticación y autorización
 
-Documento de referencia sobre el sistema de login del proyecto (implementado en `V27__add_autenticacion_a_usuario.sql`, ampliado en `V28__add_operador_y_numero_sobre_a_usuario.sql`). Complementa al `CLAUDE.md` raíz, que resume el estado general del sistema.
+Documento de referencia sobre el sistema de login del proyecto (implementado en `V27__add_autenticacion_a_usuario.sql`, ampliado en `V28__add_operador_y_numero_sobre_a_usuario.sql`). Complementa al `CLAUDE.md` raíz, que resume el estado general del sistema, y a `docs/seguridad.md`, que cubre el resto de la superficie de seguridad del sistema (CORS, manejo de archivos, secretos, TLS, gaps conocidos) además del login.
 
 ---
 
@@ -158,11 +158,18 @@ La migración `V27` crea un único usuario `ADMIN` inicial para poder entrar por
 
 **Cambiar esta contraseña** (desde el ícono de llave apenas logueado, o editando el usuario desde `/admin/usuarios`) antes de cualquier uso real fuera de un entorno de desarrollo local. Ídem con el número de sobre placeholder.
 
-## 9. Limitaciones conocidas (fuera de alcance de esta versión)
+## 9. Rate limiting de login
+
+`LoginRateLimiter` (paquete `protecciones.security`) bloquea intentos fallidos de login por **identificador** (cuenta) y por **IP de origen**, cada uno con su propio contador en memoria. Umbral configurable: `auth.login.max-intentos` (default 5) y `auth.login.bloqueo-minutos` (default 15) — al superarlo, `AuthService.login` responde HTTP 429 (`TooManyRequestsException`) en vez de intentar la autenticación.
+
+⚠️ Detrás del proxy de producción (`docker/nginx/proxy.conf` → `frontend` → `backend`), `AuthController` hoy lee la IP con `request.getRemoteAddr()`, que en ese camino es siempre la IP del contenedor `frontend`, no la del cliente real — el bloqueo por IP no discrimina usuarios en ese entorno. El bloqueo por identificador (cuenta) no tiene este problema. Detalle completo y prioridad de arreglo en `docs/seguridad.md` (sección "Rate limiting de login").
+
+## 10. Limitaciones conocidas (fuera de alcance de esta versión)
 
 - Sin refresh token: la sesión expira a las 8h y hay que volver a loguearse.
 - Sin recuperación de contraseña "olvidé mi contraseña" (solo autogestión estando ya logueado).
 - Sin 2FA.
-- Sin bloqueo por intentos fallidos de login.
+- Sin revocación/blacklist de JWT: el logout es solo del lado del cliente (borra `localStorage`); un token robado sigue siendo válido en el backend hasta que expira naturalmente.
+- Sin política de complejidad de contraseña (backend y frontend solo exigen que no esté vacía, salvo el diálogo de reseteo de contraseña que sí pide un mínimo de 6 caracteres, de forma inconsistente con el resto de los flujos).
 
-Cualquiera de estos puntos es una extensión aislada sobre lo ya construido, no un rediseño.
+Cualquiera de estos puntos es una extensión aislada sobre lo ya construido, no un rediseño. Ver `docs/seguridad.md` para el detalle y la priorización de cada uno junto con el resto de los gaps de seguridad del sistema.
